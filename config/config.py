@@ -1,0 +1,31 @@
+from config.splitter_model import SplitterModel
+# OpenAI的BaseURL
+OPENAI_BASE_URL = "https://api.openai-proxy.org/v1"
+
+# OpenAI的API_KEY
+OPENAI_API_KEY = "sk-Ob9W6r83cOj95sTXXMRPC61FDEIF6ZgoPEQur8PPyFrcuSKa"
+
+# 豆包的API_KEY
+DOUBAO_API_KEY = "d42e75b4-a5ef-4e9a-90ed-d93a9dcc2966"
+
+LLM_MODEL = "gpt-3.5-turbo"
+
+# 拆分形式 默认LLM拆分
+SPPLITTER_MODEL = SplitterModel.TextSplitter
+
+# OCR
+## OCR_PORT
+OCR_PORT = 8010
+OCR_URL = "http://127.0.0.1"
+
+# Embedding
+EMBEDDING_MODEL_PROVIDER = "doubao"
+
+
+# ES_BASE_URL
+ES_BASE_URL = "10.116.123.148"
+ES_BASE_PORT = 9200
+
+# Milvus Host
+MILVUS_HOST = "10.116.123.30"
+MILVUS_PORT = 19530
