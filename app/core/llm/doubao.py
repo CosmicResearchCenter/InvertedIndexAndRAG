@@ -3,7 +3,7 @@ from volcenginesdkarkruntime.types.chat import ChatCompletionMessage,ChatComplet
 from typing import List,Iterable
 from config.config import DOUBAO_API_KEY
 # (type alias) ChatCompletionMessageParam: type[ChatCompletionSystemMessageParam] | type[ChatCompletionUserMessageParam] | type[ChatCompletionAssistantMessageParam] | type[ChatCompletionToolMessageParam] | type[ChatCompletionFunctionMessageParam]
-from llm.llm import LLM
+from .llm import LLM
 class DouBaoLLM(LLM):
     def __init__(self,api_key:str=DOUBAO_API_KEY) -> None:
         self.client = Ark(api_key=api_key)

@@ -1,7 +1,7 @@
 from enum import Enum
-from llm.doubao import DouBaoLLM
-from llm.openaillm import OpenAILLM
-from llm.llm import LLM
+from .doubao import DouBaoLLM
+from .openaillm import OpenAILLM
+from .llm import LLM
 
 class LLM_Provider(Enum):
     """

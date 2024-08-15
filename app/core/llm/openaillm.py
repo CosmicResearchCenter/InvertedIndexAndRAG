@@ -5,7 +5,7 @@ from typing import List,Iterable
 import sys
 # sys.path.append('..')
 from config.config import OPENAI_API_KEY,OPENAI_BASE_URL,LLM_MODEL
-from llm.llm import LLM
+from .llm import LLM
 
 class OpenAILLM(LLM):
     def __init__(self, api_key: str=OPENAI_API_KEY,base_url:str=OPENAI_BASE_URL,model:str=LLM_MODEL) -> None:
