@@ -90,7 +90,7 @@ class RAG_Pipelines:
         return result
     
     #生成回答
-    def generater_answer_by_knowledgebase(self, question:str,knowledge_base_id:str):
+    def generate_answer_by_knowledgebase(self, question:str,knowledge_base_id:str):
         
         # 获取文档源信息
         source_docs = self.retriever_by_knowledgebase(question,knowledge_base_id)
@@ -99,11 +99,9 @@ class RAG_Pipelines:
         
         for source in source_docs:
             prompt_source += f"""
-            
-            {source.content}
-            
+            {source.content}\n
             """
-        print(prompt_source)
+        # print(prompt_source)
         llm = LLM_Manager().creatLLM(mode_provider="OPENAI")
         prompt_system =f"""
         你是一个基于文档提供高质量回答的助手。你的任务是根据提供的文档内容，准确、清晰地回答用户的问题。请确保以下几点：
@@ -138,6 +136,6 @@ if __name__ == "__main__":
     # 插入文档
     # pipelines.insert_knowledgebase("/Users/markyangkp/Desktop/Projects/llmqa/ocr/tmp_files/data.txt", "kbf11defac6e0043")
     # # 生成回答
-    question = "去学校图书馆自习是什么流程"
-    answer = pipelines.generater_answer_by_knowledgebase(question,"kbf11defac6e0043")
-    print(answer)
+    # question = "去学校图书馆自习是什么流程"
+    # answer = pipelines.generate_answer_by_knowledgebase(question,"kbf11defac6e0043")
+    # print(answer)
