@@ -19,7 +19,7 @@ OCR_PORT = 8010
 OCR_URL = "http://127.0.0.1"
 
 # Embedding
-EMBEDDING_MODEL_PROVIDER = "doubao"
+EMBEDDING_MODEL_PROVIDER = "openai"
 
 
 # ES_BASE_URL

@@ -19,7 +19,7 @@ class MilvusCollectionManager:
         fields = [
             FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
             FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=dim),
-            FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=1024),
+            FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=10000),
             FieldSchema(name="knowledge_doc_name", dtype=DataType.VARCHAR, max_length=512)
         ]
         schema = CollectionSchema(fields, description=knowledgeBaseName)

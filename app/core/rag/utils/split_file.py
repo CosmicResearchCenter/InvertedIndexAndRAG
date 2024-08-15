@@ -3,7 +3,8 @@ from langchain_core.documents import Document
 from typing import List
 from app.core.ocr.ocr_model import OCR_Model
 from config.splitter_model import SplitterModel
-def split_file(file_path:str,SPPLITTER_MODEL:SplitterModel)->List[Document]:
+from config.config import SPPLITTER_MODEL
+def split_file(file_path:str,SPPLITTER_MODEL:SplitterModel=SPPLITTER_MODEL)->List[Document]:
     docs:List[Document] = []
     # 判断文件类型
     if file_path.lower().endswith(".txt"):

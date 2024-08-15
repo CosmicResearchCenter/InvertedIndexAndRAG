@@ -1,7 +1,7 @@
-from embedding.doubao_embedding import DouBaoEmbedding
-from embedding.openai_embedding import OpenAIEmbedding
+from .doubao_embedding import DouBaoEmbedding
+from .openai_embedding import OpenAIEmbedding
 from enum import Enum
-from embedding.embedding import Embedding
+from .embedding import Embedding
 
 class EmbeddingType(Enum):
     doubao = "doubao"

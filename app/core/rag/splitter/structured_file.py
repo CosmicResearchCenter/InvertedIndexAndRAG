@@ -82,7 +82,7 @@ class TextSplitter:
                 #     print("---------------------\n")
                 print(f"已处理第{index}个块")
                 index += 1
-                return result
+            return result
     def split(self,full_text:str)->List[Document]:
             
             if self.SPPLITTER_MODEL == SplitterModel.LLMSplitter:

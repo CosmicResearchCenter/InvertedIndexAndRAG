@@ -1,6 +1,6 @@
 from openai import OpenAI
 import numpy as np
-from embedding.embedding import Embedding
+from .embedding import Embedding
 from config.config import OPENAI_API_KEY,OPENAI_BASE_URL
 class OpenAIEmbedding(Embedding):
     def __init__(self,base_url:str=OPENAI_BASE_URL,api_key:str=OPENAI_API_KEY):

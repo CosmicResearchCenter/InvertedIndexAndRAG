@@ -1,6 +1,6 @@
 import numpy as np
 from volcenginesdkarkruntime import Ark
-from embedding.embedding import Embedding
+from .embedding import Embedding
 from typing import List
 from config.config import DOUBAO_API_KEY
 class DouBaoEmbedding(Embedding):
