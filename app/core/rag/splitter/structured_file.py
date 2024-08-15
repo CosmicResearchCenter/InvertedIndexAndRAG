@@ -2,15 +2,17 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from typing import List
 from app.core.llm import LLM_Manager,LLM,DouBaoLLM,OpenAILLM
-from config.config import LLM_MODEL
+from config.config import LLM_MODEL, SPPLITTER_MODEL
+from config.splitter_model import SplitterModel
 class TextSplitter:
-    def __init__(self,chunk_size:int=100,chunk_overlap:int=20,length_function:int=len,is_separator_regex:bool=False,split_model:str="OPENAI"):
+    def __init__(self,SPPLITTER_MODEL=SPPLITTER_MODEL,chunk_size:int=100,chunk_overlap:int=20,length_function:int=len,is_separator_regex:bool=False,split_model:str="OPENAI"):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.length_function = length_function
         self.is_separator_regex = is_separator_regex
         self.split_model = split_model
-        self.llm_client = LLM_Manager().creatLLM(split_model)
+        self.SPPLITTER_MODEL = SPPLITTER_MODEL
+        # self.llm_client = LLM_Manager().creatLLM(split_model)
     # 拆分文本
     def _split_texts(self, text)->List[Document]:
         texst = RecursiveCharacterTextSplitter(
@@ -38,7 +40,8 @@ class TextSplitter:
 
     def SplitTextByLLM(self,text:str,splitter_str:str) -> List[Document]:
         # print(len(text))
-        
+        llm_client = LLM_Manager().creatLLM(self.split_model)
+
         if len(text)<2000:
             prompt:str = f"""
             请将以下文本拆分成逻辑清晰、内容独立的段落或部分。每个段落应完整表达一个主要思想或主题，并控制段落的长度，使其便于后续的分析和处理。每个段落之间使用指定的拆分符进行分隔，确保拆分后的内容不被修改
@@ -48,8 +51,8 @@ class TextSplitter:
             请根据文本的结构、主题和意义进行合理拆分：
             {text}
             """
-            self.llm_client.setPrompt(prompt="你是一名专业的文本拆分助手，你的任务是帮助用户拆分文本内容。")
-            texts = self.llm_client.ChatToBot(content=prompt)
+            llm_client.setPrompt(prompt="你是一名专业的文本拆分助手，你的任务是帮助用户拆分文本内容。")
+            texts = llm_client.ChatToBot(content=prompt)
             result = self._SplitText(texts,splitter_str)
             
             return result
@@ -68,8 +71,8 @@ class TextSplitter:
                 请根据文本的结构、主题和意义进行合理拆分：
                 {text[i:i + window_size]}
                 """               
-                self.llm_client.setPrompt(prompt="你是一名专业的文本拆分助手，你的任务是帮助用户拆分文本内容。")
-                texts = self.llm_client.ChatToBot(content=prompt)
+                llm_client.setPrompt(prompt="你是一名专业的文本拆分助手，你的任务是帮助用户拆分文本内容。")
+                texts = llm_client.ChatToBot(content=prompt)
                 item = self._SplitText(texts,splitter_str)
                 result.extend(item)
                 # result.extend(self._SplitText(texts,splitter_str))
@@ -79,8 +82,13 @@ class TextSplitter:
                 #     print("---------------------\n")
                 print(f"已处理第{index}个块")
                 index += 1
-            return result
-
+                return result
+    def split(self,full_text:str)->List[Document]:
+            
+            if self.SPPLITTER_MODEL == SplitterModel.LLMSplitter:
+                return self.SplitTextByLLM(full_text, "######")
+            elif self.SPPLITTER_MODEL == SplitterModel.TextSplitter:
+                return self.split_texts(full_text)
     
 if __name__ == "__main__":
     # text = "This is a test. This is another test."
