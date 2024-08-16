@@ -4,6 +4,8 @@ from typing import List
 from app.core.llm import LLM_Manager,LLM,DouBaoLLM,OpenAILLM
 from config.config import LLM_MODEL, SPPLITTER_MODEL
 from config.splitter_model import SplitterModel
+from concurrent.futures import ThreadPoolExecutor
+
 class TextSplitter:
     def __init__(self,SPPLITTER_MODEL=SPPLITTER_MODEL,chunk_size:int=100,chunk_overlap:int=20,length_function:int=len,is_separator_regex:bool=False,split_model:str="OPENAI"):
         self.chunk_size = chunk_size
@@ -12,6 +14,7 @@ class TextSplitter:
         self.is_separator_regex = is_separator_regex
         self.split_model = split_model
         self.SPPLITTER_MODEL = SPPLITTER_MODEL
+        self.result:List[Document] = []
         # self.llm_client = LLM_Manager().creatLLM(split_model)
     # 拆分文本
     def _split_texts(self, text)->List[Document]:
@@ -39,10 +42,8 @@ class TextSplitter:
         return result
 
     def SplitTextByLLM(self,text:str,splitter_str:str) -> List[Document]:
-        # print(len(text))
-        llm_client = LLM_Manager().creatLLM(self.split_model)
-
         if len(text)<2000:
+            llm_client = LLM_Manager().creatLLM(self.split_model)
             prompt:str = f"""
             请将以下文本拆分成逻辑清晰、内容独立的段落或部分。每个段落应完整表达一个主要思想或主题，并控制段落的长度，使其便于后续的分析和处理。每个段落之间使用指定的拆分符进行分隔，确保拆分后的内容不被修改
 
@@ -53,36 +54,36 @@ class TextSplitter:
             """
             llm_client.setPrompt(prompt="你是一名专业的文本拆分助手，你的任务是帮助用户拆分文本内容。")
             texts = llm_client.ChatToBot(content=prompt)
-            result = self._SplitText(texts,splitter_str)
+            self.result = self._SplitText(texts,splitter_str)
             
-            return result
+            return self.result
         else:
             # 把text分成多个部分，滑动窗口滑动，然后拆分，确保不丢失过多信息
             window_size = 2000  # 滑动窗口的大小
             step_size = 1600    # 滑动步长
             index = 1
-            result:List[Document] = []
-            for i in range(0, len(text) - window_size + 1, step_size):
-                prompt:str = f"""
-                请将以下文本拆分成逻辑清晰、内容独立的段落或部分。每个段落应完整表达一个主要思想或主题，并控制段落的长度，使其便于后续的分析和处理。每个段落之间使用指定的拆分符进行分隔，确保拆分后的内容不被修改
+            # result:List[Document] = []
+            with ThreadPoolExecutor(max_workers=6) as executor:
+                for i in range(0, len(text) - window_size + 1, step_size):
+                    
+                    executor.submit(self._LLM_Task, text[i:i + window_size],splitter_str)                    
+                    print(f"正在处理第{index}个块")
+                    index += 1
+            return self.result
+    def _LLM_Task(self,retriever_text:str,splitter_str:str)->List[Document]:
+        llm_client = LLM_Manager().creatLLM(self.split_model)
+        prompt:str = f"""
+        请将以下文本拆分成逻辑清晰、内容独立的段落或部分。每个段落应完整表达一个主要思想或主题，并控制段落的长度，使其便于后续的分析和处理。每个段落之间使用指定的拆分符进行分隔。请不要修改文本内容，确保拆分后的内容不被修改
 
-                拆分符: {splitter_str}
+        拆分符: {splitter_str}
 
-                请根据文本的结构、主题和意义进行合理拆分：
-                {text[i:i + window_size]}
-                """               
-                llm_client.setPrompt(prompt="你是一名专业的文本拆分助手，你的任务是帮助用户拆分文本内容。")
-                texts = llm_client.ChatToBot(content=prompt)
-                item = self._SplitText(texts,splitter_str)
-                result.extend(item)
-                # result.extend(self._SplitText(texts,splitter_str))
-                # print(item)
-                # for i in item:
-                #     print(i.page_content)
-                #     print("---------------------\n")
-                print(f"已处理第{index}个块")
-                index += 1
-            return result
+        请根据文本的结构、主题和意义进行合理拆分：
+        {retriever_text}
+        """               
+        llm_client.setPrompt(prompt="你是一名专业的文本拆分助手，你的任务是帮助用户拆分文本内容。")
+        texts = llm_client.ChatToBot(content=prompt)
+        item = self._SplitText(texts,splitter_str)
+        self.result.extend(item) 
     def split(self,full_text:str)->List[Document]:
             
             if self.SPPLITTER_MODEL == SplitterModel.LLMSplitter:
@@ -92,8 +93,10 @@ class TextSplitter:
     
 if __name__ == "__main__":
     # text = "This is a test. This is another test."
+    with open("/Users/markyangkp/Desktop/Projects/llmqa/ocr/tmp_files/data.txt", "r") as f:
+        text = f.read() 
     splitter = TextSplitter()
-    docs = splitter.SplitTextByLLM("/Users/markyangkp/Desktop/Projects/llmqa/ocr/tmp_files/data.txt","&&&&&")
+    docs = splitter.SplitTextByLLM(text,"&&&&&")
     for i in docs:
         print(i.page_content)
-        print("---------------------\n\n")
+        print("---------------------\n")
