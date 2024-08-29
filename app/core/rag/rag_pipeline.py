@@ -6,6 +6,7 @@ from config.splitter_model import SplitterModel
 from .utils.split_file import split_file
 from .utils.source_document import SourceDocument
 from app.core.llm import LLM,LLM_Manager
+from .database.mysql.model import KnowledgeBasesList
 import os
 class RAG_Pipelines:
     def __init__(self):
@@ -25,6 +26,10 @@ class RAG_Pipelines:
     #删除知识库
     def delete_knowledgebase(self, knowledge_base_name: str):
         pass
+    def show_knowledgebase_list(self):
+        mysqlClient = MysqlClient()
+        knowledgebaseList:List[KnowledgeBasesList] =  mysqlClient.GetKnowledgeBasesList()
+        return knowledgebaseList
     #文档插入知识库
     def insert_knowledgebase(self,file_path:str, knowledge_base_id: str):
         ### 拆分文档

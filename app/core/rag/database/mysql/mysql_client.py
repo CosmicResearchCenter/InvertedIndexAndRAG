@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Callable, Optional
 from .model import KnowledgeBasesList,ConversationsList
+from typing import List
 # 数据库设置
 DATABASE_URL = "mysql+pymysql://llmqa_user:www123...@10.116.123.148:3308/llmqa"
 # DATABASE_URL = "postgresql://ally:2024@127.0.0.1/sensing"
@@ -30,8 +31,14 @@ class MysqlClient:
         session.commit()
         session.close()
         return new_knowledge_base
+    def GetKnowledgeBasesList(self)->List[KnowledgeBasesList]:
+        # if session is None:
+        session = self.SessionLocal()
+        knowledge_bases_list = session.query(KnowledgeBasesList).all()
+        session.close()
+        return knowledge_bases_list
 
 if __name__ == "__main__":
     mysql_client = MysqlClient()
-    conversations_list = mysql_client.AddKnowledgeBasesList("Test")
-    print(conversations_list.id)
+    conversations_list = mysql_client.GetKnowledgeBasesList()
+    print(conversations_list[-1].knowledgeBaseName)
