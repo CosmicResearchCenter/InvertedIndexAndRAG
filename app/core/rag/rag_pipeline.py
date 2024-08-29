@@ -1,12 +1,13 @@
-from typing import List
-from .database import ElasticClient,MysqlClient,MilvusCollectionManager
-from .embedding import EmbeddingManager,OpenAIEmbedding,DouBaoEmbedding,Embedding
+from typing import List,Optional
+from app.core.rag.database import ElasticClient,MysqlClient,MilvusCollectionManager
+from app.core.rag.embedding import EmbeddingManager,OpenAIEmbedding,DouBaoEmbedding,Embedding
 from config.config import EMBEDDING_MODEL_PROVIDER,SPPLITTER_MODEL,LLM_MODEL
-from config.splitter_model import SplitterModel
+# from config.splitter_model import SplitterModel
 from .utils.split_file import split_file
 from .utils.source_document import SourceDocument
-from app.core.llm import LLM,LLM_Manager
-from .database.mysql.model import KnowledgeBasesList
+from app.core.llm import LLM,LLM_Manager,RerankModel
+from app.core.rag.models.document import Document
+from .rerank.rerank import RerankRunner
 import os
 class RAG_Pipelines:
     def __init__(self):
@@ -78,7 +79,7 @@ class RAG_Pipelines:
             sourceDoc = SourceDocument(content,knowledge_doc_name)
             result.append(sourceDoc)
             i += 1
-            if i == 3:
+            if i == 5:
                 break
         
         result_elastic = esClient.search(question,knowledge_base_id)
@@ -90,23 +91,45 @@ class RAG_Pipelines:
             sourceDoc = SourceDocument(content,knowledge_doc_name)
             result.append(sourceDoc)
             i += 1
-            if i == 2:
+            if i == 5:
                 break
         return result
+    
+    # ReRank评估
+    def re_rank(self,question:str,documents: list[Document], score_threshold: Optional[float] = None,
+            top_n: Optional[int] = None):
+        rerank_model = RerankModel()
+        rerank_runner = RerankRunner(rerank_model)
+        rerank_result = rerank_runner.run(question, documents, score_threshold=score_threshold, top_n=top_n)
+
+        return rerank_result
     
     #生成回答
     def generate_answer_by_knowledgebase(self, question:str,knowledge_base_id:str):
         
         # 获取文档源信息
-        source_docs = self.retriever_by_knowledgebase(question,knowledge_base_id)
+        source_docs:List[SourceDocument] = self.retriever_by_knowledgebase(question,knowledge_base_id)
+
+        documents:List[Document] = []
+        for source in source_docs:
+            print(source.content+"\n#####")
+            documents.append(Document(
+                                    page_content=source.content,
+                                    metadata={
+                                        "knowledge_doc_name": source.knowledge_doc_name
+                                    })
+                            )
+        # ReRank评估
+        rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.5,top_n=5)
 
         prompt_source = ""
         
-        for source in source_docs:
+        for result in rerank_result:
             prompt_source += f"""
-            {source.content}\n
+            {result.page_content}\n
             """
-        # print(prompt_source)
+            # print(result.metadata['score'])
+        # print(f"prompt_source:{prompt_source}")
         llm = LLM_Manager().creatLLM(mode_provider="OPENAI")
         prompt_system =f"""
         你是一个基于文档提供高质量回答的助手。你的任务是根据提供的文档内容，准确、清晰地回答用户的问题。请确保以下几点：
@@ -140,7 +163,7 @@ if __name__ == "__main__":
     # print(knowledge_base_id)    
     # 插入文档
     # pipelines.insert_knowledgebase("/Users/markyangkp/Desktop/Projects/llmqa/ocr/tmp_files/data.txt", "kbf11defac6e0043")
-    # # 生成回答
-    # question = "去学校图书馆自习是什么流程"
-    # answer = pipelines.generate_answer_by_knowledgebase(question,"kbf11defac6e0043")
-    # print(answer)
+    # 生成回答
+    question = "荣耀理发店的营业时间是多少？"
+    answer = pipelines.generate_answer_by_knowledgebase(question,"kbf11defac6e0043")
+    print(answer)

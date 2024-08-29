@@ -51,7 +51,7 @@ class OCR_Model:
         return self.get_ocr(data) 
 if __name__ == '__main__':
     ocr_model = OCR_Model()
-    image_path = "/Users/markyangkp/Desktop/Projects/llmqa/ocr/testimg.png"
+    image_path = "C:\\Users\\markyangkp\\Pictures\\123123123.bmp"
     ocr_result = ocr_model.ocr_image_by_file(image_path)
     print(type(ocr_result))
     print(ocr_result)
