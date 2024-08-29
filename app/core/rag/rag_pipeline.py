@@ -7,6 +7,7 @@ from .utils.split_file import split_file
 from .utils.source_document import SourceDocument
 from app.core.llm import LLM,LLM_Manager,RerankModel
 from app.core.rag.models.document import Document
+from app.core.rag.database.mysql.model import KnowledgeBasesList
 from .rerank.rerank import RerankRunner
 import os
 class RAG_Pipelines:
