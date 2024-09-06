@@ -1,8 +1,8 @@
 import argparse
-from app.core.rag.rag_pipeline import RAG_Pipelines
+from app.core.rag.rag_pipeline import RAG_Pipeline
 
 def main():
-    parser = argparse.ArgumentParser(description='Run RAG_Pipelines')
+    parser = argparse.ArgumentParser(description='Run RAG_Pipeline')
     parser.add_argument('--basename', type=str, help="Knowledge Base Name")
     parser.add_argument('--new_basename', type=str, help="New Knowledge Base Name")
     parser.add_argument('--baseid', type=str, help="Knowledge Base ID")
@@ -15,7 +15,7 @@ def main():
 
     args = parser.parse_args()
 
-    rag_pipeline = RAG_Pipelines()
+    rag_pipeline = RAG_Pipeline()
     if args.operation == 'create':
         print("Create Knowledge Base")
         rag_pipeline.create_knowledgebase(args.basename)
