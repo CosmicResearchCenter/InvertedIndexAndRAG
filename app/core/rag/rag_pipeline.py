@@ -9,7 +9,7 @@ from app.core.llm import LLM,LLM_Manager,RerankModel
 from app.core.rag.models.document import Document
 from .rerank.rerank import RerankRunner
 import os
-class RAG_Pipelines:
+class RAG_Pipeline:
     def __init__(self):
         pass
     #创建知识库
@@ -154,7 +154,7 @@ class RAG_Pipelines:
         return answer
 if __name__ == "__main__":
     # 创建知识库
-    pipelines = RAG_Pipelines()
+    pipelines = RAG_Pipeline()
     # knowledge_base_id = pipelines.create_knowledgebase(knowledge_base_name="testbase")
     # print(knowledge_base_id)    
     # 插入文档
