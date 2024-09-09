@@ -1,3 +1,4 @@
+from  pydantic import BaseModel
 class SourceDocument:
     content: str
     knowledge_doc_name: str
