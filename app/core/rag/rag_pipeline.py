@@ -4,11 +4,14 @@ from app.core.rag.embedding import EmbeddingManager,OpenAIEmbedding,DouBaoEmbedd
 from config.config import EMBEDDING_MODEL_PROVIDER,SPPLITTER_MODEL,LLM_MODEL
 # from config.splitter_model import SplitterModel
 from .utils.split_file import split_file
-from .utils.source_document import SourceDocument
+from .models.source_document import SourceDocument
 from app.core.llm import LLM,LLM_Manager,RerankModel
 from app.core.rag.models.document import Document
 from .rerank.rerank import RerankRunner
 import os
+
+from .models.knolwedge_base import ResultByDoc
+
 class RAG_Pipeline:
     def __init__(self):
         pass
@@ -151,7 +154,7 @@ class RAG_Pipeline:
         llm.setPrompt(prompt_system)
         answer = llm.ChatToBot(prompt)
         # print(answer)
-        return answer
+        return ResultByDoc(answer=answer,source=source_docs)
 if __name__ == "__main__":
     # 创建知识库
     pipelines = RAG_Pipeline()
