@@ -7,6 +7,7 @@ from .utils.split_file import split_file
 from .models.source_document import SourceDocument
 from app.core.llm import LLM,LLM_Manager,RerankModel
 from app.core.rag.models.document import Document
+from app.core.rag.database.mysql.model import KnowledgeBasesList
 from .rerank.rerank import RerankRunner
 import os
 
@@ -14,15 +15,15 @@ from .models.knolwedge_base import ResultByDoc
 
 class RAG_Pipeline:
     def __init__(self):
+        self.mysql_client = MysqlClient()
+        self.es_client = ElasticClient()
+        self.milvus_client = MilvusCollectionManager()
         pass
     #创建知识库
     def create_knowledgebase(self, knowledge_base_name: str):
-        mysqlClient = MysqlClient()
-        knowledge_base_id = mysqlClient.AddKnowledgeBasesList(knowledge_base_name).id
-        esClient = ElasticClient()
-        indexName = esClient.create_index(knowledge_base_id)
-        milvusClient = MilvusCollectionManager()
-        milvusClient.create_collection(knowledgeBaseID=knowledge_base_id, knowledgeBaseName=knowledge_base_name, dim=1536)
+        knowledge_base_id = self.mysql_client.AddKnowledgeBasesList(knowledge_base_name).id
+        indexName = self.es_client.create_index(knowledge_base_id)
+        self.milvus_client.create_collection(knowledgeBaseID=knowledge_base_id, knowledgeBaseName=knowledge_base_name, dim=1536)
         return knowledge_base_id
     #修改知识库名字
     def modify_knowledgebase(self, new_knowledge_base_name: str,knowledge_base_id: str):
@@ -30,6 +31,9 @@ class RAG_Pipeline:
     #删除知识库
     def delete_knowledgebase(self, knowledge_base_name: str):
         pass
+    def show_knowledgebase_list(self):
+        knowledgebaseList:List[KnowledgeBasesList] =  self.mysql_client.GetKnowledgeBasesList()
+        return knowledgebaseList
     #文档插入知识库
     def insert_knowledgebase(self,file_path:str, knowledge_base_id: str):
         ### 拆分文档
@@ -38,7 +42,6 @@ class RAG_Pipeline:
         # print("插入数据库")
         #### 写入向量数据库
         # print("写入向量数据库")
-        milvus_client = MilvusCollectionManager()
         emb_model = EmbeddingManager().create_embedding(EMBEDDING_MODEL_PROVIDER)
         mdata = []
         knowledge_doc_name = os.path.basename(file_path)
@@ -52,25 +55,22 @@ class RAG_Pipeline:
             }
             mdata.append(item)
         
-        milvus_client.insert_data(mdata, knowledge_base_id)
+        self.milvus_client.insert_data(mdata, knowledge_base_id)
         # milvus_client.create_index(nlist=128)
         ### 写入 ElasticSearch
         # print("写入 ElasticSearch")
-        esClient = ElasticClient(base_url="10.116.123.148",port=9200)        
-        success,failed = esClient.insert_data(docs,knowledge_base_id,knowledge_doc_name)
+        success,failed = self.es_client.insert_data(docs,knowledge_base_id,knowledge_doc_name)
         print(f"成功插入 {success} 条数据，失败 {len(failed)} 条数据")
         # return success,failed
     #文档召回
     def retriever_by_knowledgebase(self,question:str, knowledge_base_id: str):
-        esClient = ElasticClient()
-        milvusClient = MilvusCollectionManager()
         
         embeddingMode = EmbeddingManager().create_embedding(EMBEDDING_MODEL_PROVIDER)
         vecotr = embeddingMode.embed_with_str(question,"query")
         
         result:List[SourceDocument] = []
         
-        result_milvus = milvusClient.search(vecotr,knowledge_base_id)
+        result_milvus = self.milvus_client.search(vecotr,knowledge_base_id)
         i = 0
         for item in result_milvus[0]:
             content = item.entity.content
@@ -81,7 +81,7 @@ class RAG_Pipeline:
             if i == 5:
                 break
         
-        result_elastic = esClient.search(question,knowledge_base_id)
+        result_elastic = self.es_client.search(question,knowledge_base_id)
         
         i = 0
         for item in result_elastic:
