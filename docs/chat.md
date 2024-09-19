@@ -1,11 +1,14 @@
 ### 聊天对话接口
 
 URL: v1/api/chat/chat-message
+
 方法: POST
+
 请求参数:
 - conversation_id: string
 - message: string
 - user_id: string
+
 响应参数:
 
   - code: int
@@ -17,10 +20,13 @@ URL: v1/api/chat/chat-message
 
 ### 知识库选择接口
 URL: v1/api/chat/knowledge_base
+
 方法: POST
+
 请求参数:
 - conversation_id: string
 - knowledge_base_id: string
+
 响应参数:
   - code: int
   - data: 
@@ -33,6 +39,7 @@ URL: v1/api/chat/chat_clear
 方法: POST
 请求参数:
 - conversation_id: string
+
 响应参数:
   - code: int
   - data: 
@@ -42,8 +49,10 @@ URL: v1/api/chat/chat_clear
 ### 创建知识库接口
 URL: v1/api/knowledge_base
 方法: POST
+
 请求参数:
 - name: string
+
 响应参数:
   - code: int
   - data: 
@@ -52,8 +61,11 @@ URL: v1/api/knowledge_base
 
 ### 知识库列表接口
 URL: v1/api/knowledge_base
+
 方法: GET
+
 请求参数:
+
 响应参数:
   - code: int
   - data: 
@@ -62,8 +74,11 @@ URL: v1/api/knowledge_base
 
 ### 知识库详情接口
 URL: v1/api/knowledge_base/{id}
+
 方法: GET
+
 请求参数:
+
 响应参数:
   - code: int
   - data: 
@@ -72,9 +87,12 @@ URL: v1/api/knowledge_base/{id}
 
 ### 上传文件到知识库接口
 URL: v1/api/knowledge_base/{id}/upload
+
 方法: POST
+
 请求参数:
 - file: string
+
 响应参数:
   - code: int
   - data: 
@@ -83,8 +101,11 @@ URL: v1/api/knowledge_base/{id}/upload
 
 ### 文件索引状态接口
 URL: v1/api/knowledge_base/{id}/index_status
+
 方法: GET
+
 请求参数:
+
 响应参数:
   - code: int
   - data: 
