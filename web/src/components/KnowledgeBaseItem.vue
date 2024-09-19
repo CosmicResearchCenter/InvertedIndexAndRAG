@@ -4,7 +4,6 @@
     </el-card>
 </template>
 <script lang="ts">
-import KnowledgeBaseManager from '@/views/KnowledgeBaseManager/KnowledgeBaseManager.vue';
 import { defineComponent } from 'vue';
 import type { PropType } from 'vue';
 export default defineComponent({
@@ -19,7 +18,7 @@ export default defineComponent({
             required: true,
         },
     },
-    
+
 });
 </script>
 <style>
