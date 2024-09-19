@@ -1,124 +1,97 @@
 <template>
-    <div class="chat-container">
-        <el-container>
-            <el-aside width="300px" class="chat-aside">
-                <el-card class="chat-list">
-                    <p v-for="o in 6" :key="o" class="chat-item">{{ 'Chat Room ' + o }}</p>
-                </el-card>
-            </el-aside>
-            <el-main class="chat-main">
-                <el-card class="chat-content">
-                    <div class="message-container" ref="messageContainer">
-                        <p v-for="o in 10" :key="o" class="message-item">{{ 'Message ' + o }}</p>
+    <el-container>
+        <el-aside class="chat-aside">
+            <el-card class="chat-list">
+                <ChatLogItem class="chat-log-item" v-for="o in 20" :title="String('对话' + o)"></ChatLogItem>
+            </el-card>
+        </el-aside>
+        <el-main class="chat-main">
+            <el-card class="chat-content">
+                <div class="message-container">
+                    <div class="message-item-assistant" v-for="o in 5" :key="'assistant-' + o">
+                        <MessageItem_Assistant :message="String('要使用户的消息在右边显示，助手的消息在左边显示，您可以根据以下步骤调整代码：\n1. **更新HTML结构**：将用户和助手的消息项放在同一个容器内，并使用CSS来控制它们的位置。\n2. **调整CSS**：使用`flex`布局来控制消息的对齐方式。' + o)"></MessageItem_Assistant>
                     </div>
-                    <div class="input-area">
-                        <el-input v-model="textarea1" class="input-box" autosize type="textarea"
-                            placeholder="Type your message..." />
-                        <el-button type="primary" circle @click="sendMessage">Send</el-button>
+                    <div class="message-item-user" v-for="o in 5" :key="'user-' + o">
+                        <MessageItem_User :message="String('助手消息213098019380219380912830912 地方去外地去地区为夺取皇位iudh亲卫队请问地区武汉地区的球队和网球的\n取缔哦亲我的i请问大家哦i轻举妄动' + o)"></MessageItem_User>
                     </div>
-                </el-card>
-            </el-main>
-        </el-container>
-    </div>
+                </div>
+            </el-card>
+            <div class="input-area">
+                <el-input v-model="textarea1" class="input-box" autosize type="textarea" placeholder="Type your message..." />
+                <el-button type="primary"  @click="sendMessage">Send</el-button>
+            </div>
+        </el-main>
+    </el-container>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted, nextTick } from 'vue';
+import MessageItem_User from "@/components/MessageItem_User.vue"
+import MessageItem_Assistant from "@/components/MessageItem_Assistant.vue";
+import ChatLogItem from '@/components/ChatLogItem.vue';
+
 const textarea1 = ref('');
-const messageContainer = ref(null);
 
 const sendMessage = () => {
     if (textarea1.value.trim()) {
-        // 发送消息的逻辑
         console.log('Message sent:', textarea1.value);
-        textarea1.value = ''; // 清空输入框
-        scrollToBottom(); // 发送消息后滚动到底部
+        textarea1.value = '';
+        scrollToBottom();
     }
 };
 
 const scrollToBottom = () => {
     nextTick(() => {
-        messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+        // messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
     });
 };
 
 onMounted(() => {
-    scrollToBottom(); // 初始化时滚动到底部
+    scrollToBottom();
 });
 </script>
 
 <style scoped>
-.chat-container {
-    height: 100vh;
-    display: flex;
-}
-
 .chat-aside {
-    background-color: #f9fafc;
-    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    /* background-color: #f5f7fa; */
 }
-
 .chat-list {
-    height: 100%;
+    height: 100vh;
     overflow-y: auto;
-    padding: 20px;
 }
-
-.chat-item {
-    padding: 10px 0;
-    cursor: pointer;
-    transition: background-color 0.2s;
+.chat-log-item {
+    margin: 10px;
 }
-
-.chat-item:hover {
-    background-color: #f0f2f5;
-}
-
 .chat-main {
+    height: 100vh;
+    /* background-color: #e5e5e5; */
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    background-color: #ffffff;
-    padding: 20px;
-    box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
 }
+.chat-content{
+    /* background-color: #e5e5e5; */
 
-.chat-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    justify-content: space-between;
 }
-
 .message-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 20px;
-    background-color: #f5f7fa;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.message-item {
-    padding: 10px;
-    background-color: #ffffff;
-    border-radius: 6px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.input-area {
     display: flex;
-    align-items: center;
-    gap: 10px;
-}
+    /* background-color: #e5e5e5; */
 
-.input-box {
-    flex-grow: 1;
+    flex-direction: column;
+    overflow-y: auto;
+    height: calc(100vh - 100px); /* Adjust height to fit input area */
 }
-
-.el-button {
-    height: 40px;
-    width: 40px;
+.message-item-user {
+    margin: 10px;
+    align-self: flex-end; /* Align user messages to the right */
+}
+.message-item-assistant {
+    margin: 10px;
+    align-self: flex-start; /* Align assistant messages to the left */
+}
+.input-area {
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
 }
 </style>

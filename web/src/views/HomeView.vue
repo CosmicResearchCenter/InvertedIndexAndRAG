@@ -3,7 +3,7 @@ import ChatToLLM from './ChatToLLM/ChatToLLM.vue'
 </script>
 
 <template>
-  <main>
+  <!-- <main> -->
     <ChatToLLM />
-  </main>
+  <!-- </main> -->
 </template>
