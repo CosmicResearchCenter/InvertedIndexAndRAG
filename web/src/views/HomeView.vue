@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import ChatToLLM from './ChatToLLM/ChatToLLM.vue'
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <ChatToLLM />
   </main>
 </template>
