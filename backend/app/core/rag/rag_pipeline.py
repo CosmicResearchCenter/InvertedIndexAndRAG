@@ -104,7 +104,7 @@ class RAG_Pipeline:
         return rerank_result
     
     #生成回答
-    def generate_answer_by_knowledgebase(self, question:str,knowledge_base_id:str):
+    def generate_answer_by_knowledgebase(self, question:str,knowledge_base_id:str,history_messages=[])->ResultByDoc:
         
         # 获取文档源信息
         source_docs:List[SourceDocument] = self.retriever_by_knowledgebase(question,knowledge_base_id)
@@ -151,10 +151,11 @@ class RAG_Pipeline:
         ######################################\n
         知识库内容:{prompt_source}
         """
+        llm.addHistory(history_messages)
         llm.setPrompt(prompt_system)
         answer = llm.ChatToBot(prompt)
         # print(answer)
-        return ResultByDoc(answer=answer,source=source_docs)
+        return ResultByDoc(answer=answer,source=source_docs,query=question)
 if __name__ == "__main__":
     # 创建知识库
     pipelines = RAG_Pipeline()
