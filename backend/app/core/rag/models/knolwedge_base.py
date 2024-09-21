@@ -4,4 +4,5 @@ from .source_document import SourceDocument
 
 class ResultByDoc(BaseModel):
     source:List[SourceDocument]
+    query:str
     answer:str
