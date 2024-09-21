@@ -18,6 +18,8 @@ class DouBaoLLM(LLM):
     def addHistory_Assistant(self,content):
         message:ChatCompletionAssistantMessageParam = ChatCompletionAssistantMessageParam(role="assistant",content=content)
         self.messages.append(message)
+    def addHistory(self, messages):
+        self.messages.extend(messages)
     def ChatToBot(self,content:str):
         self.addHistory_User(content)
         completion = self.client.chat.completions.create(

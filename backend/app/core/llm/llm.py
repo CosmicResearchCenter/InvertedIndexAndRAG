@@ -14,5 +14,8 @@ class LLM(ABC):
     def addHistory_Assistant(self,content):
         pass
     @abstractmethod
+    def addHistory(self,messages):
+        pass
+    @abstractmethod
     def ChatToBot(self,content:str):
         pass

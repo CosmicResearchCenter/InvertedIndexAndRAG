@@ -24,7 +24,8 @@ class OpenAILLM(LLM):
     def addHistory_Assistant(self, content: str):
         message = {"role": "assistant", "content": content}
         self.messages.append(message)
-
+    def addHistory(self, messages):
+        self.messages.extend(messages)
     def ChatToBot(self, content: str):
         self.addHistory_User(content)
         response = self.client.chat.completions.create(
