@@ -1,22 +1,31 @@
 from pydantic import BaseModel
 from typing import List, Optional,Dict
 from app.core.rag.models.knolwedge_base import ResultByDoc
-
+from app.core.chat.chat_type import ChatMessageHistory
 # Chat message request
 class ChatMessageRequest(BaseModel):
     conversation_id: str
     message: str
     user_id: str
 
-# Chat message response
-# class ChatMessageResponseData(BaseModel):
-#     code: Optional[int]
-#     answer: Optional[str]
-#     Source: Optional[str]
+# Chat message history response
+class ChatMessageHistoryResponse(BaseModel):
+    code: int
+    data: List[ChatMessageHistory]
+    message: str
 
 class ChatMessageResponse(BaseModel):
     code: int
     data: ResultByDoc
+    message: str
+
+class ConversationCreateRequest(BaseModel):
+    user_id: str
+    knowledge_base_id: str
+
+class ConversationCreateResponse(BaseModel):
+    code: int
+    data: Optional[dict]
     message: str
 
 # Knowledge base selection request
