@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Callable, Optional
-from .models import KnowledgeBasesList,ConversationsList
 from typing import List
 # 数据库设置
 DATABASE_URL = "mysql+pymysql://llmqa_user:www123...@10.116.123.148:3308/llmqa"
