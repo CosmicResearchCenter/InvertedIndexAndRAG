@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from typing import List
-from .source_document import SourceDocument
+from .source_document import SourceDocumentReRanked
 
 class ResultByDoc(BaseModel):
-    source:List[SourceDocument]
+    source:List[SourceDocumentReRanked]
     query:str
     answer:str
