@@ -1,10 +1,10 @@
 from app.core.llm import LLM,LLM_Manager
 from app.core.database.mysql_client import MysqlClient
-from app.core.database.models import Conversation,KnowledgeBase,Chat_Messages,RetrieverDoc
+from app.core.database.models import Conversation,KnowledgeBase,Chat_Messages,RetrieverDoc 
 from app.models.chat_models import ChatMessageRequest
 from app.core.rag.rag_pipeline import RAG_Pipeline
 from app.core.rag.models.knolwedge_base import ResultByDoc
-from app.core.chat.chat_type import ChatMessageHistory,RetrieverDoc
+from app.core.chat.chat_type import ChatMessageHistory,RetrieverDoc as RetrieverDocs
 import datetime
 from typing import List
 
@@ -19,10 +19,11 @@ class Chat:
     #创建对话
     def create_conversation(self,knowledgeBaseId:str,user_id)->Conversation:
         try:
-            new_conversation = Conversation(num_conversation=0,knowledgeBaseId=knowledgeBaseId,userId=user_id,conversationName="New Conversation")
+            new_conversation = Conversation(num_conversation=0,knowledgeBaseId=knowledgeBaseId,userId=user_id,conversationName="New Conversation",lastChatTime=datetime.datetime.now())                 
             self.mysql_session.add(new_conversation)
             self.mysql_session.commit()
             self.mysql_session.refresh(new_conversation)
+            # print("Conversation created successfully")
             return new_conversation
         except Exception as e:
             print(e)
@@ -42,6 +43,7 @@ class Chat:
     def match_knowledgebase(self, conversation_id,user_id)->KnowledgeBase:
         try:
             conversation = self.match_conversations(conversation_id,user_id)
+            print(conversation_id)
             knowledgebase = self.mysql_session.query(KnowledgeBase).filter(KnowledgeBase.id==conversation.knowledgeBaseId).first()
             if knowledgebase is None:
                 raise ValueError("Knowledge base not found")
@@ -59,7 +61,6 @@ class Chat:
 
             messages_history:List[ChatMessageHistory] = []
 
-
             for message in messages:
                 messages_history_item = ChatMessageHistory(
                     conversation_id=message.conversationID,
@@ -70,7 +71,7 @@ class Chat:
                 retriever_docs = self.mysql_session.query(RetrieverDoc).filter(RetrieverDoc.messageId == message.id).all()
 
                 for doc in retriever_docs:
-                    retrieverDoc:RetrieverDoc = RetrieverDoc(
+                    retrieverDoc:RetrieverDocs = RetrieverDocs(
                         content=doc.content,
                         knowledge_doc_name=doc.knowledge_doc_name,
                         knowledgeBaseId=doc.knowledgeBaseId,
@@ -113,7 +114,7 @@ class Chat:
     def answer_question(self, question,knowledgebase_id,history_message=[])->ResultByDoc:
         rAG_Pipeline = RAG_Pipeline()
 
-        resultByDoc:ResultByDoc = rAG_Pipeline.retriever_by_knowledgebase(question,knowledgebase_id,history_message,history_message)
+        resultByDoc:ResultByDoc = rAG_Pipeline.generate_answer_by_knowledgebase(question=question,knowledge_base_id=knowledgebase_id,history_messages=history_message)
 
         return resultByDoc
 
@@ -136,7 +137,7 @@ class Chat:
             messages = self.load_conversation(conversation.id)
             messageLog = self.format_conversation_Log(messages)
             try:
-                resultByDoc:ResultByDoc = self.answer_question(message,knowledgebase.id,messageLog)
+                resultByDoc:ResultByDoc = self.answer_question(question=message,knowledgebase_id=knowledgebase.id,history_message=messageLog)
                 
                 # 保存对话记录
                 new_message = Chat_Messages(
