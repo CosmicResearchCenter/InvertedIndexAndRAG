@@ -36,14 +36,11 @@ class Chat_Messages (Base):
     answer = Column(String)
     userId = Column(String) # 存储用户 ID
     knowledgeBaseId = Column(String) # 存储知识库 ID
-    retrieverDocId = Column(String) # 存储检索文档的 ID
 
 class RetrieverDoc(Base):
     __tablename__ = 'retrieverDocs'
     id = Column(String, primary_key=True, default=lambda: str(generate_id()))
-    title = Column(Text)
     content = Column(Text)
-    source = Column(String)
-    url = Column(String)
+    knowledge_doc_name = Column(String)
     knowledgeBaseId = Column(String)
     messageId = Column(String)
