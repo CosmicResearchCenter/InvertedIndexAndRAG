@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional,List
 
 from app.core.llm.rerankmodel import RerankModel
 from app.core.rag.models.document import Document
@@ -9,8 +9,8 @@ class RerankRunner:
     def __init__(self, rerank_model_instance: RerankModel) -> None:
         self.rerank_model_instance = rerank_model_instance
 
-    def run(self, query: str, documents: list[Document], score_threshold: Optional[float] = None,
-            top_n: Optional[int] = None, user: Optional[str] = None) -> list[Document]:
+    def run(self, query: str, documents: List[Document], score_threshold: Optional[float] = None,
+            top_n: Optional[int] = None, user: Optional[str] = None) -> List[Document]:
         """
         Run rerank model
         :param query: search query
