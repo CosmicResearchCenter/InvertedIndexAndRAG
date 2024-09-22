@@ -75,7 +75,7 @@ class RAG_Pipeline:
         for item in result_milvus[0]:
             content = item.entity.content
             knowledge_doc_name = item.entity.knowledge_doc_name
-            sourceDoc = SourceDocument(content,knowledge_doc_name)
+            sourceDoc = SourceDocument(content=content,knowledge_doc_name=knowledge_doc_name)
             result.append(sourceDoc)
             i += 1
             if i == 5:
@@ -87,7 +87,7 @@ class RAG_Pipeline:
         for item in result_elastic:
             content = item["_source"]["content"]
             knowledge_doc_name = item["_source"]["knowledgeDocName"]
-            sourceDoc = SourceDocument(content,knowledge_doc_name)
+            sourceDoc = SourceDocument(content=content,knowledge_doc_name=knowledge_doc_name)
             result.append(sourceDoc)
             i += 1
             if i == 5:
@@ -105,13 +105,14 @@ class RAG_Pipeline:
     
     #生成回答
     def generate_answer_by_knowledgebase(self, question:str,knowledge_base_id:str,history_messages=[])->ResultByDoc:
-        
+        print("generate_answer_by_knowledgebase")
+        print(history_messages)
         # 获取文档源信息
         source_docs:List[SourceDocument] = self.retriever_by_knowledgebase(question,knowledge_base_id)
 
         documents:List[Document] = []
         for source in source_docs:
-            print(source.content+"\n#####")
+            # print(source.content+"\n#####")
             documents.append(Document(
                                     page_content=source.content,
                                     metadata={
@@ -119,7 +120,7 @@ class RAG_Pipeline:
                                     })
                             )
         # ReRank评估
-        rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.5,top_n=5)
+        rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.5,top_n=4)
 
         prompt_source = ""
         
@@ -128,7 +129,7 @@ class RAG_Pipeline:
             {result.page_content}\n
             """
             # print(result.metadata['score'])
-        # print(f"prompt_source:{prompt_source}")
+        print(prompt_source)
         llm = LLM_Manager().creatLLM(mode_provider="OPENAI")
         prompt_system =f"""
         你是一个基于文档提供高质量回答的助手。你的任务是根据提供的文档内容，准确、清晰地回答用户的问题。请确保以下几点：
@@ -141,15 +142,19 @@ class RAG_Pipeline:
         你将收到召回的文档内容以及用户的问题，请在此基础上生成回答。
         """ 
         prompt = f"""
-        请根据以下的用户问题，使用知识库中的信息进行回答。请确保回答内容准确且全面，并根据需要引用相关知识库条目。
+        你是一个基于文档提供高质量回答的助手。你的任务是根据提供的文档内容，准确、清晰地回答用户的问题。
+        现在请你完成以下任务：
+        请根据用户问题，使用召回的知识库中的信息进行推理回答。请确保回答内容准确。
         要求：
-        1. 使用文档中的信息来回答问题，并确保答案准确。
+        1. 使用文档中的信息来推理回答问题，并确保答案准确。
         2. 如果文档中没有明确的信息，可以合理推断，但要标注推断部分。
         3. 尽量简洁明了地表达。
         ######################################\n
-        用户问题:{question}
+        用户问题:
+        {question}
         ######################################\n
-        知识库内容:{prompt_source}
+        知识库内容:
+        {prompt_source}
         """
         llm.addHistory(history_messages)
         llm.setPrompt(prompt_system)
@@ -159,10 +164,11 @@ class RAG_Pipeline:
 if __name__ == "__main__":
     # 创建知识库
     pipelines = RAG_Pipeline()
-    # knowledge_base_id = pipelines.create_knowledgebase(knowledge_base_name="testbase")
+    # kb4cc1c0b5d7164a
+    # knowledge_base_id = pipelines.create_knowledgebase(knowledge_base_name="第一个知识库_test")
     # print(knowledge_base_id)    
     # 插入文档
-    # pipelines.insert_knowledgebase("/Users/markyangkp/Desktop/Projects/llmqa/ocr/tmp_files/data.txt", "kbf11defac6e0043")
+    # pipelines.insert_knowledgebase("C:\\Users\\markyangkp\\Desktop\\常用校园信息集合.docx", "kb4cc1c0b5d7164a")
     # 生成回答
     question = "荣耀理发店的营业时间是多少？"
     answer = pipelines.generate_answer_by_knowledgebase(question,"kbf11defac6e0043")
