@@ -4,7 +4,7 @@ from app.core.rag.embedding import EmbeddingManager,OpenAIEmbedding,DouBaoEmbedd
 from config.config import EMBEDDING_MODEL_PROVIDER,SPPLITTER_MODEL,LLM_MODEL
 # from config.splitter_model import SplitterModel
 from .utils.split_file import split_file
-from .models.source_document import SourceDocument
+from .models.source_document import SourceDocument,SourceDocumentReRanked
 from app.core.llm import LLM,LLM_Manager,RerankModel
 from app.core.rag.models.document import Document
 from app.core.rag.database.mysql.model import KnowledgeBasesList
@@ -120,14 +120,20 @@ class RAG_Pipeline:
                                     })
                             )
         # ReRank评估
-        rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.5,top_n=4)
+        rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.09,top_n=4)
 
         prompt_source = ""
-        
+        source_docs_reranked:List[SourceDocumentReRanked] = []
+
         for result in rerank_result:
             prompt_source += f"""
             {result.page_content}\n
             """
+            source_docs_reranked.append(SourceDocumentReRanked(
+                                content=result.page_content,
+                                knowledge_doc_name=result.metadata['knowledge_doc_name'],
+                                socre=result.metadata['score']
+                            ))
             # print(result.metadata['score'])
         print(prompt_source)
         llm = LLM_Manager().creatLLM(mode_provider="OPENAI")
@@ -160,7 +166,7 @@ class RAG_Pipeline:
         llm.setPrompt(prompt_system)
         answer = llm.ChatToBot(prompt)
         # print(answer)
-        return ResultByDoc(answer=answer,source=source_docs,query=question)
+        return ResultByDoc(answer=answer,source=source_docs_reranked,query=question)
 if __name__ == "__main__":
     # 创建知识库
     pipelines = RAG_Pipeline()
