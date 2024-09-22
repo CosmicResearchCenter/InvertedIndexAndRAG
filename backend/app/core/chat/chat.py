@@ -4,6 +4,7 @@ from app.core.database.models import Conversation,KnowledgeBase,Chat_Messages,Re
 from app.models.chat_models import ChatMessageRequest
 from app.core.rag.rag_pipeline import RAG_Pipeline
 from app.core.rag.models.knolwedge_base import ResultByDoc
+from app.core.chat.chat_type import ChatMessageHistory,RetrieverDoc
 import datetime
 from typing import List
 
@@ -46,15 +47,40 @@ class Chat:
                 raise ValueError("Knowledge base not found")
             else:
                 return knowledgebase
+            
         except Exception as e:
             print(e)
     
     # 加载对话
-    def load_conversation(self, conversation_id)->List[Chat_Messages]:
+    def load_conversation(self, conversation_id)->List[ChatMessageHistory]:
         # 查询对话记录
         try:
             messages = self.mysql_session.query(Chat_Messages).filter(Chat_Messages.conversationID == conversation_id).all()
-            return messages
+
+            messages_history:List[ChatMessageHistory] = []
+
+
+            for message in messages:
+                messages_history_item = ChatMessageHistory(
+                    conversation_id=message.conversationID,
+                    query=message.query,
+                    answer=message.answer,
+                    retriever_docs=[]
+                )
+                retriever_docs = self.mysql_session.query(RetrieverDoc).filter(RetrieverDoc.messageId == message.id).all()
+
+                for doc in retriever_docs:
+                    retrieverDoc:RetrieverDoc = RetrieverDoc(
+                        content=doc.content,
+                        knowledge_doc_name=doc.knowledge_doc_name,
+                        knowledgeBaseId=doc.knowledgeBaseId,
+                    )
+                    messages_history_item.retriever_docs.append(retrieverDoc)
+                messages_history.append(messages_history_item)
+
+
+
+            return messages_history
         except Exception as e:
             print(e)
     
