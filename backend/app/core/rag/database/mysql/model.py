@@ -11,7 +11,7 @@ def generate_id(length=18):
     full_id = f'kb{id_str}'
     # 截取指定长度
     return full_id[:length].replace('-', '')
-class KnowledgeBasesList(Base):
+class KnowledgeBase(Base):
     __tablename__ = 'knowledgeBasesList'
     id = Column(String, primary_key=True, default=lambda: str(generate_id()))
     knowledgeBaseName 	= Column(String)
