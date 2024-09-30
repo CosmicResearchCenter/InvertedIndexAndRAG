@@ -87,7 +87,16 @@ class MilvusCollectionManager:
             return content[0]["content"]
         else:
             return None
-
+    # 删除集合
+    def drop_collection(self, name: str)->bool:
+        """删除指定名称的集合"""
+        try:
+            Collection(name=name).drop()
+            print(f"Collection '{name}' dropped successfully.")
+            return True
+        except Exception as e:
+            print(f"Failed to drop collection '{name}': {e}")
+            
 # 使用示例
 if __name__ == "__main__":
     manager = MilvusCollectionManager()
