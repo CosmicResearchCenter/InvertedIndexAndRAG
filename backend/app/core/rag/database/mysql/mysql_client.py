@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Callable, Optional
-from .model import KnowledgeBasesList,ConversationsList
+from .model import KnowledgeBase,ConversationsList
 from typing import List
 # 数据库设置
 DATABASE_URL = "mysql+pymysql://llmqa_user:www123...@10.116.123.148:3308/llmqa"
@@ -23,18 +23,18 @@ class MysqlClient:
 
         return conversations_list
     # 添加知识库Name和ID到表里
-    def AddKnowledgeBasesList(self,knowledgeBaseName:str)->KnowledgeBasesList:
+    def AddKnowledgeBasesList(self,knowledgeBaseName:str)->KnowledgeBase:
         # if session is None:
         session = self.SessionLocal()
-        new_knowledge_base = KnowledgeBasesList(knowledgeBaseName=knowledgeBaseName)
+        new_knowledge_base = KnowledgeBase(knowledgeBaseName=knowledgeBaseName)
         session.add(new_knowledge_base)
         session.commit()
         session.close()
         return new_knowledge_base
-    def GetKnowledgeBasesList(self)->List[KnowledgeBasesList]:
+    def GetKnowledgeBasesList(self)->List[KnowledgeBase]:
         # if session is None:
         session = self.SessionLocal()
-        knowledge_bases_list = session.query(KnowledgeBasesList).all()
+        knowledge_bases_list = session.query(KnowledgeBase).all()
         session.close()
         return knowledge_bases_list
 
