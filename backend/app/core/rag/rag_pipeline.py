@@ -7,7 +7,7 @@ from .utils.split_file import split_file
 from .models.source_document import SourceDocument,SourceDocumentReRanked
 from app.core.llm import LLM,LLM_Manager,RerankModel
 from app.core.rag.models.document import Document
-from app.core.rag.database.mysql.model import KnowledgeBasesList
+from app.core.rag.database.mysql.model import KnowledgeBase
 from .rerank.rerank import RerankRunner
 import os
 
@@ -32,7 +32,7 @@ class RAG_Pipeline:
     def delete_knowledgebase(self, knowledge_base_name: str):
         pass
     def show_knowledgebase_list(self):
-        knowledgebaseList:List[KnowledgeBasesList] =  self.mysql_client.GetKnowledgeBasesList()
+        knowledgebaseList:List[KnowledgeBase] =  self.mysql_client.GetKnowledgeBasesList()
         return knowledgebaseList
     #文档插入知识库
     def insert_knowledgebase(self,file_path:str, knowledge_base_id: str):
@@ -171,11 +171,11 @@ if __name__ == "__main__":
     # 创建知识库
     pipelines = RAG_Pipeline()
     # kb4cc1c0b5d7164a
-    # knowledge_base_id = pipelines.create_knowledgebase(knowledge_base_name="第一个知识库_test")
+    # knowledge_base_id = pipelines.create_knowledgebase(knowledge_base_name="第二个测试")
     # print(knowledge_base_id)    
     # 插入文档
-    # pipelines.insert_knowledgebase("C:\\Users\\markyangkp\\Desktop\\常用校园信息集合.docx", "kb4cc1c0b5d7164a")
+    pipelines.insert_knowledgebase("/Users/markyangkp/Desktop/Projects/llmqa/ocr/tmp_files/data.txt", "kb1bba5c96d9414c")
     # 生成回答
-    question = "荣耀理发店的营业时间是多少？"
-    answer = pipelines.generate_answer_by_knowledgebase(question,"kbf11defac6e0043")
-    print(answer)
+    # question = "荣耀理发店的营业时间是多少？"
+    # answer = pipelines.generate_answer_by_knowledgebase(question,"kbf11defac6e0043")
+    # print(answer)
