@@ -14,6 +14,10 @@ class MysqlClient:
     def __init__(self,database_url:str=DATABASE_URL):
         self.engine = create_engine(database_url)
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine,expire_on_commit=False)
+        self.db = self.SessionLocal()
+    def __del__(self):
+        self.db.close()
+    
 #     def GetConversationsList(self)->ConversationsList:
 #         # if session is None:
 #         session = self.SessionLocal()
