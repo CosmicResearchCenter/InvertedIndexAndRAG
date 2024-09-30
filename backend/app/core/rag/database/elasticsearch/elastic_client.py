@@ -73,6 +73,12 @@ class ElasticClient:
         print(response)
         return response
 
+    # 删除索引
+    def delete_index(self,knowledgeBaseID:str)->str:
+        # 删除索引
+        response = self.es_client.indices.delete(index=knowledgeBaseID)
+        # print(response)
+        return response
 if __name__ == "__main__":
     client = ElasticClient(base_url="10.116.123.148",port=9200)
     # client.create_index("test","test")
