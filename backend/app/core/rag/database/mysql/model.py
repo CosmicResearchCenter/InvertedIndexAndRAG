@@ -30,3 +30,23 @@ class ConversationsList(Base):
     num_conversation = Column(Integer)
     dataSourceName = Column(String)
     dataSourceID = Column(String)
+
+# 知识库文档表
+class KnowledgeBaseDocuments(Base):
+    __tablename__ = 'knowledgeBaseDocuments'
+    id = Column(String, primary_key=True, default=lambda: str(generate_id()))
+    # 知识库ID
+    knowledgeBaseID = Column(String)
+    # 文档名
+    documentName = Column(String)
+
+# 知识库文档内容表
+class KnowledgeBaseDocumentContent(Base):
+    __tablename__ = 'knowledgeBaseDocumentContent'
+    id = Column(String, primary_key=True, default=lambda: str(generate_id()))
+    # 知识库ID
+    knowledgeBaseID = Column(String)
+    # 文档ID
+    documentID = Column(String)
+    # 文档内容
+    content = Column(Text)
