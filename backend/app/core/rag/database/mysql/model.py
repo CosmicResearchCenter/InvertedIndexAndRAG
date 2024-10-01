@@ -15,6 +15,12 @@ class KnowledgeBase(Base):
     __tablename__ = 'knowledgeBasesList'
     id = Column(String, primary_key=True, default=lambda: str(generate_id()))
     knowledgeBaseName 	= Column(String)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "knowledgeBaseName": self.knowledgeBaseName
+        }
     
 class ConversationsList(Base):
     __tablename__ = 'conversationsList'

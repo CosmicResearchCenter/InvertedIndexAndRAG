@@ -1,4 +1,4 @@
-from app.core.database.models import KnowledgeBase
+from app.core.rag.database.mysql.model import KnowledgeBase
 from app.core.database.mysql_client import MysqlClient
 from fastapi import HTTPException
 from app.models.general_models import GenericResponse

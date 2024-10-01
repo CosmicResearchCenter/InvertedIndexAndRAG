@@ -16,8 +16,13 @@ def create(createBaseRequest:CreateBaseRequest):
 @router.get("/",tags=["获取知识库列表"],response_model=GenericResponse)
 def get_base_list():
     kb_manager = KBase()
-    knowledgeBase_id = kb_manager.get_all_kbs()
-    return GenericResponse(message="获取成功",code=200,data=knowledgeBase_id)
+    knowledgeBase = kb_manager.get_all_kbs()
+
+    data = []
+    for kb in knowledgeBase:
+        data.append(kb.to_dict())
+
+    return GenericResponse(message="获取成功",code=200,data=data)
 @router.get("/{base_id}",tags=["获取知识库详情"],response_model=GenericResponse)
 def get_base_detail():
     pass
