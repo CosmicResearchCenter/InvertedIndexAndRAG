@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Float, Integer, String, Text,TIMESTAMP
+from sqlalchemy import Column, Float, Integer, String, Text,TIMESTAMP,Boolean
 import uuid
 from .mysql_client import Base
 
@@ -70,3 +70,18 @@ class DocInfo(Base):
     create_time = Column(TIMESTAMP)
     doc_type = Column(String(255))
     doc_size = Column(Integer)
+    save_id = Column(String(255))
+
+class DocIndexStatus(Base):
+    __tablename__ = 'docIndexStatus'
+    id = Column(String(255), primary_key=True, default=lambda: str(generate_general_id(length=18)))
+    index_status = Column(Integer)
+    knowledgeBaseId = Column(String(255))
+    doc_id = Column(String(255))
+
+    def to_dict(self):
+        return {
+            "index_status": self.index_status,
+            "knowledgeBaseId": self.knowledgeBaseId,
+            "doc_id": self.doc_id
+        }
