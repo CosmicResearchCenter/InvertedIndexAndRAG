@@ -29,3 +29,10 @@ ES_BASE_PORT = 9200
 # Milvus Host
 MILVUS_HOST = "10.116.123.30"
 MILVUS_PORT = 19530
+
+# 文档存放路径
+DOCS_PATH = ""
+
+def set_docs_path(path):
+    global DOCS_PATH
+    DOCS_PATH = path
