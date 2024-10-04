@@ -15,6 +15,9 @@ import time
 from pathlib import Path
 import uuid
 import asyncio
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'docx','doc','ppt','pptx','excel'}
 
 class KBase(MysqlClient):
@@ -73,7 +76,7 @@ class KBase(MysqlClient):
         return save_path_p
     # 更新知识库
     # 为每个文档生成一个信息字典，包括文档id、文档名称、文档类型等信息，保存到数据库中
-    async def upload_files(self, base_id:int, files:List[UploadFile],backgroundTasks:BackgroundTasks)->List[DocIndexStatus]:
+    def upload_files(self, base_id:int, files:List[UploadFile],background_tasks:BackgroundTasks,executor:ThreadPoolExecutor)->List[DocIndexStatus]:
         from config.config import DOCS_PATH
         save_path_p = self._get_docs_save_path(base_id)
         docs:List[DocInfo] = []
@@ -109,13 +112,13 @@ class KBase(MysqlClient):
 
             docs_status.append(index_status)
 
-            backgroundTasks.add_task(self.insert_knowledgebase,base_id,doc)
-            # asyncio.create_task( self.insert_knowledgebase(base_id,doc))
+            background_tasks.add_task(executor.submit, self.insert_knowledgebase, base_id, doc)
+
             print(f'{len(files)} files saved successfully')
         return docs_status
     
     # 解析文档
-    async def insert_knowledgebase(self, base_id:int,doc:DocInfo):
+    def insert_knowledgebase(self, base_id:int,doc:DocInfo):
         print(f'insert_knowledgebase document {doc.doc_name}')
         rAG_Pipeline:RAG_Pipeline = RAG_Pipeline()
 

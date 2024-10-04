@@ -8,13 +8,17 @@ from app.core.knowledgebase.knowledgebase_type import CreateBaseRequest,IndexSta
 from app.models.general_models import GenericResponse
 from typing import List
 
+from concurrent.futures import ThreadPoolExecutor
+
+
 router = APIRouter()
+executor = ThreadPoolExecutor(max_workers=5)
 
 @router.post("/",tags=["创建知识库"],response_model=GenericResponse)
 async def create(createBaseRequest:CreateBaseRequest):
     kb = KBase()
     knowledgeBase_id = kb.create_kb(createBaseRequest.base_name)
-    GenericResponse(message="获取成功",code=200,data=[{'knowledgeBase_id':knowledgeBase_id}])
+    return GenericResponse(message="获取成功",code=200,data=[{'knowledgeBase_id':knowledgeBase_id}])
 
 @router.get("/",tags=["获取知识库列表"],response_model=GenericResponse)
 async def get_base_list():
@@ -47,7 +51,8 @@ async def upload(
     
     kb_manager = KBase()
 
-    index_infos = await  kb_manager.upload_files(base_id,file,background_tasks)
+    # index_infos = await  kb_manager.upload_files(base_id,file,threadPool)
+    index_infos =   kb_manager.upload_files(base_id,file,background_tasks,executor)
 
     index_infos_prase = []
     for index_info in index_infos:
