@@ -76,8 +76,10 @@ async def get_doc_index_status(base_id:str, doc_id:str):
 
 
 @router.delete("/{base_id}",tags=["删除知识库"],response_model=GenericResponse)
-async def delete():
-    pass
+async def delete(base_id:str):
+    kb_manager = KBase()
+    return kb_manager.delete_kb(base_id)
+
 
 @router.delete("/{base_id}/doc/{doc_id}",tags=["删除文档"],response_model=GenericResponse)
 async def delete_doc():
