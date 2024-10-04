@@ -164,7 +164,7 @@ onMounted(() => {
     display: flex;
 
     /* background-color: #e5e5e5; */
-    flex-direction: column-reverse;
+    flex-direction: column;
 }
 
 .message-container {
