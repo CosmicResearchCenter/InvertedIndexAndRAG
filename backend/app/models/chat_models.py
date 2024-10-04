@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional,Dict
+from typing import List, Optional,Dict,Any
 from app.core.rag.models.knolwedge_base import ResultByDoc
 from app.core.chat.chat_type import ChatMessageHistory
 # Chat message request
@@ -17,6 +17,10 @@ class ChatMessageHistoryResponse(BaseModel):
 class ChatMessageResponse(BaseModel):
     code: int
     data: ResultByDoc
+    message: str
+class ChatConversationResponse(BaseModel):
+    code: int
+    data: List[Any]
     message: str
 
 class ConversationCreateRequest(BaseModel):
