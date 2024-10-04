@@ -4,7 +4,7 @@
 
 from fastapi import APIRouter
 from starlette.responses import StreamingResponse
-from app.models.chat_models import ChatMessageRequest,ChatClearResponse,ChatMessageResponse,ChatMessageHistoryResponse,ConversationCreateRequest,ConversationCreateResponse
+from app.models.chat_models import ChatMessageRequest,ChatClearResponse,ChatMessageResponse,ChatMessageHistoryResponse,ConversationCreateRequest,ConversationCreateResponse,ChatConversationResponse
 from app.core.rag.rag_pipeline import RAG_Pipeline
 from app.core.chat.chat import Chat
 from app.core.database.models import Chat_Messages
@@ -51,6 +51,15 @@ def create_conversation(conversationCreateRequest: ConversationCreateRequest):
     except Exception as e:
         # print(e)
         return ConversationCreateResponse(code=400,message="Failed to create conversation")
+# 获取对话列表
+@router.get("/chat-message/{user_id}",response_model=ChatConversationResponse)
+def chat_message(user_id: str):
+    chat:Chat = Chat(conversation_id="",user_id=user_id)
+    conversations = chat.get_conversation_list(user_id)
+    conversations_prased = [conversation.to_dict() for conversation in conversations]
+
+    return ChatConversationResponse(data=conversations_prased,code = 200,message="Get chat message successfully!" )
+
 
 @router.post("/knowledge_base", response_model=ChatMessageResponse)
 def knowledge_base(query: ChatMessageRequest):
