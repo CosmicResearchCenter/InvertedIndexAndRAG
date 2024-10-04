@@ -117,7 +117,10 @@ class Chat:
         resultByDoc:ResultByDoc = rAG_Pipeline.generate_answer_by_knowledgebase(question=question,knowledge_base_id=knowledgebase_id,history_messages=history_message)
 
         return resultByDoc
-
+    # 获取对话列表
+    def get_conversation_list(self,user_id):
+        conversations = self.mysql_session.query(Conversation).filter(Conversation.userId == user_id).all()
+        return conversations
     # 生成回复
     def generate_response(self, input_text):
         pass
