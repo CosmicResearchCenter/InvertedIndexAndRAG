@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Callable, Optional
 from typing import List
 # 数据库设置
-DATABASE_URL = "mysql+pymysql://llmqa_user:www123...@10.116.123.148:3308/llmqa"
+DATABASE_URL = "mysql+pymysql://llmqa_user:www123...@222.199.255.41:3308/llmqa"
 # DATABASE_URL = "postgresql://ally:2024@127.0.0.1/sensing"
 # engine = create_engine(DATABASE_URL)
 # SessionLocal = 
