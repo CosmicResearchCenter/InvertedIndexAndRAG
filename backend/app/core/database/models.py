@@ -45,7 +45,7 @@ class Conversation(Base):
         }
 class Chat_Messages (Base):
     __tablename__ = 'chat_messages'
-    id = Column(String(18), primary_key=True, default=lambda: str(generate_general_id(length=18)))
+    id = Column(Integer, primary_key=True)
     conversationID = Column(String(255))
     timeStamp = Column(TIMESTAMP)
     query = Column(String(255))
