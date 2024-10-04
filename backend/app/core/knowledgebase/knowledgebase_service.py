@@ -49,25 +49,33 @@ class KBase(MysqlClient):
         # 删除表
         kb = self.get_kb_by_id(kb_id)
         if not kb:
-            return GenericResponse(message="KnowledgeBase not found", code=404)
+            return GenericResponse(message="KnowledgeBase not found", code=404,data=[])
         self.db.delete(kb)
-        
+        self.db.commit()
         # 删除ElasticSearch数据
         try:
             elastic_client = ElasticClient()
             elastic_client.delete_index(kb_id)
         except Exception as e:
             print("Error deleting index from ElasticSearch: ", e)
-            return GenericResponse(message="KnowledgeBase not found", code=404)
+            return GenericResponse(message="KnowledgeBase not found", code=404,data=[])
         # 删除Milvus数据
         try:
             milvus_manager = MilvusCollectionManager()
             milvus_manager.drop_collection(f'{kb_id}')
         except Exception as e:
             print("Error dropping collection from Milvus: ", e)
-            return GenericResponse(message="KnowledgeBase not found", code=404)
+            return GenericResponse(message="KnowledgeBase not found", code=404,data=[])
         
-        return GenericResponse(message="KnowledgeBase deleted successfully", code=200)
+        return GenericResponse(message="KnowledgeBase deleted successfully", code=200,data=[])
+    # 删除文档
+    def delete_document(self, doc_id:str)->GenericResponse:
+        doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
+        if not doc:
+            return GenericResponse(message="Document not found", code=404,data=[])
+        self.db.delete(doc)
+        self.db.commit()
+        return GenericResponse(message="Document deleted successfully", code=200,data=[])
     def _get_docs_save_path(self, base_id:int)->Path:
         from config.config import DOCS_PATH
         save_path_p = Path(DOCS_PATH)/ base_id
