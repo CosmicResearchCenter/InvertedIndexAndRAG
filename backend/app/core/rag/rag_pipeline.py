@@ -120,21 +120,33 @@ class RAG_Pipeline:
                                     })
                             )
         # ReRank评估
-        rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.09,top_n=4)
+        # rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.09,top_n=4)
 
         prompt_source = ""
         source_docs_reranked:List[SourceDocumentReRanked] = []
 
-        for result in rerank_result:
+        # for result in rerank_result:
+        #     prompt_source += f"""
+        #     {result.page_content}\n
+        #     """
+        #     source_docs_reranked.append(SourceDocumentReRanked(
+        #                         content=result.page_content,
+        #                         knowledge_doc_name=result.metadata['knowledge_doc_name'],
+        #                         socre=result.metadata['score']
+        #                     ))
+        #     # print(result.metadata['score'])
+        
+        for result in source_docs:
             prompt_source += f"""
-            {result.page_content}\n
+            {result.content}\n
             """
             source_docs_reranked.append(SourceDocumentReRanked(
-                                content=result.page_content,
-                                knowledge_doc_name=result.metadata['knowledge_doc_name'],
-                                socre=result.metadata['score']
+                                content=result.content,
+                                knowledge_doc_name=result.knowledge_doc_name,
+                                socre=0.00
                             ))
             # print(result.metadata['score'])
+
         print(prompt_source)
         llm = LLM_Manager().creatLLM(mode_provider="OPENAI")
         prompt_system =f"""
