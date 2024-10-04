@@ -15,7 +15,7 @@ UPLOAD_DIR = BASE_DIR / "documents_stored"
 
 from config.config import set_docs_path
 import config.config
-
+set_docs_path(UPLOAD_DIR)
 
 router = APIRouter()
 router.include_router(AccountRouter, prefix="/account", tags=["mark", "account"])
@@ -27,7 +27,7 @@ app.include_router(router, prefix="/v1/api/mark", tags=["mark"])
 
 
 if __name__ == "__main__":
-  set_docs_path(UPLOAD_DIR)
+  
   print(config.config.DOCS_PATH)
   config = uvicorn.Config("main:app", host="0.0.0.0", port=9988, reload=True)
   server = uvicorn.Server(config)
