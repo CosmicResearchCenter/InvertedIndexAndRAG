@@ -101,6 +101,8 @@ class RAG_Pipeline:
         rerank_runner = RerankRunner(rerank_model)
         rerank_result = rerank_runner.run(question, documents, score_threshold=score_threshold, top_n=top_n)
 
+        
+        
         return rerank_result
     
     #生成回答
@@ -120,7 +122,7 @@ class RAG_Pipeline:
                                     })
                             )
         # ReRank评估
-        rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.01,top_n=4)
+        rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.001,top_n=4)
 
         prompt_source = ""
         source_docs_reranked:List[SourceDocumentReRanked] = []
