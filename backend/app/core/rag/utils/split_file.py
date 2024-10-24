@@ -1,4 +1,4 @@
-from ..splitter import PDFSplitter,TextSplitter
+from ..splitter import PDFSplitter,TextSplitter,DocxSplitter
 from langchain_core.documents import Document
 from typing import List
 from app.core.ocr.ocr_model import OCR_Model
@@ -19,11 +19,13 @@ def split_file(file_path:str,SPPLITTER_MODEL:SplitterModel=SPPLITTER_MODEL)->Lis
         # pdf文件
         loader = PDFSplitter(file_path=file_path,SPPLITTER_MODEL=SPPLITTER_MODEL)
         docs = loader.split()
-        print(docs)
+        # print(docs)
     elif file_path.lower().endswith(".doc"):
-        pass
+        loader = DocxSplitter(file_path=file_path,splitter_model=SPPLITTER_MODEL)
+        docs = loader.split()
     elif file_path.lower().endswith(".docx"):
-        pass
+        loader = DocxSplitter(file_path=file_path,splitter_model=SPPLITTER_MODEL)
+        docs = loader.split()
     elif file_path.lower().endswith(".xls"):
         pass
     elif file_path.lower().endswith(".xlsx"):
