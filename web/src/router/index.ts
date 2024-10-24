@@ -16,6 +16,16 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/KnowledgeBaseListView.vue')
+    },
+    {
+      path: '/manager/:id',
+      name: 'knowledge-base',
+      component: () => import('../views/KnowledgeBaseManager/KnowledgeBaseManager.vue')
+    },
+    {
+      path: '/manager/:id/create',
+      name: 'knowledge-base',
+      component: () => import('../views/KnowledgeBaseManager/KnowledgeBaseCreate.vue')
     }
   ]
 })
