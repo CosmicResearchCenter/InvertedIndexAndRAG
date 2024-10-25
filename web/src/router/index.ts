@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-
+// import KnowledgeBaseManager from '../views/KnowledgeBaseManager/KnowledgeBaseManager.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -24,7 +24,7 @@ const router = createRouter({
     },
     {
       path: '/manager/:id/create',
-      name: 'knowledge-base',
+      name: 'knowledge-base-create',
       component: () => import('../views/KnowledgeBaseManager/KnowledgeBaseCreate.vue')
     }
   ]
