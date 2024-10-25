@@ -43,7 +43,7 @@
                 </div>
             </el-card>
         </el-col>
-        <el-dialog title="设置知识库名称" :visible.sync="dialogVisible">
+        <el-dialog title="设置知识库名称" v-model="dialogVisible">
             <el-input v-model="knowledgeBaseName" placeholder="请输入知识库名称"></el-input>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogVisible = false">取消</el-button>
