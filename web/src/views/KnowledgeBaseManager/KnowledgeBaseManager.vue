@@ -2,16 +2,16 @@
     <el-row class="page-content">
         <!-- Sidebar -->
         <el-col :span="4" class="sidebar">
-            <el-menu default-active="1" class="el-menu-vertical-demo" background-color="#f3f3f4" text-color="#303133"
+            <el-menu :default-active="activeMenu" class="el-menu-vertical-demo" background-color="#f3f3f4" text-color="#303133"
                 active-text-color="#409EFF">
-                <el-menu-item index="1" @click="toggleSwitch">
+                <el-menu-item index="1" @click="toggleSwitch('1')">
                     <el-icon>
                         <Document />
                     </el-icon>
-                    <span slot="title" >文档</span>
+                    <span slot="title">文档</span>
                 </el-menu-item>
 
-                <el-menu-item index="2" @click="toggleSwitch">
+                <el-menu-item index="2" @click="toggleSwitch('2')">
                     <el-icon>
                         <Setting />
                     </el-icon>
@@ -21,8 +21,8 @@
         </el-col>
 
         <!-- Main content -->
-        <el-col :span="20" class="main-content" >
-            <div class="documentBox" v-if="switchButtion">
+        <el-col :span="20" class="main-content">
+            <div class="documentBox" v-if="switchButton === '1'">
                 <!-- Header -->
                 <div class="header">
                     <el-input v-model="searchText" placeholder="搜索" class="search-input" clearable />
@@ -59,9 +59,7 @@
                                 <template #dropdown>
                                     <el-dropdown-menu>
                                         <el-dropdown-item>重命名</el-dropdown-item>
-                                        <el-dropdown-item>
-                                            分段设置
-                                        </el-dropdown-item>
+                                        <el-dropdown-item>分段设置</el-dropdown-item>
                                         <el-dropdown-item>归档</el-dropdown-item>
                                         <el-dropdown-item>删除</el-dropdown-item>
                                     </el-dropdown-menu>
@@ -75,37 +73,66 @@
             <div class="settingBox" v-else>
                 这是设置
             </div>
-
         </el-col>
     </el-row>
 </template>
 
-<script>
-export default {
-    data() {
-        return {
-            switchButtion: true,
-            searchText: '',
-            files: [
-                {
-                    index: 1,
-                    name: '常用校园信息集合.docx',
-                    size: '8.4k',
-                    recalls: 54,
-                    uploadDate: '2024-09-19 22:02',
-                    status: 'available',
-                    toggle: true
-                },
-            ]
+<script lang="ts">
+import { defineComponent, ref } from 'vue';
+import { ElMessage } from 'element-plus';
+import { useRouter, useRoute } from 'vue-router';
+
+interface File {
+    index: number;
+    name: string;
+    size: string;
+    recalls: number;
+    uploadDate: string;
+    status: string;
+}
+
+export default defineComponent({
+    setup() {
+        const router = useRouter();
+        const switchButton = ref('1'); // "1" for 文档, "2" for 设置
+        const activeMenu = ref('1');
+        const searchText = ref('');
+        const files = ref<File[]>([
+            {
+                index: 1,
+                name: '常用校园信息集合.docx',
+                size: '8.4k',
+                recalls: 54,
+                uploadDate: '2024-09-19 22:02',
+                status: 'available',
+            }
+        ]);
+
+        const toggleSwitch = (menuIndex: string) => {
+            if (switchButton.value !== menuIndex) {
+                switchButton.value = menuIndex;
+                activeMenu.value = menuIndex;
+                ElMessage.info(`切换到${menuIndex === '1' ? '文档' : '设置'}`);
+            }
         };
-    },
-    methods: {
-        toggleSwitch() {
-            console.log('Switch clicked');
-        this.switchButtion = !this.switchButtion;
-        },
+
+        const addFile = () => {
+            // ElMessage.success('文件已添加');
+            //切换路由
+
+            router.push('/manager/12/create');
+        };
+
+        return {
+            switchButton,
+            activeMenu,
+            searchText,
+            files,
+            toggleSwitch,
+            addFile
+        };
     }
-};
+});
 </script>
 
 <style scoped>
