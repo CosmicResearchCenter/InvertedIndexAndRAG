@@ -73,7 +73,7 @@ const chatContent = ref(null);
 
 async function sendMessage() {
     if (message.value === '') return;
-    const data = await postRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message', {
+    const data:any = await postRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message', {
         "conversation_id": currentConversationId.value,
         "message": message.value,
         "user_id": "mark"

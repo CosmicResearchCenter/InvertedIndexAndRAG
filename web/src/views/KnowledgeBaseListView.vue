@@ -2,7 +2,7 @@
     <el-row :gutter="20">
         <!-- Create new knowledge base card -->
         <el-col :span="8" class="col-card">
-            <el-card class="new-base" shadow="hover" @click="goToCreate">
+            <el-card class="new-base" shadow="hover" @click="openDialog">
                 <div class="new-base-content">
                     <el-icon :size="60">
                         <Plus />
@@ -34,7 +34,8 @@
                         </span>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item @click.stop="handleMenuCommand(file)('settings')">设置</el-dropdown-item>
+                                <el-dropdown-item
+                                    @click.stop="handleMenuCommand(file)('settings')">设置</el-dropdown-item>
                                 <el-dropdown-item @click.stop="handleMenuCommand(file)('delete')">删除</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
@@ -42,52 +43,119 @@
                 </div>
             </el-card>
         </el-col>
+        <el-dialog title="设置知识库名称" :visible.sync="dialogVisible">
+            <el-input v-model="knowledgeBaseName" placeholder="请输入知识库名称"></el-input>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="createKnowledgeBase">确定</el-button>
+            </span>
+        </el-dialog>
     </el-row>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Plus, Document } from '@element-plus/icons-vue';
+import { Plus, Document, More } from '@element-plus/icons-vue';
+import { getRequest, postRequest, deleteRequest } from '@/utils/http';
 
 interface FileData {
-    id: number;
+    id: string;
     name: string;
     details: string;
 }
 
 export default defineComponent({
-    components: { Plus, Document },
+    components: { Plus, Document, More },
     setup() {
         const router = useRouter();
-        
-        const files = reactive<FileData[]>([
-            { id: 1, name: '常用校园信息集合.txt', details: '1 文档 | 1 千字符 | 0 关联应用' },
-            { id: 2, name: '常用校园信息集合.txt', details: '1 文档 | 1 千字符 | 0 关联应用' },
-            { id: 3, name: '常用校园信息集合.txt', details: '1 文档 | 1 千字符 | 0 关联应用' },
-            { id: 4, name: '常用校园信息集合.docx', details: '1 文档 | 8 千字符 | 1 关联应用' },
-            { id: 5, name: '常用校园信息集合.txt', details: '1 文档 | 19 千字符 | 0 关联应用' }
-        ]);
 
-        const goToCreate = () => {
-            router.push("/manager/id/create");
+        const files = ref<FileData[]>([]);
+        const dialogVisible = ref(false); // 控制弹出框的显示与隐藏
+        const knowledgeBaseName = ref(""); // 存储知识库名称
+
+        // 打开弹出框
+        const openDialog = () => {
+            console.log('打开弹出框');
+            dialogVisible.value = true;
         };
 
-        const goToKnowledgeBase = (id: number) => {
-            router.push(`/manager/${id}`);
-        };
-
-        const handleMenuCommand = (file: FileData) => (command: string) => {
-            if (command === 'settings') {
-                console.log('Settings for:', file);
-                // Add settings functionality here
-            } else if (command === 'delete') {
-                console.log('Deleting:', file);
-                // Add delete functionality here
+        // 初始化时获取知识库数据
+        const fetchKnowledgeBases = async () => {
+            try {
+                const response: any = await getRequest('http://localhost:9988/v1/api/mark/knowledgebase/');
+                if (response.code === 200) {
+                    files.value = [];  // 清空files
+                    response.data.forEach((kb: any) => {
+                        files.value.push({
+                            id: kb.id,
+                            name: kb.knowledgeBaseName,
+                            details: '1 文档 | 1 千字符 | 0 关联应用' // 示例细节
+                        });
+                    });
+                } else {
+                    console.error('获取知识库数据失败:', response.message);
+                }
+            } catch (error) {
+                console.error('请求失败:', error);
             }
         };
 
-        return { files, goToCreate, goToKnowledgeBase, handleMenuCommand };
+        // 初始化时加载知识库数据
+        onMounted(fetchKnowledgeBases);
+
+        // 创建知识库
+        const createKnowledgeBase = async () => {
+            try {
+                const response: any = await postRequest('http://localhost:9988/v1/api/mark/knowledgebase/', {
+                    base_name: knowledgeBaseName.value || "default"
+                });
+
+                if (response.code === 200 && response.data.length > 0) {
+                    const id = response.data[0].knowledgeBase_id;
+                    router.push(`/manager/${id}/create`);
+                    dialogVisible.value = false;
+                    knowledgeBaseName.value = "";
+                } else {
+                    console.error('创建知识库失败:', response.message);
+                }
+            } catch (error) {
+                console.error('请求创建知识库失败:', error);
+            }
+        };
+
+        const goToKnowledgeBase = (id: string) => {
+            router.push(`/manager/${id}`);
+        };
+
+        const handleMenuCommand = (file: FileData) => async (command: string) => {
+            if (command === 'settings') {
+                router.push(`/manager/${file.id}/settings`);
+            } else if (command === 'delete') {
+                try {
+                    const response: any = await deleteRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${file.id}`);
+                    if (response.code === 200) {
+                        const index = files.value.findIndex(f => f.id === file.id);
+                        if (index !== -1) files.value.splice(index, 1);
+                        console.log('删除成功:', response.message);
+                    } else {
+                        console.error('删除失败:', response.message);
+                    }
+                } catch (error) {
+                    console.error('删除请求失败:', error);
+                }
+            }
+        };
+
+        return {
+            files,
+            dialogVisible,
+            knowledgeBaseName,
+            openDialog,
+            createKnowledgeBase,
+            goToKnowledgeBase,
+            handleMenuCommand
+        };
     }
 });
 </script>
