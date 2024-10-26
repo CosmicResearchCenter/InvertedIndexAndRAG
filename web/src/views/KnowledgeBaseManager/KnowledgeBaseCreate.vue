@@ -48,14 +48,12 @@
                 <el-radio label="custom">自定义</el-radio>
               </el-radio-group>
               <el-divider></el-divider>
-              <h3>索引方式</h3>
-              <el-radio-group v-model="indexMode">
-                <el-radio label="highQuality">高质量</el-radio>
-                <el-radio label="qaMode">采用 Q&A 分段模式</el-radio>
-              </el-radio-group>
+              <h3>字符数限制</h3>
+              <el-input-number v-model="characterLimit" :min="100" :step="100" label="分段字符数" style="width: 100px;"></el-input-number>
+              <el-button @click="applyCustomSegment" type="primary" size="small">应用</el-button>
               <el-divider></el-divider>
-              <h3>检索设置</h3>
-              <el-checkbox v-model="mixedSearch">混合检索</el-checkbox>
+              <h3>分段模式</h3>
+              <el-button type="primary" plain @click="toggleSegmentMode">切换分段模式</el-button>
             </el-card>
           </el-col>
           <el-col :span="12">
@@ -96,19 +94,24 @@ export default defineComponent({
     const fileName = ref('');
     const fileSize = ref('');
     const segmentSetting = ref('auto');
-    const indexMode = ref('highQuality');
-    const mixedSearch = ref(false);
+    const characterLimit = ref(500);
     const segments = ref([
-      { text: '常用校园信息集合 食堂 各餐厅营业时间表', length: 419 },
-      { text: '10:30-14:00 | 紫竹民族食堂', length: 436 },
-      { text: '中心广场餐车', length: 74 },
-      { text: '各个商店营业时间', length: 435 },
-      { text: '校内活动信息', length: 221 }
+      { text: '示例文本 1', length: 419 },
+      { text: '示例文本 2', length: 436 },
     ]);
 
     const handleFileChange = (file) => {
       fileName.value = file.name;
       fileSize.value = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+    };
+
+    const applyCustomSegment = () => {
+      // 调用拆分算法，这里可以实现实际的分段逻辑
+      console.log(`将文件按 ${characterLimit.value} 字符分段`);
+    };
+
+    const toggleSegmentMode = () => {
+      console.log("切换到不同的分段模式");
     };
 
     const nextStep = () => {
@@ -126,15 +129,17 @@ export default defineComponent({
       fileName,
       fileSize,
       segmentSetting,
-      indexMode,
-      mixedSearch,
+      characterLimit,
       segments,
       handleFileChange,
+      applyCustomSegment,
+      toggleSegmentMode,
       nextStep
     };
   }
 });
 </script>
+
 
 <style scoped>
 .step-content {

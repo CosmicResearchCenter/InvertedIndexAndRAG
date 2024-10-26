@@ -76,11 +76,11 @@
         </el-col>
     </el-row>
 </template>
-
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter, useRoute } from 'vue-router';
+import { getRequest } from '@/utils/http';
 
 interface File {
     index: number;
@@ -94,19 +94,35 @@ interface File {
 export default defineComponent({
     setup() {
         const router = useRouter();
-        const switchButton = ref('1'); // "1" for 文档, "2" for 设置
+        const route = useRoute();
+        const switchButton = ref('1');
         const activeMenu = ref('1');
         const searchText = ref('');
-        const files = ref<File[]>([
-            {
-                index: 1,
-                name: '常用校园信息集合.docx',
-                size: '8.4k',
-                recalls: 54,
-                uploadDate: '2024-09-19 22:02',
-                status: 'available',
+        const files = ref<File[]>([]);
+
+        // Fetch documents from the backend API
+        const fetchFiles = async () => {
+            const baseId = route.params.id as string;
+            try {
+                const response:any = await getRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}`);
+                if (response.code === 200) {
+                    files.value = response.data.map((doc: any, index: number) => ({
+                        index: index + 1,
+                        name: doc.doc_name,
+                        size: (doc.doc_size / 1024).toFixed(1) + 'k', // Convert size to kB
+                        recalls: 0, // Set default or calculate based on your logic
+                        uploadDate: new Date(doc.create_time).toLocaleString(),
+                        status: 'available',
+                    }));
+                    ElMessage.success(response.message);
+                } else {
+                    ElMessage.error("Failed to retrieve files.");
+                }
+            } catch (error) {
+                console.error(error);
+                ElMessage.error("Error fetching documents.");
             }
-        ]);
+        };
 
         const toggleSwitch = (menuIndex: string) => {
             if (switchButton.value !== menuIndex) {
@@ -117,11 +133,12 @@ export default defineComponent({
         };
 
         const addFile = () => {
-            // ElMessage.success('文件已添加');
-            //切换路由
-
             router.push('/manager/12/create');
         };
+
+        onMounted(() => {
+            fetchFiles();
+        });
 
         return {
             switchButton,
@@ -134,6 +151,7 @@ export default defineComponent({
     }
 });
 </script>
+
 
 <style scoped>
 .page-content {
