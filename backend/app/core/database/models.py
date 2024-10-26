@@ -23,16 +23,18 @@ class KnowledgeBase(Base):
     __tablename__ = 'knowledgeBasesList'
     id = Column(String(18), primary_key=True, default=lambda: str(generate_id(length=18)))
     knowledgeBaseName 	= Column(String(255))
+    delete_sign = Column(Boolean, default=False)
 
 # 对话列表
 class Conversation(Base):
     __tablename__ = 'conversationsList'
-    id = Column(String(18), primary_key=True, default=lambda: str(generate_general_id(length=18)))
+    id = Column(Integer, primary_key=True, autoincrement=True)
     lastChatTime 	= Column(TIMESTAMP, nullable=False)
     conversationName 	= Column(String(255))
     num_conversation = Column(Integer)
     knowledgeBaseId = Column(String(255))
     userId = Column(String(255))
+    delete_sign = Column(Boolean, default=False)
 
     def to_dict(self):
         return {
@@ -45,7 +47,7 @@ class Conversation(Base):
         }
 class Chat_Messages (Base):
     __tablename__ = 'chat_messages'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     conversationID = Column(String(255))
     timeStamp = Column(TIMESTAMP)
     query = Column(String(255))
@@ -55,7 +57,7 @@ class Chat_Messages (Base):
 
 class RetrieverDoc(Base):
     __tablename__ = 'retrieverDocs'
-    id = Column(String(255), primary_key=True, default=lambda: str(generate_general_id(length=18)))
+    id = Column(Integer, primary_key=True, autoincrement=True)
     content = Column(Text)
     knowledge_doc_name = Column(String(255))
     knowledgeBaseId = Column(String(255))
@@ -64,13 +66,14 @@ class RetrieverDoc(Base):
 # 文档信息
 class DocInfo(Base):
     __tablename__ = 'docsInfo'
-    id = Column(String(255), primary_key=True, default=lambda: str(generate_general_id(length=18)))
+    id = Column(Integer, primary_key=True, autoincrement=True)
     doc_name = Column(String(255))
     knowledgeBaseId = Column(String(255))
     create_time = Column(TIMESTAMP)
     doc_type = Column(String(255))
     doc_size = Column(Integer)
     save_id = Column(String(255))
+    delete_sign = Column(Boolean, default=False)
 
 class DocIndexStatus(Base):
     __tablename__ = 'docIndexStatus'
