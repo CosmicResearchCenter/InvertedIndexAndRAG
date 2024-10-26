@@ -45,7 +45,7 @@ class RAG_Pipeline:
         ### 插入数据库
         # print("插入数据库")
         #### 写入向量数据库
-        # print("写入向量数据库")
+        print("写入向量数据库")
         emb_model = EmbeddingManager().create_embedding(EMBEDDING_MODEL_PROVIDER)
         mdata = []
         knowledge_doc_name = os.path.basename(file_path)
@@ -60,7 +60,7 @@ class RAG_Pipeline:
             mdata.append(item)
         
         self.milvus_client.insert_data(mdata, knowledge_base_id)
-        # milvus_client.create_index(nlist=128)
+        self.milvus_client.create_index(collection=knowledge_base_id)
         ### 写入 ElasticSearch
         # print("写入 ElasticSearch")
         success,failed = self.es_client.insert_data(docs,knowledge_base_id,knowledge_doc_name)
@@ -77,6 +77,7 @@ class RAG_Pipeline:
         result_milvus = self.milvus_client.search(vecotr,knowledge_base_id)
         i = 0
         for item in result_milvus[0]:
+            # print("1")
             content = item.entity.content
             knowledge_doc_name = item.entity.knowledge_doc_name
             sourceDoc = SourceDocument(content=content,knowledge_doc_name=knowledge_doc_name)
@@ -86,7 +87,7 @@ class RAG_Pipeline:
                 break
         
         result_elastic = self.es_client.search(question,knowledge_base_id)
-        
+        # print("Milvus没问题")
         i = 0
         for item in result_elastic:
             content = item["_source"]["content"]
