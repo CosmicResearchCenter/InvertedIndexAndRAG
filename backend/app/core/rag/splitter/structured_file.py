@@ -7,11 +7,13 @@ from config.splitter_model import SplitterModel
 from concurrent.futures import ThreadPoolExecutor
 
 class TextSplitter:
-    def __init__(self,SPPLITTER_MODEL=SPPLITTER_MODEL,chunk_size:int=100,chunk_overlap:int=20,length_function:int=len,is_separator_regex:bool=False,split_model:str="OPENAI"):
-        self.chunk_size = chunk_size
-        self.chunk_overlap = chunk_overlap
-        self.length_function = length_function
-        self.is_separator_regex = is_separator_regex
+    def __init__(self,splitter_args,SPPLITTER_MODEL=SPPLITTER_MODEL,split_model:str="OPENAI"):
+        # self.chunk_size = chunk_size
+        # self.chunk_overlap = chunk_overlap
+        # self.length_function = length_function
+        # self.is_separator_regex = is_separator_regex
+        self.splitter_args = splitter_args
+
         self.split_model = split_model
         self.SPPLITTER_MODEL = SPPLITTER_MODEL
         self.result:List[Document] = []
@@ -20,10 +22,8 @@ class TextSplitter:
     def _split_texts(self, text)->List[Document]:
         texst = RecursiveCharacterTextSplitter(
             # Set a really small chunk size, just to show.
-            chunk_size=self.chunk_size,
-            chunk_overlap=self.chunk_overlap,
-            length_function=self.length_function,
-            is_separator_regex=self.is_separator_regex,
+            chunk_size=self.splitter_args['chunk_size'],
+            chunk_overlap=self.splitter_args['chunk_overlap']
         )
         texts = texst.create_documents([text])
         
@@ -43,7 +43,7 @@ class TextSplitter:
 
     def SplitTextByLLM(self,text:str,splitter_str:str) -> List[Document]:
         print(len(text) )
-        if len(text)<2000:
+        if len(text)<int(self.splitter_args['window_size']):
             llm_client = LLM_Manager().creatLLM(self.split_model)
             prompt:str = f"""
             请将以下文本拆分成逻辑清晰、内容独立的段落或部分。每个段落应完整表达一个主要思想或主题，并控制段落的长度，使其便于后续的分析和处理。每个段落之间使用指定的拆分符进行分隔，确保拆分后的内容不被修改
@@ -60,8 +60,8 @@ class TextSplitter:
             return self.result
         else:
             # 把text分成多个部分，滑动窗口滑动，然后拆分，确保不丢失过多信息
-            window_size = 2000  # 滑动窗口的大小
-            step_size = 1600    # 滑动步长
+            window_size = int(self.splitter_args['window_size'])  # 滑动窗口的大小
+            step_size = int(self.splitter_args['step_size'])    # 滑动步长
             index = 1
             text_length = len(text)
 
@@ -83,7 +83,7 @@ class TextSplitter:
         prompt:str = f"""
         请将以下文本拆分成逻辑清晰、内容独立的段落或部分。每个段落应可以完整表达一个主要思想或主题。并控制段落的长度，使其便于后续的分析和处理。每个段落之间使用指定的拆分符进行分隔。请不要修改文本内容，确保拆分后的内容不被修改
         拆分符: {splitter_str}
-        ##########################################
+        需要拆分的文本:
         {retriever_text}
         """               
         llm_client.setPrompt(prompt="你是一名专业的文本拆分助手，你的任务是帮助用户拆分文本。")
@@ -93,7 +93,7 @@ class TextSplitter:
     def split(self,full_text:str)->List[Document]:
             
             if self.SPPLITTER_MODEL == SplitterModel.LLMSplitter:
-                return self.SplitTextByLLM(full_text, "######")
+                return self.SplitTextByLLM(full_text, "&&&&&")
             elif self.SPPLITTER_MODEL == SplitterModel.TextSplitter:
                 return self.split_texts(full_text)
     
