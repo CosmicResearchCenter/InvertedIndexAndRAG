@@ -59,7 +59,7 @@ export async function putRequest<T>(url: string, body: any): Promise<T | undefin
     }
 }
 
-export async function deleteRequest(url: string): Promise<void> {
+export async function deleteRequest<T>(url: string): Promise<T | undefined> {
     try {
         const response = await fetch(url, {
             method: 'DELETE',
@@ -70,6 +70,7 @@ export async function deleteRequest(url: string): Promise<void> {
         }
 
         console.log('Resource deleted successfully');
+        return await response.json() as T;
     } catch (error) {
         console.error('DELETE request error:', error);
     }
