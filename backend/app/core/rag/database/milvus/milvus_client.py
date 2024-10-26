@@ -29,11 +29,12 @@ class MilvusCollectionManager:
     def load_collection(self, knowledgeBaseID: str):
         """加载现有集合"""
         self.collection = Collection(name=knowledgeBaseID)
-        self.collection.load()
+        # self.collection.load()
         print(f"Collection '{knowledgeBaseID}' loaded")
 
     def insert_data(self, data,knowledgeBaseID):
         self.load_collection(knowledgeBaseID)
+        # self.load_collection(knowledgeBaseID)
         """插入数据到集合"""
         if self.collection is None:
             raise ValueError("No collection is loaded or created")
@@ -65,10 +66,12 @@ class MilvusCollectionManager:
             "params": {"nlist": nlist}
         }
         self.collection.create_index(field_name="vector", index_params=index_params)
+        self.collection.load()
         print(f"Index created for collection '{self.collection.name}' with type '{index_type}' and metric 'L2'")
 
     def search(self, query_vector,collection:str, limit: int = 10, nprobe: int = 256,)->SearchResult:
         self.load_collection(collection)
+        
         """在集合中搜索相似向量"""
         if self.collection is None:
             raise ValueError("No collection is loaded or created")
@@ -77,7 +80,9 @@ class MilvusCollectionManager:
             "metric_type": "L2",
             "params": {"nprobe": nprobe}
         }
+        # print(search_params)
         results = self.collection.search([query_vector], "vector", search_params, limit=limit,output_fields=["content","knowledge_doc_name"])
+        # print(f"Found {len(results[0])} results")
         return results
 
     def get_content_by_id(self, entity_id):
