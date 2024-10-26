@@ -2,8 +2,8 @@
     <el-row class="page-content">
         <!-- Sidebar -->
         <el-col :span="4" class="sidebar">
-            <el-menu :default-active="activeMenu" class="el-menu-vertical-demo" background-color="#f3f3f4" text-color="#303133"
-                active-text-color="#409EFF">
+            <el-menu :default-active="activeMenu" class="el-menu-vertical-demo" background-color="#f3f3f4"
+                text-color="#303133" active-text-color="#409EFF">
                 <el-menu-item index="1" @click="toggleSwitch('1')">
                     <el-icon>
                         <Document />
@@ -102,9 +102,9 @@ export default defineComponent({
 
         // Fetch documents from the backend API
         const fetchFiles = async () => {
-            const baseId = route.params.id as string;
+            const baseId = route.params.base_id as string;
             try {
-                const response:any = await getRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}`);
+                const response: any = await getRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}`);
                 if (response.code === 200) {
                     files.value = response.data.map((doc: any, index: number) => ({
                         index: index + 1,
@@ -133,8 +133,10 @@ export default defineComponent({
         };
 
         const addFile = () => {
-            router.push('/manager/12/create');
+            const baseId = route.params.base_id as string;
+            router.push(`/manager/${baseId}/create`);
         };
+
 
         onMounted(() => {
             fetchFiles();
