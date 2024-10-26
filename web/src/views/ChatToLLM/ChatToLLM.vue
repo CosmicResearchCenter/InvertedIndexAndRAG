@@ -12,7 +12,6 @@
                     :title="String(item.conversationName)"
                     :conversation_id="item.conversation_id"
                     @click="handleItemClick(item.conversation_id)"
-                    :active="currentConversationId === item.conversation_id"
                     @updateTitle="updateConversationTitle(item.conversation_id, $event)"
                     @refreshList="getConversionsList"
                 />
@@ -51,7 +50,7 @@
                     v-for="item in knowledgebaseList"
                     :key="item.id"
                     class="knowledge-base-item"
-                    :checked="choosedKnowledgeBaseId === item.id"
+                    :class="{ active: choosedKnowledgeBaseId === item.id }"
                     :knowledgeBaseName="String(item.knowledgeBaseName)"
                     :knowledgeBaseId="String(item.id)"
                     @click="choosedKnowledgeBaseId = item.id" />
@@ -77,9 +76,10 @@ const currentConversationId = ref('');
 const chatContent = ref(null);
 
 async function sendMessage() {
+    console.log(currentConversationId.value)
     if (message.value === '') return;
     const data:any = await postRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message', {
-        "conversation_id": currentConversationId.value,
+        "conversation_id": currentConversationId.value.toString(),
         "message": message.value,
         "user_id": "mark"
     });
@@ -118,6 +118,9 @@ async function handleItemClick(conversation_id: string) {
 async function getKnowledgeBaseList() {
     const data = await getRequest<any>('http://localhost:9988/v1/api/mark/knowledgebase');
     knowledgebaseList.value = data.data;
+    for (const item of data.data) {
+        console.log(item);
+    }
 }
 
 async function createConversation() {
