@@ -47,21 +47,17 @@
               <div v-if="splitMode === 'llm'">
                 <h3>LLM拆分参数</h3>
                 <el-input-number v-model="windowSize" :min="1" label="窗口大小" style="width: 150px;"></el-input-number>
-                <el-input-number v-model="slideDistance" :min="1" label="滑动距离"
-                  style="width: 150px; margin-top: 10px;"></el-input-number>
+                <el-input-number v-model="slideDistance" :min="1" label="滑动距离" style="width: 150px; margin-top: 10px;"></el-input-number>
               </div>
 
               <!-- 文本块拆分模式参数 -->
               <div v-else-if="splitMode === 'textBlock'">
                 <h3>文本块拆分参数</h3>
                 <el-input-number v-model="blockSize" :min="100" label="文本块大小" style="width: 150px;"></el-input-number>
-                <el-input-number v-model="overLengthHandling" :min="20" label="运行超出长度"
-                  style="width: 150px;"></el-input-number>
-                <!-- <el-input v-model="overLengthHandling" placeholder="超出长度处理" style="margin-top: 10px;"></el-input> -->
+                <el-input-number v-model="overLengthHandling" :min="20" label="运行超出长度" style="width: 150px;"></el-input-number>
               </div>
 
-              <el-button @click="applySplitSettings" type="primary" size="small"
-                style="margin-top: 20px;">应用</el-button>
+              <el-button @click="applySplitSettings" type="primary" size="small" style="margin-top: 20px;">应用</el-button>
             </el-card>
           </el-col>
         </el-row>
@@ -99,7 +95,6 @@ export default defineComponent({
     const docId = ref('');
     const route = useRoute();
 
-    // 获取base_id
     onMounted(() => {
       baseId.value = route.params.base_id as string;
       console.log("baseId:", baseId.value);
@@ -108,7 +103,7 @@ export default defineComponent({
     const handleFileChange = (file: any) => {
       fileName.value = file.name;
       fileSize.value = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-      fileData.value = file.raw; // 保存文件数据
+      fileData.value = file.raw;
     };
 
     const uploadFile = async () => {
@@ -126,7 +121,7 @@ export default defineComponent({
         if (response.code === 200) {
           docId.value = response.data[0].doc_id;
           alert("文件上传成功！");
-          activeStep.value = 2; // 上传成功后手动跳转到步骤2
+          activeStep.value = 2;
         } else {
           alert("文件上传失败，请重试！");
         }
@@ -145,7 +140,7 @@ export default defineComponent({
       const splitterModel = splitMode.value === 'llm' ? 0 : 1;
       const splitterArgs = splitMode.value === 'llm'
         ? { window_size: windowSize.value.toString(), step_size: slideDistance.value.toString() }
-        : { block_size: blockSize.value.toString(), over_length_handling: overLengthHandling.value.toString() };
+        : { chunk_size: blockSize.value.toString(), chunk_overlap: overLengthHandling.value.toString() };
 
       try {
         const response: any = await postRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId.value}/doc/${docId.value}/index`, {
@@ -155,6 +150,7 @@ export default defineComponent({
 
         if (response.code === 200) {
           alert("索引处理成功，正在建立索引！");
+          activeStep.value = 3;
           nextStep();
         } else {
           alert("索引处理失败，请重试！");
@@ -171,9 +167,9 @@ export default defineComponent({
           alert("请先选择文件！");
           return;
         }
-        uploadFile(); // 上传文件，不直接调用 nextStep
+        uploadFile();
       } else if (activeStep.value === 2) {
-        applySplitSettings(); // 应用清洗参数后再跳转到下一步
+        applySplitSettings();
       } else if (activeStep.value < 3) {
         activeStep.value += 1;
       }
