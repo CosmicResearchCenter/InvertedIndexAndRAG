@@ -1,20 +1,25 @@
 <template>
-    <el-container>
-        <!-- 左侧对话列表 -->
+    <el-container style="height: 100%; width: 100%;">
+        <!-- Left Sidebar for Chat List -->
         <el-aside class="chat-aside">
+            <el-button type="primary" @click="createConversation" class="create-button">新建对话</el-button>
             <div class="chat-list">
                 <ChatLogItem
                     class="chat-log-item"
                     v-for="item in conversionsList"
                     :key="item.conversation_id"
                     :title="String(item.conversationName)"
+                    :conversation_id="item.conversation_id"
                     @click="handleItemClick(item.conversation_id)"
-                    :active="currentConversationId === item.conversation_id" />
+                    :active="currentConversationId === item.conversation_id"
+                    @updateTitle="updateConversationTitle(item.conversation_id, $event)"
+                    @refreshList="getConversionsList"
+                />
             </div>
-            <el-button type="primary" @click="createConversation" class="create-button">新建对话</el-button>
+            
         </el-aside>
 
-        <!-- 主聊天界面 -->
+        <!-- Main Chat Interface -->
         <el-main class="chat-main">
             <div class="chat-content" ref="chatContent">
                 <div class="message-container" v-for="item in conversionMessage" :key="item.id">
@@ -27,7 +32,7 @@
                 </div>
             </div>
 
-            <!-- 输入区域 -->
+            <!-- Input Area -->
             <div class="input-area">
                 <el-input
                     v-model="message"
@@ -39,7 +44,7 @@
             </div>
         </el-main>
 
-        <!-- 右侧知识库菜单 -->
+        <!-- Right Sidebar for Knowledge Base -->
         <el-aside class="chat-aside-right">
             <div class="knowledge-base-list">
                 <KnowledgeBaseItem
@@ -94,6 +99,12 @@ function scrollToBottom() {
 async function getConversionsList() {
     const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message/mark');
     conversionsList.value = data.data;
+
+    // 如果有可用对话列表，将第一个对话设置为当前对话
+    if (conversionsList.value.length > 0) {
+        const latestConversationId = conversionsList.value[0].conversation_id;
+        handleItemClick(latestConversationId);
+    }
 }
 
 async function handleItemClick(conversation_id: string) {
@@ -120,6 +131,14 @@ async function createConversation() {
     handleItemClick(data.data.conversation_id);
 }
 
+// 更新对话标题
+function updateConversationTitle(conversationId: string, newTitle: string) {
+    const conversation = conversionsList.value.find(item => item.conversation_id === conversationId);
+    if (conversation) {
+        conversation.conversationName = newTitle;
+    }
+}
+
 onMounted(() => {
     getConversionsList();
     scrollToBottom();
@@ -134,11 +153,12 @@ onMounted(() => {
     background-color: #f7f7f7;
     border-right: 1px solid #e0e0e0;
     overflow-y: auto;
+    flex-shrink: 0;
 }
 
-.chat-list {
-    height: calc(100vh - 60px);
-    overflow-y: auto;
+.chat-list, .knowledge-base-list {
+    /* overflow-y: auto; */
+    height: 100%;
 }
 
 .chat-log-item {
@@ -154,7 +174,7 @@ onMounted(() => {
 .chat-main {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;
 }
 
 .chat-content {
@@ -193,12 +213,6 @@ onMounted(() => {
 
 .input-box {
     flex-grow: 1;
-}
-
-.knowledge-base-list {
-    padding: 10px;
-    overflow-y: auto;
-    height: calc(100vh - 20px);
 }
 
 .knowledge-base-item {
