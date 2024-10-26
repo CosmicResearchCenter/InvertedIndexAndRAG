@@ -29,6 +29,7 @@ class MilvusCollectionManager:
     def load_collection(self, knowledgeBaseID: str):
         """加载现有集合"""
         self.collection = Collection(name=knowledgeBaseID)
+        self.collection.load()
         print(f"Collection '{knowledgeBaseID}' loaded")
 
     def insert_data(self, data,knowledgeBaseID):
@@ -52,17 +53,19 @@ class MilvusCollectionManager:
         self.collection.flush()
         print(f"Inserted {len(data)} entities into collection '{self.collection.name}'")
 
-    def create_index(self, index_type: str = "IVF_FLAT", nlist: int = 128):
-        """为向量字段创建索引"""
+    def create_index(self, collection:str,index_type: str = "IVF_FLAT", nlist: int = 128):
+        self.load_collection(collection)
+        """为向量字段创建基于 L2 的索引"""
         if self.collection is None:
             raise ValueError("No collection is loaded or created")
         
         index_params = {
             "index_type": index_type,
+            "metric_type": "L2",  # 指定为 L2
             "params": {"nlist": nlist}
         }
         self.collection.create_index(field_name="vector", index_params=index_params)
-        print(f"Index created for collection '{self.collection.name}' with type '{index_type}'")
+        print(f"Index created for collection '{self.collection.name}' with type '{index_type}' and metric 'L2'")
 
     def search(self, query_vector,collection:str, limit: int = 10, nprobe: int = 256,)->SearchResult:
         self.load_collection(collection)
@@ -80,6 +83,7 @@ class MilvusCollectionManager:
     def get_content_by_id(self, entity_id):
         """根据ID获取内容"""
         if self.collection is None:
+            
             raise ValueError("No collection is loaded or created")
 
         content = self.collection.query(expr=f"id == {entity_id}", output_fields=["content"])
@@ -102,7 +106,7 @@ if __name__ == "__main__":
     manager = MilvusCollectionManager()
 
     # 创建新的集合
-    manager.create_collection(knowledgeBaseID="kb292f83a3955549",knowledgeBaseName="Test", dim=2048)
+    # manager.create_collection(knowledgeBaseID="kb292f83a3955549",knowledgeBaseName="Test", dim=2048)
 
     # # 或加载现有集合
     # # manager.load_collection(name="document_segments")
@@ -116,7 +120,7 @@ if __name__ == "__main__":
     # manager.insert_data(data)
 
     # # 创建索引
-    # manager.create_index()
+    manager.create_index(collection="kbf1e940bf138e46")
 
     # # 搜索示例
     # query_vector = np.random.random(128).tolist()

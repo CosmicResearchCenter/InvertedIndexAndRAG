@@ -36,8 +36,8 @@ class RAG_Pipeline:
         knowledgebaseList:List[KnowledgeBase] =  self.mysql_client.GetKnowledgeBasesList()
         return knowledgebaseList
     # 文档拆分
-    def split_files(self,file_path:str,splitterModel:SplitterModel):
-        return split_file(file_path,splitterModel=splitterModel)
+    def split_files(self,file_path:str,splitter_args,splitterModel:SplitterModel):
+        return split_file(file_path,splitter_args=splitter_args,splitterModel=splitterModel)
     
     #文档插入知识库
     def insert_knowledgebase(self,file_path:str,docs:List[LcDocument], knowledge_base_id: str):
@@ -126,32 +126,32 @@ class RAG_Pipeline:
                                     })
                             )
         # ReRank评估
-        rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.001,top_n=4)
+        # rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.001,top_n=4)
 
         prompt_source = ""
         source_docs_reranked:List[SourceDocumentReRanked] = []
 
-        for result in rerank_result:
-            prompt_source += f"""
-            {result.page_content}\n
-            """
-            source_docs_reranked.append(SourceDocumentReRanked(
-                                content=result.page_content,
-                                knowledge_doc_name=result.metadata['knowledge_doc_name'],
-                                socre=result.metadata['score']
-                            ))
-            # print(result.metadata['score'])
-        
-        # for result in source_docs:
+        # for result in rerank_result:
         #     prompt_source += f"""
-        #     {result.content}\n
+        #     {result.page_content}\n
         #     """
         #     source_docs_reranked.append(SourceDocumentReRanked(
-        #                         content=result.content,
-        #                         knowledge_doc_name=result.knowledge_doc_name,
-        #                         socre=0.00
+        #                         content=result.page_content,
+        #                         knowledge_doc_name=result.metadata['knowledge_doc_name'],
+        #                         socre=result.metadata['score']
         #                     ))
         #     # print(result.metadata['score'])
+        
+        for result in source_docs:
+            prompt_source += f"""
+            {result.content}\n
+            """
+            source_docs_reranked.append(SourceDocumentReRanked(
+                                content=result.content,
+                                knowledge_doc_name=result.knowledge_doc_name,
+                                socre=0.00
+                            ))
+            # print(result.metadata['score'])
 
         print(prompt_source)
         llm = LLM_Manager().creatLLM(mode_provider="OPENAI")
