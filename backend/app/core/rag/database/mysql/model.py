@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Float, Integer, String, Text,TIMESTAMP
+from sqlalchemy import Column, Float, Integer, String, Text,TIMESTAMP, Boolean
 import uuid
 
 Base = declarative_base()
@@ -15,7 +15,8 @@ class KnowledgeBase(Base):
     __tablename__ = 'knowledgeBasesList'
     id = Column(String, primary_key=True, default=lambda: str(generate_id()))
     knowledgeBaseName 	= Column(String)
-
+    delete_sign = Column(Boolean, default=False)
+    
     def to_dict(self):
         return {
             "id": self.id,
