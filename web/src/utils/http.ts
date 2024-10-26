@@ -17,21 +17,23 @@ export async function getRequest<T>(url: string): Promise<T | undefined> {
     }
 }
 
-export async function postRequest<T>(url: string, body: any): Promise<T | undefined> {
+export async function postRequest<T>(url: string, body: any, headers?: any): Promise<T | undefined> {
     try {
+        const defaultHeaders = {
+            'Content-Type': 'application/json',
+        };
+
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body), // convert body to JSON string
+            headers: headers || defaultHeaders, // use provided headers if available, otherwise use default
+            body: JSON.stringify(body),
         });
 
         if (!response.ok) {
             throw new Error(`POST request failed: ${response.statusText}`);
         }
 
-        return await response.json() as T; // assuming the response is JSON
+        return await response.json() as T;
     } catch (error) {
         console.error('POST request error:', error);
         return undefined;
@@ -59,7 +61,7 @@ export async function putRequest<T>(url: string, body: any): Promise<T | undefin
     }
 }
 
-export async function deleteRequest<T>(url: string): Promise<T | undefined> {
+export async function deleteRequest(url: string): Promise<void> {
     try {
         const response = await fetch(url, {
             method: 'DELETE',
@@ -70,7 +72,6 @@ export async function deleteRequest<T>(url: string): Promise<T | undefined> {
         }
 
         console.log('Resource deleted successfully');
-        return await response.json() as T;
     } catch (error) {
         console.error('DELETE request error:', error);
     }
