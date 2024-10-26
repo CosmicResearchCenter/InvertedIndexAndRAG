@@ -6,6 +6,7 @@
             <div class="chat-list">
                 <ChatLogItem
                     class="chat-log-item"
+                    :class="{ active: currentConversationId === item.conversation_id }"
                     v-for="item in conversionsList"
                     :key="item.conversation_id"
                     :title="String(item.conversationName)"
@@ -16,7 +17,6 @@
                     @refreshList="getConversionsList"
                 />
             </div>
-            
         </el-aside>
 
         <!-- Main Chat Interface -->
@@ -98,7 +98,7 @@ function scrollToBottom() {
 
 async function getConversionsList() {
     const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message/mark');
-    conversionsList.value = data.data;
+    conversionsList.value = data.data.reverse();
 
     // 如果有可用对话列表，将第一个对话设置为当前对话
     if (conversionsList.value.length > 0) {
@@ -157,7 +157,6 @@ onMounted(() => {
 }
 
 .chat-list, .knowledge-base-list {
-    /* overflow-y: auto; */
     height: 100%;
 }
 
@@ -165,7 +164,11 @@ onMounted(() => {
     margin: 8px;
     cursor: pointer;
 }
-
+.chat-log-item.active {
+    background-color: #e6f7ff; /* 蓝色背景 */
+    color: #1890ff; /* 文字颜色 */
+    font-weight: bold;
+}
 .create-button {
     margin-top: 10px;
     width: 100%;
