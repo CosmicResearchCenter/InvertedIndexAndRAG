@@ -4,30 +4,24 @@
     <el-main>
       <el-steps :active="activeStep" align-center finish-status="success">
         <el-step title="选择数据源"></el-step>
-        <el-step title="文本分段与清洗"></el-step>
+        <el-step title="数据清洗参数选择"></el-step>
         <el-step title="处理并完成"></el-step>
       </el-steps>
 
       <!-- 第一步：选择数据源 -->
       <div v-if="activeStep === 1" class="step1">
-        <el-upload
-          class="upload-demo"
-          drag
-          action="#"
-          :limit="1"
-          :auto-upload="false"
-          accept=".txt,.md,.pdf,.html,.xlsx,.xls,.docx,.csv,.bin,.py"
-          @change="handleFileChange"
-        >
+        <el-upload class="upload-demo" drag :http-request="uploadFile" :limit="1" :auto-upload="false"
+          accept=".txt,.md,.pdf,.html,.xlsx,.xls,.docx,.csv,.bin,.py" @change="handleFileChange" show-file-list="false">
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">
             拖拽文件至此，或者
-            <el-button type="text" @click="uploadFile">选择文件</el-button>
+            <el-button type="text">选择文件</el-button>
           </div>
           <div class="el-upload__tip" slot="tip">
             已支持TXT, MARKDOWN, PDF, HTML, XLSX, XLS, DOCX, CSV, BIN, PY, 每个文件不超过15MB.
           </div>
         </el-upload>
+
         <el-card v-if="fileName" class="box-card">
           <div slot="header" class="clearfix">
             <span>{{ fileName }}</span>
@@ -42,32 +36,32 @@
         <el-row :gutter="20" class="step-content">
           <el-col :span="12">
             <el-card>
-              <h3>分段设置</h3>
-              <el-radio-group v-model="segmentSetting">
-                <el-radio label="auto">自动分段与清洗</el-radio>
-                <el-radio label="custom">自定义</el-radio>
+              <h3>选择分段模式</h3>
+              <el-radio-group v-model="splitMode">
+                <el-radio label="llm">LLM拆分</el-radio>
+                <el-radio label="textBlock">文本块拆分</el-radio>
               </el-radio-group>
               <el-divider></el-divider>
-              <h3>字符数限制</h3>
-              <el-input-number v-model="characterLimit" :min="100" :step="100" label="分段字符数" style="width: 100px;"></el-input-number>
-              <el-button @click="applyCustomSegment" type="primary" size="small">应用</el-button>
-              <el-divider></el-divider>
-              <h3>分段模式</h3>
-              <el-button type="primary" plain @click="toggleSegmentMode">切换分段模式</el-button>
-            </el-card>
-          </el-col>
-          <el-col :span="12">
-            <el-card>
-              <h3>分段预览</h3>
-              <el-row v-for="(segment, index) in segments" :key="index" class="segment-preview">
-                <el-col :span="24">
-                  <el-card>
-                    <div>段落 # {{ index + 1 }}</div>
-                    <div>{{ segment.text }}</div>
-                    <div>字数: {{ segment.length }}</div>
-                  </el-card>
-                </el-col>
-              </el-row>
+
+              <!-- LLM拆分模式参数 -->
+              <div v-if="splitMode === 'llm'">
+                <h3>LLM拆分参数</h3>
+                <el-input-number v-model="windowSize" :min="1" label="窗口大小" style="width: 150px;"></el-input-number>
+                <el-input-number v-model="slideDistance" :min="1" label="滑动距离"
+                  style="width: 150px; margin-top: 10px;"></el-input-number>
+              </div>
+
+              <!-- 文本块拆分模式参数 -->
+              <div v-else-if="splitMode === 'textBlock'">
+                <h3>文本块拆分参数</h3>
+                <el-input-number v-model="blockSize" :min="100" label="文本块大小" style="width: 150px;"></el-input-number>
+                <el-input-number v-model="overLengthHandling" :min="20" label="运行超出长度"
+                  style="width: 150px;"></el-input-number>
+                <!-- <el-input v-model="overLengthHandling" placeholder="超出长度处理" style="margin-top: 10px;"></el-input> -->
+              </div>
+
+              <el-button @click="applySplitSettings" type="primary" size="small"
+                style="margin-top: 20px;">应用</el-button>
             </el-card>
           </el-col>
         </el-row>
@@ -86,40 +80,101 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
+import { getRequest, putRequest, postRequest } from '@/utils/http';
+import { useRoute } from 'vue-router';
 
 export default defineComponent({
   setup() {
     const activeStep = ref(1);
     const fileName = ref('');
     const fileSize = ref('');
-    const segmentSetting = ref('auto');
-    const characterLimit = ref(500);
-    const segments = ref([
-      { text: '示例文本 1', length: 419 },
-      { text: '示例文本 2', length: 436 },
-    ]);
+    const fileData = ref(null); // 保存上传的文件数据
+    const splitMode = ref('llm');
+    const windowSize = ref(2000);
+    const slideDistance = ref(1500);
+    const blockSize = ref(200);
+    const overLengthHandling = ref(50);
+    const baseId = ref('');
+    const docId = ref('');
+    const route = useRoute();
 
-    const handleFileChange = (file) => {
+    // 获取base_id
+    onMounted(() => {
+      baseId.value = route.params.base_id as string;
+      console.log("baseId:", baseId.value);
+    });
+
+    const handleFileChange = (file: any) => {
       fileName.value = file.name;
       fileSize.value = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+      fileData.value = file.raw; // 保存文件数据
     };
 
-    const applyCustomSegment = () => {
-      // 调用拆分算法，这里可以实现实际的分段逻辑
-      console.log(`将文件按 ${characterLimit.value} 字符分段`);
-    };
-
-    const toggleSegmentMode = () => {
-      console.log("切换到不同的分段模式");
-    };
-
-    const nextStep = () => {
-      if (activeStep.value === 1 && !fileName.value) {
+    const uploadFile = async () => {
+      if (!fileData.value) {
         alert("请先选择文件！");
         return;
       }
-      if (activeStep.value < 3) {
+
+      const formData = new FormData();
+      formData.append('file', fileData.value);
+
+      try {
+        const response: any = await putRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId.value}`, formData);
+        console.log(response);
+        if (response.code === 200) {
+          docId.value = response.data[0].doc_id;
+          alert("文件上传成功！");
+          activeStep.value = 2; // 上传成功后手动跳转到步骤2
+        } else {
+          alert("文件上传失败，请重试！");
+        }
+      } catch (error) {
+        console.error("上传文件时出错:", error);
+        alert("文件上传失败，请检查网络连接！");
+      }
+    };
+
+    const applySplitSettings = async () => {
+      if (!docId.value) {
+        alert("请先上传文件！");
+        return;
+      }
+
+      const splitterModel = splitMode.value === 'llm' ? 0 : 1;
+      const splitterArgs = splitMode.value === 'llm'
+        ? { window_size: windowSize.value.toString(), step_size: slideDistance.value.toString() }
+        : { block_size: blockSize.value.toString(), over_length_handling: overLengthHandling.value.toString() };
+
+      try {
+        const response: any = await postRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId.value}/doc/${docId.value}/index`, {
+          "splitter_model": splitterModel,
+          "splitter_args": splitterArgs
+        });
+
+        if (response.code === 200) {
+          alert("索引处理成功，正在建立索引！");
+          nextStep();
+        } else {
+          alert("索引处理失败，请重试！");
+        }
+      } catch (error) {
+        console.error("索引处理时出错:", error);
+        alert("索引处理失败，请检查网络连接！");
+      }
+    };
+
+    const nextStep = () => {
+      if (activeStep.value === 1) {
+        if (!fileData.value) {
+          alert("请先选择文件！");
+          return;
+        }
+        uploadFile(); // 上传文件，不直接调用 nextStep
+      } else if (activeStep.value === 2) {
+        applySplitSettings(); // 应用清洗参数后再跳转到下一步
+      } else if (activeStep.value < 3) {
         activeStep.value += 1;
       }
     };
@@ -128,23 +183,26 @@ export default defineComponent({
       activeStep,
       fileName,
       fileSize,
-      segmentSetting,
-      characterLimit,
-      segments,
+      fileData,
+      splitMode,
+      windowSize,
+      slideDistance,
+      blockSize,
+      overLengthHandling,
       handleFileChange,
-      applyCustomSegment,
-      toggleSegmentMode,
+      uploadFile,
+      applySplitSettings,
       nextStep
     };
   }
 });
 </script>
 
-
 <style scoped>
 .step-content {
   margin-top: 20px;
 }
+
 .segment-preview {
   margin-bottom: 10px;
 }
