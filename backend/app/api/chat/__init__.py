@@ -34,7 +34,7 @@ def chat(query: ChatMessageRequest):
         del chat
         return ChatMessageResponse(data=result,code = 200,message="Get chat message successfully!")
     except Exception as e:
-        print(e)
+        print(f"ChatMessage Error:{e}")
         return ChatMessageResponse(code=400,message="No results found.")
 @router.post("/create-conversation",response_model=ConversationCreateResponse)
 def create_conversation(conversationCreateRequest: ConversationCreateRequest):

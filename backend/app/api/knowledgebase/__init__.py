@@ -51,20 +51,21 @@ async def get_base_detail(base_id:str):
 async def upload(
     base_id:str,
     background_tasks: BackgroundTasks,
-    file:List[UploadFile] = File(...),
+    file:UploadFile = File(...),
     ):
-    if len(file) == 0:
+    print("uploading file")
+    if file == None:
         return GenericResponse(message="文件不能为空",code=400,data=[])
     
     base_id = base_id
-
+ 
     if base_id == "":
         return GenericResponse(message="知识库ID不能为空",code=400,data=[])
     
     kb_manager = KBase()
 
     # index_infos = await  kb_manager.upload_files(base_id,file,threadPool)
-    index_infos =   kb_manager.upload_files(base_id,file,background_tasks,executor)
+    index_infos =   kb_manager.upload_files(base_id,[file],background_tasks,executor)
 
     index_infos_prase = []
     for index_info in index_infos:

@@ -170,7 +170,7 @@ class Chat:
             messageLog = self.format_conversation_Log(messages)
             try:
                 resultByDoc:ResultByDoc = self.answer_question(question=message,knowledgebase_id=knowledgebase.id,history_message=messageLog)
-                
+                print("123")
                 # 保存对话记录
                 new_message = Chat_Messages(
                     conversationID=conversation.id,
@@ -180,9 +180,10 @@ class Chat:
                     knowledgeBaseId=knowledgebase.id,
                 )
                 self.save_conversation(new_message)
-
+                print("1234")
                 # 保存检索文档
                 for doc in resultByDoc.source:
+                    print("12345")
                     retriever_doc = RetrieverDoc(
                         content=doc.content,
                         knowledge_doc_name=doc.knowledge_doc_name,
@@ -199,11 +200,11 @@ class Chat:
             # 返回历史聊天记录、检索文档和答案，聊天记录并附带聊天文档
                 return resultByDoc
             except Exception as e:
-                print(e)
+                print(f"1:{e}")
 
 
         except Exception as e:
-            print(e)
+            print(f"2:{e}")
 
         pass
     
