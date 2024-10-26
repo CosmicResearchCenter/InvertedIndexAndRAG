@@ -2,11 +2,12 @@ from typing import List,Optional
 from app.core.rag.database import ElasticClient,MysqlClient,MilvusCollectionManager
 from app.core.rag.embedding import EmbeddingManager,OpenAIEmbedding,DouBaoEmbedding,Embedding
 from config.config import EMBEDDING_MODEL_PROVIDER,SPPLITTER_MODEL,LLM_MODEL
-# from config.splitter_model import SplitterModel
+from config.splitter_model import SplitterModel
 from .utils.split_file import split_file
 from .models.source_document import SourceDocument,SourceDocumentReRanked
 from app.core.llm import LLM,LLM_Manager,RerankModel
 from app.core.rag.models.document import Document
+from langchain_core.documents import Document as LcDocument
 from app.core.rag.database.mysql.model import KnowledgeBase
 from .rerank.rerank import RerankRunner
 import os
@@ -34,10 +35,13 @@ class RAG_Pipeline:
     def show_knowledgebase_list(self):
         knowledgebaseList:List[KnowledgeBase] =  self.mysql_client.GetKnowledgeBasesList()
         return knowledgebaseList
+    # 文档拆分
+    def split_files(self,file_path:str,splitterModel:SplitterModel):
+        return split_file(file_path,splitterModel=splitterModel)
+    
     #文档插入知识库
-    def insert_knowledgebase(self,file_path:str, knowledge_base_id: str):
-        ### 拆分文档
-        docs = split_file(file_path,SPPLITTER_MODEL=SPPLITTER_MODEL)
+    def insert_knowledgebase(self,file_path:str,docs:List[LcDocument], knowledge_base_id: str):
+
         ### 插入数据库
         # print("插入数据库")
         #### 写入向量数据库

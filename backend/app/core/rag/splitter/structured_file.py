@@ -26,7 +26,7 @@ class TextSplitter:
             is_separator_regex=self.is_separator_regex,
         )
         texts = texst.create_documents([text])
-
+        
         return texts
     def split_texts(self, state_of_the_union:str) -> List[Document]:
         
