@@ -134,27 +134,25 @@ class KBase(MysqlClient):
         self.db.add(index_status)
         self.db.commit()
 
-        doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
-
+        doc = self.db.query(DocInfo).filter(DocInfo.save_id == doc_id).first()
+        print(f'insert_knowledgebase document {doc.doc_name}')
         # 获取分割参数
         splitter_model = documentSplitArgs.splitter_model
         splitter_args = documentSplitArgs.splitter_args
+        print(f'insert_knowledgebase document {doc.doc_name}, splitter_model: {splitter_model}, splitter_args: {splitter_args}')
         if splitter_model == 0:
-            splitter_args["max_chunk_words"] = int(splitter_args["max_chunk_words"])
-
-            background_tasks.add_task(executor.submit, self._insert_knowledgebase, base_id, doc, SplitterModel.LLMSplitter)
+            splitter_args["window_size"] = int(splitter_args["window_size"])
+            splitter_args["step_size"] = int(splitter_args["step_size"])
+            background_tasks.add_task(executor.submit, self._insert_knowledgebase, base_id, doc,splitter_args, SplitterModel.LLMSplitter)
 
         elif splitter_model == 1:
-            background_tasks.add_task(executor.submit, self._insert_knowledgebase, base_id, doc, SplitterModel.TextSplitter)
-            splitter_args["min_chunk_length"] = int(splitter_args["min_chunk_length"])
-
+            splitter_args["chunk_size"] = int(splitter_args["chunk_size"])
+            splitter_args["chunk_overlap"] = int(splitter_args["chunk_overlap"])
+            background_tasks.add_task(executor.submit, self._insert_knowledgebase, base_id, doc,splitter_args, SplitterModel.TextSplitter)
         
-        
-
-
         return index_status
     # 解析文档
-    def _insert_knowledgebase(self, base_id:int,doc:DocInfo,splitterModel:SplitterModel):
+    def _insert_knowledgebase(self, base_id:int,doc:DocInfo,splitter_args,splitterModel:SplitterModel):
         print(f'insert_knowledgebase document {doc.doc_name}')
         rAG_Pipeline:RAG_Pipeline = RAG_Pipeline()
 
@@ -163,7 +161,7 @@ class KBase(MysqlClient):
         doc_newname = f'{doc.save_id}.{doc.doc_type}'
         doc_path = Path(save_path_p)/ doc_newname
         try:
-            docs = rAG_Pipeline.split_files(str(doc_path),splitterModel)
+            docs = rAG_Pipeline.split_files(str(doc_path),splitter_args,splitterModel)
             rAG_Pipeline.insert_knowledgebase(file_path=str(doc_path),docs=docs,knowledge_base_id=base_id)
         except Exception as e:
             print(f"Error parsing document {doc.doc_name}: {e}")

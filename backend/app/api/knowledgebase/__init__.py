@@ -4,7 +4,7 @@
 
 from fastapi import APIRouter,File, UploadFile,Form,BackgroundTasks
 from app.core.knowledgebase.knowledgebase_service import KBase
-from app.core.knowledgebase.knowledgebase_type import CreateBaseRequest,IndexStatusRequest
+from app.core.knowledgebase.knowledgebase_type import CreateBaseRequest,IndexStatusRequest,DocumentSplitArgs
 from app.models.general_models import GenericResponse
 from typing import List
 
@@ -77,6 +77,12 @@ async def upload(
 
 
     return GenericResponse(message="上传成功",code=200,data=index_infos_prase)
+
+@router.post("/{base_id}/doc/{doc_id}/index",tags=["插入文档到知识库"],response_model=GenericResponse)
+def insert_doc(base_id:str,doc_id:str,documentSplitArgs:DocumentSplitArgs,background_tasks: BackgroundTasks):
+    kb_manager = KBase()
+    index_status = kb_manager.insert_knowledgebase(documentSplitArgs,base_id,doc_id,background_tasks,executor)
+    return GenericResponse(message="正在建立索引",code=200,data=[index_status.to_dict()])
 
 
 @router.get("/{base_id}/doc/{doc_id}/index_status", tags=["获取文档索引状态"],response_model=GenericResponse)

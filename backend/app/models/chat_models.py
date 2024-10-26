@@ -50,7 +50,7 @@ class ChatClearRequest(BaseModel):
 # Clear chat response
 class ChatClearResponse(BaseModel):
     code: int
-    data: List[Optional[dict]]
+    data: List[Any]
     message: str
 
 # Create knowledge base request
@@ -89,4 +89,19 @@ class UploadFileResponse(BaseModel):
 class FileIndexStatusResponse(BaseModel):
     code: int
     data: List[Optional[dict]]
+    message: str
+
+class DeleteConversationResponse(BaseModel):
+    code: int
+    data: Optional[dict]
+    message: str
+
+class ReNameRequest(BaseModel):
+    conversation_id: str
+    new_name: str
+    user_id: str
+
+class ReNameResponse(BaseModel):
+    code: int
+    data: Optional[dict]
     message: str
