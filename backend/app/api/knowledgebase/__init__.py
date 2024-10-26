@@ -33,8 +33,20 @@ async def get_base_list():
 
 
 @router.get("/{base_id}",tags=["获取知识库详情"],response_model=GenericResponse)
-async def get_base_detail():
-    pass
+async def get_base_detail(base_id:str):
+    kb_manager = KBase()
+    infos = kb_manager.get_kbinfo_by_id(base_id)
+    infos_prased = []
+    for index_info in infos:
+        info = {
+            'create_time':index_info.create_time,
+            'doc_name':index_info.doc_name,
+            'doc_id':index_info.id,
+            'doc_size':index_info.doc_size,
+        }
+        infos_prased.append(info)
+    return GenericResponse(message="获取成功",code=200,data=infos_prased)
+
 @router.put("/{base_id}",tags=["更新知识库"],response_model=GenericResponse)
 async def upload(
     base_id:str,

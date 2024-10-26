@@ -6,8 +6,9 @@ from app.models.general_models import GenericResponse
 from app.core.rag.database.milvus.milvus_client import MilvusCollectionManager
 from app.core.rag.database.elasticsearch.elastic_client import ElasticClient
 from app.core.rag.rag_pipeline import RAG_Pipeline
-from .knowledgebase_type import CreateBaseRequest,IndexStatusRequest
+from .knowledgebase_type import CreateBaseRequest,IndexStatusRequest,DocumentSplitArgs
 from fastapi import UploadFile,BackgroundTasks
+from config.splitter_model import SplitterModel
 from typing import List
 import os
 import shutil
@@ -41,13 +42,15 @@ class KBase(MysqlClient):
         return all_kbs
     
     # 根据id获取知识库
-    def get_kb_by_id(self, kb_id:int)->KnowledgeBase:
-        kb = self.db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
+    def get_kbinfo_by_id(self, kb_id:int)->List[DocInfo]:
+
+       
+        kb = self.db.query(DocInfo).filter(DocInfo.knowledgeBaseId == kb_id).all()
         return kb
     # 删除知识库
     def delete_kb(self, kb_id:int)->GenericResponse:
         # 删除表
-        kb = self.get_kb_by_id(kb_id)
+        kb = self.db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
         if not kb:
             return GenericResponse(message="KnowledgeBase not found", code=404,data=[])
         self.db.delete(kb)
@@ -120,13 +123,38 @@ class KBase(MysqlClient):
 
             docs_status.append(index_status)
 
-            background_tasks.add_task(executor.submit, self.insert_knowledgebase, base_id, doc)
+            
 
             print(f'{len(files)} files saved successfully')
         return docs_status
-    
+    def insert_knowledgebase(self,documentSplitArgs:DocumentSplitArgs,base_id,doc_id,background_tasks:BackgroundTasks,executor:ThreadPoolExecutor)->DocIndexStatus:
+        
+        
+        index_status = DocIndexStatus(index_status=0,knowledgeBaseId=base_id,doc_id=doc_id)
+        self.db.add(index_status)
+        self.db.commit()
+
+        doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
+
+        # 获取分割参数
+        splitter_model = documentSplitArgs.splitter_model
+        splitter_args = documentSplitArgs.splitter_args
+        if splitter_model == 0:
+            splitter_args["max_chunk_words"] = int(splitter_args["max_chunk_words"])
+
+            background_tasks.add_task(executor.submit, self._insert_knowledgebase, base_id, doc, SplitterModel.LLMSplitter)
+
+        elif splitter_model == 1:
+            background_tasks.add_task(executor.submit, self._insert_knowledgebase, base_id, doc, SplitterModel.TextSplitter)
+            splitter_args["min_chunk_length"] = int(splitter_args["min_chunk_length"])
+
+        
+        
+
+
+        return index_status
     # 解析文档
-    def insert_knowledgebase(self, base_id:int,doc:DocInfo):
+    def _insert_knowledgebase(self, base_id:int,doc:DocInfo,splitterModel:SplitterModel):
         print(f'insert_knowledgebase document {doc.doc_name}')
         rAG_Pipeline:RAG_Pipeline = RAG_Pipeline()
 
@@ -135,7 +163,8 @@ class KBase(MysqlClient):
         doc_newname = f'{doc.save_id}.{doc.doc_type}'
         doc_path = Path(save_path_p)/ doc_newname
         try:
-            rAG_Pipeline.insert_knowledgebase(str(doc_path),base_id)
+            docs = rAG_Pipeline.split_files(str(doc_path),splitterModel)
+            rAG_Pipeline.insert_knowledgebase(file_path=str(doc_path),docs=docs,knowledge_base_id=base_id)
         except Exception as e:
             print(f"Error parsing document {doc.doc_name}: {e}")
 
