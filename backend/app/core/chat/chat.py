@@ -31,7 +31,7 @@ class Chat:
     
     #匹配对话
     def match_conversations(self, conversation_id,user_id)->Conversation:
-        conversation = self.mysql_session.query(Conversation).filter(Conversation.id==conversation_id).first()
+        conversation = self.mysql_session.query(Conversation).filter(Conversation.id==conversation_id , Conversation.delete_sign == False).first()
         if conversation is None:
             raise ValueError("Conversation not found")
         elif conversation.userId != user_id:
@@ -44,15 +44,44 @@ class Chat:
         try:
             conversation = self.match_conversations(conversation_id,user_id)
             print(conversation_id)
-            knowledgebase = self.mysql_session.query(KnowledgeBase).filter(KnowledgeBase.id==conversation.knowledgeBaseId).first()
+            print(f"knowledgeBaseId:{conversation.knowledgeBaseId}")
+            knowledgebase = self.mysql_session.query(KnowledgeBase).filter(KnowledgeBase.id==conversation.knowledgeBaseId , KnowledgeBase.delete_sign==False).first()
             if knowledgebase is None:
                 raise ValueError("Knowledge base not found")
             else:
                 return knowledgebase
             
         except Exception as e:
+            print(f"Erreor:{e}")
+    # 删除对话
+    def delete_conversation(self, conversation_id):
+        try:
+            conversation = self.mysql_session.query(Conversation).filter(Conversation.id==conversation_id , Conversation.delete_sign == False , Conversation.userId == self.user_id).first()
+            if conversation is None:
+                raise ValueError("Conversation not found")
+            else:
+                conversation.delete_sign = True
+                self.mysql_session.commit()
+                self.mysql_session.refresh(conversation)
+                return conversation
+            
+        except Exception as e:
             print(e)
-    
+    # 重命名对话
+    def rename_conversation(self, conversation_id, new_name):
+        try:
+            conversation = self.mysql_session.query(Conversation).filter(Conversation.id==conversation_id , Conversation.delete_sign == False , Conversation.userId == self.user_id).first()
+            if conversation is None:
+                raise ValueError("Conversation not found")
+            else:
+                conversation.conversationName = new_name
+                self.mysql_session.commit()
+                self.mysql_session.refresh(conversation)
+
+
+                return conversation
+        except Exception as e:
+            print(e)
     # 加载对话
     def load_conversation(self, conversation_id)->List[ChatMessageHistory]:
         # 查询对话记录
@@ -119,7 +148,7 @@ class Chat:
         return resultByDoc
     # 获取对话列表
     def get_conversation_list(self,user_id):
-        conversations = self.mysql_session.query(Conversation).filter(Conversation.userId == user_id).all()
+        conversations = self.mysql_session.query(Conversation).filter(Conversation.delete_sign == False , Conversation.userId == user_id ).all()
         return conversations
     # 生成回复
     def generate_response(self, input_text):

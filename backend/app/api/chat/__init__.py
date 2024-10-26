@@ -4,7 +4,7 @@
 
 from fastapi import APIRouter
 from starlette.responses import StreamingResponse
-from app.models.chat_models import ChatMessageRequest,ChatClearResponse,ChatMessageResponse,ChatMessageHistoryResponse,ConversationCreateRequest,ConversationCreateResponse,ChatConversationResponse
+from app.models.chat_models import ChatMessageRequest,ChatClearResponse,ChatMessageResponse,ChatMessageHistoryResponse,ConversationCreateRequest,ConversationCreateResponse,ChatConversationResponse,ReNameRequest,ReNameResponse,DeleteConversationResponse
 from app.core.rag.rag_pipeline import RAG_Pipeline
 from app.core.chat.chat import Chat
 from app.core.database.models import Chat_Messages
@@ -69,6 +69,30 @@ def knowledge_base(query: ChatMessageRequest):
 @router.post("/chat-clear", response_model=ChatClearResponse)
 def clear():
     return {"code": 200}
+
+@router.delete("/conversation/{user_id}/{conversation_id}",tags=["删除对话"], response_model=DeleteConversationResponse)
+def delete(conversation_id: str,user_id: str):
+    chat:Chat = Chat(conversation_id=conversation_id,user_id=user_id)
+    try:
+        conversation = chat.delete_conversation(conversation_id)
+        return DeleteConversationResponse(code = 200,message="Delete conversation successfully!",data={"conversation_id":conversation.id,"conversation_name":conversation.conversationName})
+    except Exception as e:
+        print(e)
+        return DeleteConversationResponse(code = 400,message="Failed to delete conversation!" )
+
+
+    
+@router.post("/conversation-rename/",tags=["重命名对话"], response_model=ReNameResponse)
+def rename(reNameRequest:ReNameRequest):
+    chat:Chat = Chat(conversation_id=reNameRequest.conversation_id,user_id=reNameRequest.user_id)
+    try:
+        conversation = chat.rename_conversation(reNameRequest.conversation_id,reNameRequest.new_name)
+        return ReNameResponse(code = 200,message="Delete conversation successfully!",data={"conversation_id":conversation.id,"conversation_name":conversation.conversationName})
+    except Exception as e:
+        print(e)
+        return ReNameResponse(code = 400,message="Failed to delete conversation!" )
+
+
 
 
 
