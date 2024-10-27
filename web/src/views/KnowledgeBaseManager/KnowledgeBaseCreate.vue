@@ -57,11 +57,11 @@
                 <el-input-number v-model="overLengthHandling" :min="20" label="运行超出长度" style="width: 150px;"></el-input-number>
               </div>
 
-              <el-button @click="applySplitSettings" type="primary" size="small" style="margin-top: 20px;">应用</el-button>
+              <!-- <el-button @click="applySplitSettings" type="primary" size="small" style="margin-top: 20px;">应用</el-button> -->
             </el-card>
           </el-col>
         </el-row>
-        <el-button style="margin-top: 20px;" type="primary" @click="nextStep">下一步</el-button>
+        <el-button style="margin-top: 20px;" type="primary" @click="applySplitSettings">下一步</el-button>
       </div>
 
       <!-- 第三步：处理并完成 -->
@@ -70,6 +70,7 @@
           <h3>处理完成！</h3>
           <p>你已经完成了所有步骤。</p>
         </el-card>
+        <el-button style="margin-top: 20px;" type="primary" @click="toKnowledge">完成 </el-button>
       </div>
     </el-main>
   </el-container>
@@ -78,7 +79,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import { getRequest, putRequest, postRequest } from '@/utils/http';
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 
 export default defineComponent({
   setup() {
@@ -94,12 +95,14 @@ export default defineComponent({
     const baseId = ref('');
     const docId = ref('');
     const route = useRoute();
-
+    const router = useRouter();
     onMounted(() => {
       baseId.value = route.params.base_id as string;
       console.log("baseId:", baseId.value);
     });
-
+    const toKnowledge = () => {
+      router.push({ name: 'knowledge-base', params: { base_id: baseId.value } });
+     };
     const handleFileChange = (file: any) => {
       fileName.value = file.name;
       fileSize.value = (file.size / 1024 / 1024).toFixed(2) + ' MB';
@@ -188,7 +191,8 @@ export default defineComponent({
       handleFileChange,
       uploadFile,
       applySplitSettings,
-      nextStep
+      nextStep,
+      toKnowledge
     };
   }
 });
