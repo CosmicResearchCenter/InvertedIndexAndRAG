@@ -1,17 +1,19 @@
 from openai import OpenAI
 import numpy as np
 from .embedding import Embedding
-from config.config import OPENAI_API_KEY,OPENAI_BASE_URL
+from config.config_info import settings
+
 class OpenAIEmbedding(Embedding):
-    def __init__(self,base_url:str=OPENAI_BASE_URL,api_key:str=OPENAI_API_KEY):
+    def __init__(self,base_url:str=settings.OPENAI_BASE_URL,api_key:str=settings.OPENAI_API_KEY,model:str=settings.OPENAI_EMBEDDING_MODEL):
         self.client = OpenAI(
             base_url=base_url,
             api_key=api_key,
         )
+        self.model = model
 
     def embed_with_str(self,text:str,embType:str)-> list[float]:    
         response = self.client.embeddings.create(
-            model="text-embedding-3-small",
+            model=self.model,
             input=text,
         )
         return response.data[0].embedding

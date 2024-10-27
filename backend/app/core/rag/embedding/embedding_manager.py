@@ -4,8 +4,8 @@ from enum import Enum
 from .embedding import Embedding
 
 class EmbeddingType(Enum):
-    doubao = "doubao"
-    openai = "openai"
+    doubao = "DOUBAO"
+    openai = "OPENAI"
 
     @classmethod
     def get_embedding(cls, name: str):
@@ -16,7 +16,7 @@ class EmbeddingType(Enum):
             raise Exception("Not supported embedding type")
 
 class EmbeddingManager:
-    def create_embedding(self, name: str = "doubao")->Embedding:
+    def create_embedding(self, name: str)->Embedding:
         embedding_type = EmbeddingType.get_embedding(name)
         if embedding_type == EmbeddingType.doubao:
             return DouBaoEmbedding()
