@@ -109,11 +109,9 @@ class RAG_Pipeline:
         
         
         return rerank_result
-    
-    #生成回答
-    def generate_answer_by_knowledgebase(self, question:str,knowledge_base_id:str,history_messages=[])->ResultByDoc:
+    # 找回文档
+    def retrieve_documents(self,question:str,knowledge_base_id: str)->SourceDocumentReRanked:
         print("generate_answer_by_knowledgebase")
-        print(history_messages)
         # 获取文档源信息
         source_docs:List[SourceDocument] = self.retriever_by_knowledgebase(question,knowledge_base_id)
 
@@ -129,7 +127,6 @@ class RAG_Pipeline:
         # ReRank评估
         # rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.001,top_n=4)
 
-        prompt_source = ""
         source_docs_reranked:List[SourceDocumentReRanked] = []
 
         # for result in rerank_result:
@@ -144,57 +141,77 @@ class RAG_Pipeline:
         #     # print(result.metadata['score'])
         
         for result in source_docs:
-            prompt_source += f"""
-            {result.content}\n
-            """
+
             source_docs_reranked.append(SourceDocumentReRanked(
                                 content=result.content,
                                 knowledge_doc_name=result.knowledge_doc_name,
                                 socre=0.00
                             ))
             # print(result.metadata['score'])
+        resultByDoc:ResultByDoc = ResultByDoc(source=source_docs_reranked,query=question)
+        return resultByDoc
 
-        print(prompt_source)
+    #生成回答
+    def generate_answer_by_knowledgebase(self,resultByDoc:ResultByDoc,history_messages=[],streaming=False):
+        print("generate_answer_by_knowledgebase")
+        print(history_messages)
+        prompt_source =""
+        for doc in resultByDoc.source:
+            prompt_source+=f"""
+            {doc.content}\n
+            """
+
+
         llm = LLM_Manager().creatLLM(mode_provider="OPENAI")
         prompt_system =f"""
-        你是一个基于文档提供高质量回答的助手。你的任务是根据提供的文档内容，准确、清晰地回答用户的问题。请确保以下几点：
+你是一个基于文档提供高质量回答的助手。你的任务是根据提供的文档内容，准确、清晰地回答用户的问题。请确保以下几点：
 
-        1. 基于文档：你的回答应严格基于提供的文档内容，避免编造信息。如果文档中没有相关信息，请明确告知用户。
-        2. 准确性：回答应尽可能准确，避免模糊或不确定的表达。如果某些部分是合理推测，请明确说明。
-        3. 简洁明了：尽量简洁明了地表达你的回答，不使用多余的细节。
-        4. 专业性：回答应保持专业性和客观性，避免使用主观或情感化的语言。
+1. 基于文档：你的回答应严格基于提供的文档内容，避免编造信息。如果文档中没有相关信息，请明确告知用户。
+2. 准确性：回答应尽可能准确，避免模糊或不确定的表达。如果某些部分是合理推测，请明确说明。
+3. 简洁明了：尽量简洁明了地表达你的回答，不使用多余的细节。
+4. 专业性：回答应保持专业性和客观性，避免使用主观或情感化的语言。
 
-        你将收到召回的文档内容以及用户的问题，请在此基础上生成回答。
-        """ 
+你将收到召回的文档内容以及用户的问题，请在此基础上生成回答。
+""" 
         prompt = f"""
-        你是一个基于文档提供高质量回答的助手。你的任务是根据提供的文档内容，准确、清晰地回答用户的问题。
-        现在请你完成以下任务：
-        请根据用户问题，使用召回的知识库中的信息进行推理回答。请确保回答内容准确。
-        要求：
-        1. 使用文档中的信息来推理回答问题，并确保答案准确。
-        2. 如果文档中没有明确的信息，可以合理推断，但要标注推断部分。
-        3. 尽量简洁明了地表达。
-        ######################################\n
-        用户问题:
-        {question}
-        ######################################\n
-        知识库内容:
-        {prompt_source}
-        """
+你是一个基于文档提供高质量回答的助手。你的任务是根据提供的文档内容，准确、清晰地回答用户的问题。
+现在请你完成以下任务：
+请根据用户问题，使用召回的知识库中的信息进行推理回答。请确保回答内容准确。
+要求：
+1. 使用文档中的信息来推理回答问题，并确保答案准确。
+2. 如果文档中没有明确的信息，可以合理推断，但要标注推断部分。
+3. 尽量简洁明了地表达。
+######################################\n
+用户问题:
+{resultByDoc.query}
+######################################\n
+知识库内容:
+{prompt_source}
+"""
+        print(prompt)
+
         llm.addHistory(history_messages)
         llm.setPrompt(prompt_system)
-        answer = llm.ChatToBot(prompt)
-        # print(answer)
-        return ResultByDoc(answer=answer,source=source_docs_reranked,query=question)
+        if not streaming:
+            answer = llm.ChatToBot(prompt)
+            print(answer)
+            return answer
+        else:
+            answer = llm.ChatToBotWithSteam(prompt)
+            for i in answer:
+                if i:
+                    yield i
+            
 if __name__ == "__main__":
     # 创建知识库
     pipelines = RAG_Pipeline()
-    # kb4cc1c0b5d7164a
-    # knowledge_base_id = pipelines.create_knowledgebase(knowledge_base_name="第二个测试")
-    # print(knowledge_base_id)    
-    # 插入文档
-    pipelines.insert_knowledgebase("/Users/markyangkp/Desktop/Projects/llmqa/ocr/tmp_files/data.txt", "kb1bba5c96d9414c")
-    # 生成回答
-    # question = "荣耀理发店的营业时间是多少？"
-    # answer = pipelines.generate_answer_by_knowledgebase(question,"kbf11defac6e0043")
-    # print(answer)
+    resultByDoc:ResultByDoc= ResultByDoc(query="hello world",source=[])
+    print("resultByDoc")
+    answer = pipelines.generate_answer_by_knowledgebase(resultByDoc=resultByDoc,history_messages=[],streaming=True)
+
+    if isinstance(answer, str):
+        print("Answer:", answer)
+    else:
+        # 遍历生成器输出以获取完整答案
+        for part in answer:
+            print("Streaming Answer Part:", part)

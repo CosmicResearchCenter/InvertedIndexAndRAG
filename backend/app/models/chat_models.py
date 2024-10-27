@@ -4,6 +4,7 @@ from app.core.rag.models.knolwedge_base import ResultByDoc
 from app.core.chat.chat_type import ChatMessageHistory
 # Chat message request
 class ChatMessageRequest(BaseModel):
+    streaming: bool
     conversation_id: str
     message: str
     user_id: str
@@ -16,7 +17,7 @@ class ChatMessageHistoryResponse(BaseModel):
 
 class ChatMessageResponse(BaseModel):
     code: int
-    data: ResultByDoc
+    data: List[Any]
     message: str
 class ChatConversationResponse(BaseModel):
     code: int
