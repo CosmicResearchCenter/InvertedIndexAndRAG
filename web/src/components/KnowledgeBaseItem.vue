@@ -1,5 +1,5 @@
 <template>
-    <el-card shadow="hover" class="kb-box">
+    <el-card shadow="hover" :class="cardClass">
         {{ knowledgeBaseName }}
     </el-card>
 </template>
@@ -17,10 +17,25 @@ export default defineComponent({
             type: String as PropType<string>,
             required: true,
         },
+        checked: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
     },
-
+    computed: {
+        cardClass() {
+            console.log('Checked:', this.checked);  // 用于调试
+            return this.checked ? 'kb-box-checked' : 'kb-box';
+        },
+    },
 });
 </script>
 <style>
-    
+.kb-box {
+    background-color: #ffffff;
+}
+
+.kb-box-checked {
+    background-color: #337ce8;
+}
 </style>

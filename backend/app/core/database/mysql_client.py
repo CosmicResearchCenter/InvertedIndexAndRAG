@@ -3,8 +3,16 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Callable, Optional
 from typing import List
+from config.config_info import settings
+
+user = settings.MYSQL_USER
+password = settings.MYSQL_PASSWORD
+ip = settings.MYSQL_IP
+port = settings.MYSQL_PORT
+basename = settings.MYSQL_BASE
+
 # 数据库设置
-DATABASE_URL = "mysql+pymysql://llmqa_user:www123...@10.116.123.148:3308/llmqa"
+DATABASE_URL = f"mysql+pymysql://{user}:{password}@{ip}:{port}/{basename}"
 # DATABASE_URL = "postgresql://ally:2024@127.0.0.1/sensing"
 # engine = create_engine(DATABASE_URL)
 # SessionLocal = 
@@ -14,6 +22,10 @@ class MysqlClient:
     def __init__(self,database_url:str=DATABASE_URL):
         self.engine = create_engine(database_url)
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine,expire_on_commit=False)
+        self.db = self.SessionLocal()
+    def __del__(self):
+        self.db.close()
+    
 #     def GetConversationsList(self)->ConversationsList:
 #         # if session is None:
 #         session = self.SessionLocal()

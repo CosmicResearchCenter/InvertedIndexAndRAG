@@ -1,9 +1,10 @@
 from pydantic import BaseModel
-from typing import List, Optional,Dict
+from typing import List, Optional,Dict,Any
 from app.core.rag.models.knolwedge_base import ResultByDoc
 from app.core.chat.chat_type import ChatMessageHistory
 # Chat message request
 class ChatMessageRequest(BaseModel):
+    streaming: bool
     conversation_id: str
     message: str
     user_id: str
@@ -16,7 +17,11 @@ class ChatMessageHistoryResponse(BaseModel):
 
 class ChatMessageResponse(BaseModel):
     code: int
-    data: ResultByDoc
+    data: List[Any]
+    message: str
+class ChatConversationResponse(BaseModel):
+    code: int
+    data: List[Any]
     message: str
 
 class ConversationCreateRequest(BaseModel):
@@ -30,13 +35,14 @@ class ConversationCreateResponse(BaseModel):
 
 # Knowledge base selection request
 class KnowledgeBaseSelectRequest(BaseModel):
+    user_id: str
     conversation_id: str
     knowledge_base_id: str
 
 # Knowledge base selection response
 class KnowledgeBaseSelectResponse(BaseModel):
     code: int
-    data: List[Optional[dict]]
+    data: List[Any]
     message: str
 
 # Clear chat request
@@ -46,7 +52,7 @@ class ChatClearRequest(BaseModel):
 # Clear chat response
 class ChatClearResponse(BaseModel):
     code: int
-    data: List[Optional[dict]]
+    data: List[Any]
     message: str
 
 # Create knowledge base request
@@ -85,4 +91,19 @@ class UploadFileResponse(BaseModel):
 class FileIndexStatusResponse(BaseModel):
     code: int
     data: List[Optional[dict]]
+    message: str
+
+class DeleteConversationResponse(BaseModel):
+    code: int
+    data: Optional[dict]
+    message: str
+
+class ReNameRequest(BaseModel):
+    conversation_id: str
+    new_name: str
+    user_id: str
+
+class ReNameResponse(BaseModel):
+    code: int
+    data: Optional[dict]
     message: str

@@ -19,3 +19,6 @@ class LLM(ABC):
     @abstractmethod
     def ChatToBot(self,content:str):
         pass
+    @abstractmethod
+    def ChatToBotWithSteam(self, content: str):
+        pass

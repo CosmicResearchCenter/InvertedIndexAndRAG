@@ -1,13 +1,14 @@
 from volcenginesdkarkruntime import Ark
 from volcenginesdkarkruntime.types.chat import ChatCompletionMessage,ChatCompletionSystemMessageParam,ChatCompletionUserMessageParam,ChatCompletionAssistantMessageParam,ChatCompletionRole,ChatCompletionMessageParam
 from typing import List,Iterable
-from config.config import DOUBAO_API_KEY
+from config.config_info import settings as llm_Settings
 # (type alias) ChatCompletionMessageParam: type[ChatCompletionSystemMessageParam] | type[ChatCompletionUserMessageParam] | type[ChatCompletionAssistantMessageParam] | type[ChatCompletionToolMessageParam] | type[ChatCompletionFunctionMessageParam]
 from .llm import LLM
 class DouBaoLLM(LLM):
-    def __init__(self,api_key:str=DOUBAO_API_KEY) -> None:
-        self.client = Ark(api_key=api_key)
+    def __init__(self,api_key:str=llm_Settings.DOUBAOAI_API_KEY,base_url:str=llm_Settings.DOUBAOAI_BASE_URL,model:str=llm_Settings.DOUBAOAI_MODEL) -> None:
+        self.client = Ark(api_key=api_key,base_url=base_url)
         self.messages:List[Iterable[ChatCompletionMessageParam]]= []
+        self.model:str = model
 
     def setPrompt(self,prompt:str):
         message:ChatCompletionSystemMessageParam = ChatCompletionSystemMessageParam(role="system",content=prompt) 
@@ -28,7 +29,15 @@ class DouBaoLLM(LLM):
             stream=False,
         )
         return completion.choices[0].message.content
-
+    def ChatToBotWithSteam(self, content: str):
+        self.addHistory_User(content)
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=self.messages,
+            stream=True
+        )
+        for chunk in response:
+            yield chunk.choices[0].delta.content
 if __name__ == "__main__":
     doubao = DouBaoLLM()
     doubao.setPrompt("你是一个聊天助手")

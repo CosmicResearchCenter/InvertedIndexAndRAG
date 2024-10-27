@@ -1,9 +1,10 @@
 from pymilvus import connections, Collection, FieldSchema, CollectionSchema, DataType,IndexType
 from pymilvus import SearchResult,Hits,Hit
 import numpy as np
-from config.config import MILVUS_PORT, MILVUS_HOST
+from config.config_info import settings
+
 class MilvusCollectionManager:
-    def __init__(self, host: str = MILVUS_HOST, port: int = MILVUS_PORT):
+    def __init__(self, host: str = settings.MILVUS_HOST, port: int = settings.MILVUS_PORT):
         self.host = host
         self.port = port
         self.collection = None
@@ -29,10 +30,12 @@ class MilvusCollectionManager:
     def load_collection(self, knowledgeBaseID: str):
         """加载现有集合"""
         self.collection = Collection(name=knowledgeBaseID)
+        # self.collection.load()
         print(f"Collection '{knowledgeBaseID}' loaded")
 
     def insert_data(self, data,knowledgeBaseID):
         self.load_collection(knowledgeBaseID)
+        # self.load_collection(knowledgeBaseID)
         """插入数据到集合"""
         if self.collection is None:
             raise ValueError("No collection is loaded or created")
@@ -52,20 +55,24 @@ class MilvusCollectionManager:
         self.collection.flush()
         print(f"Inserted {len(data)} entities into collection '{self.collection.name}'")
 
-    def create_index(self, index_type: str = "IVF_FLAT", nlist: int = 128):
-        """为向量字段创建索引"""
+    def create_index(self, collection:str,index_type: str = "IVF_FLAT", nlist: int = 128):
+        self.load_collection(collection)
+        """为向量字段创建基于 L2 的索引"""
         if self.collection is None:
             raise ValueError("No collection is loaded or created")
         
         index_params = {
             "index_type": index_type,
+            "metric_type": "L2",  # 指定为 L2
             "params": {"nlist": nlist}
         }
         self.collection.create_index(field_name="vector", index_params=index_params)
-        print(f"Index created for collection '{self.collection.name}' with type '{index_type}'")
+        self.collection.load()
+        print(f"Index created for collection '{self.collection.name}' with type '{index_type}' and metric 'L2'")
 
     def search(self, query_vector,collection:str, limit: int = 10, nprobe: int = 256,)->SearchResult:
         self.load_collection(collection)
+        
         """在集合中搜索相似向量"""
         if self.collection is None:
             raise ValueError("No collection is loaded or created")
@@ -74,12 +81,15 @@ class MilvusCollectionManager:
             "metric_type": "L2",
             "params": {"nprobe": nprobe}
         }
+        # print(search_params)
         results = self.collection.search([query_vector], "vector", search_params, limit=limit,output_fields=["content","knowledge_doc_name"])
+        # print(f"Found {len(results[0])} results")
         return results
 
     def get_content_by_id(self, entity_id):
         """根据ID获取内容"""
         if self.collection is None:
+            
             raise ValueError("No collection is loaded or created")
 
         content = self.collection.query(expr=f"id == {entity_id}", output_fields=["content"])
@@ -87,13 +97,22 @@ class MilvusCollectionManager:
             return content[0]["content"]
         else:
             return None
-
+    # 删除集合
+    def drop_collection(self, name: str)->bool:
+        """删除指定名称的集合"""
+        try:
+            Collection(name=name).drop()
+            print(f"Collection '{name}' dropped successfully.")
+            return True
+        except Exception as e:
+            print(f"Failed to drop collection '{name}': {e}")
+            
 # 使用示例
 if __name__ == "__main__":
     manager = MilvusCollectionManager()
 
     # 创建新的集合
-    manager.create_collection(knowledgeBaseID="kb292f83a3955549",knowledgeBaseName="Test", dim=2048)
+    # manager.create_collection(knowledgeBaseID="kb292f83a3955549",knowledgeBaseName="Test", dim=2048)
 
     # # 或加载现有集合
     # # manager.load_collection(name="document_segments")
@@ -107,7 +126,7 @@ if __name__ == "__main__":
     # manager.insert_data(data)
 
     # # 创建索引
-    # manager.create_index()
+    manager.create_index(collection="kbf1e940bf138e46")
 
     # # 搜索示例
     # query_vector = np.random.random(128).tolist()

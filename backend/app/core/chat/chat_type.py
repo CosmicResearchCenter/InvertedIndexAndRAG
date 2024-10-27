@@ -12,6 +12,7 @@ class ChatMessageHistory(BaseModel):
     query: str
     answer: str
     retriever_docs: List[RetrieverDoc]
+    current_knowledge_baseid:str
 
 
 

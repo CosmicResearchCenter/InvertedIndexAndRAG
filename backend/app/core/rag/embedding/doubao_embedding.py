@@ -2,23 +2,26 @@ import numpy as np
 from volcenginesdkarkruntime import Ark
 from .embedding import Embedding
 from typing import List
-from config.config import DOUBAO_API_KEY
+from config.config_info import settings
+
 class DouBaoEmbedding(Embedding):
-    def __init__(self,api_key:str=DOUBAO_API_KEY):
+    def __init__(self,api_key:str=settings.DOUBAOAI_API_KEY,base_url:str=settings.DOUBAOAI_BASE_URL,model:str=settings.DOUBAOAI_EMBEDDING_MODEL):
         self.client = Ark(
             api_key=api_key,
+            base_url=base_url
         )
+        self.model = model
     def embed_with_str(self,text:str,embType:str)-> list[float]:
         if embType == "query":
             query_instruction:str = '为这个句子生成表示以用于检索相关文章:'
             resp = self.client.embeddings.create(
-                model="ep-20240703010240-hsbv9",
+                model=self.model,
                 input=[query_instruction+text],
                 # text_type=type
                 )
         elif embType == "document": 
             resp = self.client.embeddings.create(
-                model="ep-20240703010240-hsbv9",
+                model=self.model,
                 input=[text],
                 # text_type=type
                 )

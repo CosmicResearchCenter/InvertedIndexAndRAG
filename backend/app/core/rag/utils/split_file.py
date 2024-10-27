@@ -1,29 +1,31 @@
-from ..splitter import PDFSplitter,TextSplitter
+from ..splitter import PDFSplitter,TextSplitter,DocxSplitter
 from langchain_core.documents import Document
 from typing import List
 from app.core.ocr.ocr_model import OCR_Model
 from config.splitter_model import SplitterModel
 from config.config import SPPLITTER_MODEL
-def split_file(file_path:str,SPPLITTER_MODEL:SplitterModel=SPPLITTER_MODEL)->List[Document]:
+def split_file(file_path:str,splitter_args,splitterModel:SplitterModel=SPPLITTER_MODEL)->List[Document]:
     docs:List[Document] = []
     # 判断文件类型
     if file_path.lower().endswith(".txt"):
         print("txt file")
         with open(file_path) as f:
             state_of_the_union = f.read()
-        textSplitter = TextSplitter(SPPLITTER_MODEL)
+        textSplitter = TextSplitter(splitter_args=splitter_args,SPPLITTER_MODEL=splitterModel)
         docs = textSplitter.split(state_of_the_union)
         return docs
     elif file_path.lower().endswith(".pdf"):
         print("pdf file")
         # pdf文件
-        loader = PDFSplitter(file_path=file_path,SPPLITTER_MODEL=SPPLITTER_MODEL)
+        loader = PDFSplitter(file_path=file_path,splitter_args=splitter_args,SPPLITTER_MODEL=splitterModel)
         docs = loader.split()
-        print(docs)
+        # print(docs)
     elif file_path.lower().endswith(".doc"):
-        pass
+        loader = DocxSplitter(file_path=file_path,splitter_args=splitter_args,splitter_model=splitterModel)
+        docs = loader.split()
     elif file_path.lower().endswith(".docx"):
-        pass
+        loader = DocxSplitter(file_path=file_path,splitter_args=splitter_args,splitter_model=splitterModel)
+        docs = loader.split()
     elif file_path.lower().endswith(".xls"):
         pass
     elif file_path.lower().endswith(".xlsx"):
@@ -35,22 +37,22 @@ def split_file(file_path:str,SPPLITTER_MODEL:SplitterModel=SPPLITTER_MODEL)->Lis
     elif file_path.lower().endswith(".png"):
         ocr_model = OCR_Model()        
         state_of_the_union = ocr_model.ocr_image_by_file(file_path) 
-        textSplitter = TextSplitter(SPPLITTER_MODEL)
+        textSplitter = TextSplitter(splitter_args=splitter_args,SPPLITTER_MODEL=splitterModel)
         docs = textSplitter.split(state_of_the_union)
     elif file_path.lower().endswith(".jpg"):
         ocr_model = OCR_Model()        
         state_of_the_union = ocr_model.ocr_image_by_file(file_path) 
-        textSplitter = TextSplitter(SPPLITTER_MODEL)
+        textSplitter = TextSplitter(splitter_args=splitter_args,SPPLITTER_MODEL=splitterModel)
         docs = textSplitter.split(state_of_the_union)
     elif file_path.lower().endswith(".jpeg"):
         ocr_model = OCR_Model()        
         state_of_the_union = ocr_model.ocr_image_by_file(file_path) 
-        textSplitter = TextSplitter(SPPLITTER_MODEL)
+        textSplitter = TextSplitter(splitter_args=splitter_args,SPPLITTER_MODEL=splitterModel)
         docs = textSplitter.split(state_of_the_union)
     elif file_path.lower().endswith(".png"):
         ocr_model = OCR_Model()        
         state_of_the_union = ocr_model.ocr_image_by_file(file_path) 
-        textSplitter = TextSplitter(SPPLITTER_MODEL)
+        textSplitter = TextSplitter(splitter_args=splitter_args,SPPLITTER_MODEL=splitterModel)
         docs = textSplitter.split(state_of_the_union)
     elif file_path.lower().endswith(".md"):
         pass

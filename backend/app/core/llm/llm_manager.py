@@ -1,6 +1,8 @@
 from enum import Enum
 from .doubao import DouBaoLLM
 from .openaillm import OpenAILLM
+from .zhipuai_llm import ZhiPuAI_LLM
+from .sparkai_llm import SparkAILLM
 from .llm import LLM
 
 class LLM_Provider(Enum):
@@ -9,6 +11,8 @@ class LLM_Provider(Enum):
     """
     OPENAI = "OPENAI"
     DOUBAO = "DOUBAO"
+    ZHIPUAI = "ZHIPUAI"
+    SPARKAI = "SPARKAI"
     @classmethod
     def get_llm(cls, mode_provider: str):
         for member_name, member in cls.__members__.items():
@@ -24,6 +28,10 @@ class LLM_Manager:
             return DouBaoLLM()
         elif lLM_Provider == LLM_Provider.OPENAI:
             return OpenAILLM()
+        elif lLM_Provider == LLM_Provider.ZHIPUAI:
+            return ZhiPuAI_LLM()
+        elif lLM_Provider == LLM_Provider.SPARKAI:
+            return SparkAILLM()
         else:
             raise Exception("Not supported mode_provider type")
         

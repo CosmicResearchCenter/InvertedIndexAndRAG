@@ -1,40 +1,46 @@
 <template>
-    <el-container>
+    <el-container style="height: 100%; width: 100%;">
+        <!-- Left Sidebar for Chat List -->
         <el-aside class="chat-aside">
-            <!-- 左侧对话列表 -->
+            <el-button type="primary" @click="createConversation" class="create-button">新建对话</el-button>
             <div class="chat-list">
-                <ChatLogItem class="chat-log-item" v-for="o in 20" :title="String('对话' + o)"></ChatLogItem>
+                <ChatLogItem class="chat-log-item" :class="{ active: currentConversationId === item.conversation_id }"
+                    v-for="item in conversionsList" :key="item.conversation_id" :title="String(item.conversationName)"
+                    :conversation_id="item.conversation_id" @click="handleItemClick(item.conversation_id)"
+                    @updateTitle="updateConversationTitle(item.conversation_id, $event)"
+                    @refreshList="getConversionsList" />
             </div>
         </el-aside>
+
+        <!-- Main Chat Interface -->
         <el-main class="chat-main">
-            <!-- 聊天界面 -->
-            <div class="chat-content">
-                <div class="message-container">
-                    <div class="message-item-assistant" v-for="o in 5" :key="'assistant-' + o">
-                        <MessageItem_Assistant
-                            :message="String('要使用户的消息在右边显示，助手的消息在左边显示，您可以根据以下步骤调整代码：\n1. **更新HTML结构**：将用户和助手的消息项放在同一个容器内，并使用CSS来控制它们的位置。\n2. **调整CSS**：使用`flex`布局来控制消息的对齐方式。' + o)">
-                        </MessageItem_Assistant>
+            <div class="chat-content" ref="chatContent">
+                <div class="message-container" v-for="item in conversionMessage" :key="item.id">
+                    <div class="message-item-user">
+                        <MessageItem_User :message="String(item.query)" />
                     </div>
-                    <div class="message-item-user" v-for="o in 5" :key="'user-' + o">
-                        <MessageItem_User
-                            :message="String('助手消息213098019380219380912830912 地方去外地去地区为夺取皇位iudh亲卫队请问地区武汉地区的球队和网球的\n取缔哦亲我的i请问大家哦i轻举妄动' + o)">
-                        </MessageItem_User>
+                    <div class="message-item-assistant">
+                        <MessageItem_Assistant :message="String(item.answer)" />
                     </div>
                 </div>
             </div>
+
+            <!-- Input Area -->
             <div class="input-area">
-                <el-input v-model="textarea1" class="input-box" autosize type="textarea"
+                <el-input v-model="message" class="input-box" autosize type="textarea"
                     placeholder="Type your message..." />
                 <el-button type="primary" @click="sendMessage">Send</el-button>
+                <el-loading v-if="loading" text="Sending..."></el-loading> <!-- Loading indicator -->
             </div>
         </el-main>
+
+        <!-- Right Sidebar for Knowledge Base -->
         <el-aside class="chat-aside-right">
-            <!-- 右侧选择知识库菜单 -->
             <div class="knowledge-base-list">
-
-                <KnowledgeBaseItem class="knowledge-base-item" v-for="o in 10" :knowledgeBaseName="String('知识库' + o)"
-                    :knowledgeBaseId="String(o)"></KnowledgeBaseItem>
-
+                <KnowledgeBaseItem v-for="item in knowledgebaseList" :key="item.id" class="knowledge-base-item"
+                    :class="{ active: choosedKnowledgeBaseId === item.id }"
+                    :knowledgeBaseName="String(item.knowledgeBaseName)" :knowledgeBaseId="String(item.id)"
+                    @click="switchKnowledgeBase(item.id)" />
             </div>
         </el-aside>
     </el-container>
@@ -42,96 +48,250 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, nextTick } from 'vue';
-import MessageItem_User from "@/components/MessageItem_User.vue"
+import MessageItem_User from "@/components/MessageItem_User.vue";
 import MessageItem_Assistant from "@/components/MessageItem_Assistant.vue";
 import ChatLogItem from '@/components/ChatLogItem.vue';
 import KnowledgeBaseItem from '@/components/KnowledgeBaseItem.vue';
-const textarea1 = ref('');
-const radio1 = ref('1')
+import { getRequest, postRequest } from '@/utils/http';
+import { ElMessageBox, ElMessage } from 'element-plus';
+import { ElLoading } from 'element-plus';
 
-const sendMessage = () => {
-    if (textarea1.value.trim()) {
-        console.log('Message sent:', textarea1.value);
-        textarea1.value = '';
-        scrollToBottom();
+const conversionsList = ref<any>([]);
+let conversionMessage = ref<any>([]);
+const knowledgebaseList = ref<any>([]);
+const choosedKnowledgeBaseId = ref<any>('');
+const message = ref<any>('');
+const currentConversationId = ref<any>('');
+let chatContent = ref<any>(null);
+const  loading = ref<boolean>(false);
+
+async function sendMessage() {
+    if (message.value === '') return;
+
+    loading.value = true; // 显示加载状态
+    let chatItemUser:any ={
+        id: Date.now(),
+        query: message.value,
+        answer: '',
+
+    };
+    
+    conversionMessage.value.push(chatItemUser);
+    let message_length = conversionMessage.value.length;
+    try {
+        const response:any = await fetch('http://localhost:9988/v1/api/mark/chat/chat-message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                "conversation_id": currentConversationId.value.toString(),
+                "message": message.value,
+                "user_id": "mark",
+                "streaming": true
+            })
+        });
+
+        if (!response.ok) throw new Error('网络错误，无法发送消息');
+
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let resultText = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            resultText += decoder.decode(value, { stream: true });
+            conversionMessage.value[message_length - 1].answer = resultText;
+            scrollToBottom();
+        }
+
+        message.value = '';
+    } catch (error:any) {
+        console.error(error);
+    } finally {
+        loading.value = false; // 隐藏加载状态
     }
-};
+}
 
-const scrollToBottom = () => {
+
+function scrollToBottom() {
     nextTick(() => {
-        // messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+        if (chatContent.value) {
+            chatContent.value.scrollTop = chatContent.value.scrollHeight;
+        }
     });
-};
+}
+
+async function getConversionsList() {
+    const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message/mark');
+    conversionsList.value = data.data.reverse();
+
+    if (conversionsList.value.length > 0) {
+        const latestConversationId = conversionsList.value[0].conversation_id;
+        handleItemClick(latestConversationId);
+    }
+}
+
+async function handleItemClick(conversation_id: string) {
+    currentConversationId.value = conversation_id;
+
+    // 加载当前对话的历史消息
+    const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-history/' + conversation_id);
+    conversionMessage.value = data.data;
+
+    // 设置为当前对话关联的知识库 ID
+    let dataLength = data.data.length;
+    choosedKnowledgeBaseId.value = data.data[dataLength - 1]?.current_knowledge_baseid || '';
+
+    scrollToBottom();
+}
+
+async function getKnowledgeBaseList() {
+    const data = await getRequest<any>('http://localhost:9988/v1/api/mark/knowledgebase');
+    knowledgebaseList.value = data.data;
+}
+
+async function switchKnowledgeBase(knowledgeBaseId: string) {
+    choosedKnowledgeBaseId.value = knowledgeBaseId;
+    if (!currentConversationId.value) return;
+
+    const response: any = await postRequest<any>('http://localhost:9988/v1/api/mark/chat/knowledge_base', {
+        "user_id": "mark",
+        "conversation_id": currentConversationId.value.toString(),
+        "knowledge_base_id": knowledgeBaseId
+    });
+
+    if (response.code === 200) {
+        ElMessage.info('切换知识库成功！');
+        // await handleItemClick(currentConversationId.value);
+    }
+}
+
+async function createConversation() {
+    const knowledge_base_id = knowledgebaseList.value[0]?.id || '';
+    const user_id = "mark";
+    const data = await postRequest<any>('http://localhost:9988/v1/api/mark/chat/create-conversation', {
+        "knowledge_base_id": knowledge_base_id,
+        "user_id": user_id
+    });
+    getConversionsList();
+    handleItemClick(data.data.conversation_id);
+}
+
+function updateConversationTitle(conversationId: string, newTitle: string) {
+    const conversation = conversionsList.value.find((item: { conversation_id: string; }) => item.conversation_id === conversationId);
+    if (conversation) {
+        conversation.conversationName = newTitle;
+    }
+}
 
 onMounted(() => {
+    getConversionsList();
     scrollToBottom();
+    getKnowledgeBaseList();
 });
 </script>
 
 <style scoped>
-.chat-aside {
+.chat-aside,
+.chat-aside-right {
+    height: 100%;
+    padding: 10px;
+    background-color: #f7f7f7;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.chat-list,
+.knowledge-base-list {
     height: 100%;
 }
 
-.chat-list {
-    height: 100vh;
-    overflow-y: scroll;
+.chat-log-item {
+    margin: 8px;
+    cursor: pointer;
 }
 
-.chat-log-item {
-    margin: 10px;
+.chat-log-item.active {
+    background-color: #e6f7ff;
+    color: #1890ff;
+    font-weight: bold;
+}
+
+.knowledge-base-item {
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.knowledge-base-item.active {
+    background-color: #e6f7ff;
+    color: #1890ff;
+    font-weight: bold;
+}
+
+.create-button {
+    margin-top: 10px;
+    width: 100%;
 }
 
 .chat-main {
-    height: 100vh;
-    /* background-color: #e5e5e5; */
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .chat-content {
-    /* background-color: #e5e5e5; */
-
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #fafafa;
+    scroll-behavior: smooth;
 }
 
 .message-container {
     display: flex;
-    /* background-color: #e5e5e5; */
-
     flex-direction: column;
-    overflow-y: auto;
-    height: calc(100vh - 100px);
-    /* Adjust height to fit input area */
+}
+
+.message-item-user,
+.message-item-assistant {
+    margin: 8px;
 }
 
 .message-item-user {
-    margin: 10px;
     align-self: flex-end;
-    /* Align user messages to the right */
 }
 
 .message-item-assistant {
-    margin: 10px;
     align-self: flex-start;
-    /* Align assistant messages to the left */
 }
 
 .input-area {
-    padding: 10px;
     display: flex;
-    justify-content: space-between;
+    padding: 10px;
+    background-color: #fff;
+    border-top: 1px solid #e0e0e0;
+    align-items: center;
+    gap: 10px;
 }
 
-.chat-aside-right {
-    height: 100%;
+.input-box {
+    flex-grow: 1;
 }
 
-.knowledge-base-list {
-    height: 100vh;
-    overflow-y: scroll;
+.input-area {
+    display: flex;
+    padding: 10px;
+    background-color: #fff;
+    border-top: 1px solid #e0e0e0;
+    align-items: center;
+    gap: 10px;
 }
 
-.knowledge-base-item {
-    margin: 10px;
+/* Add some styles for loading */
+.el-loading {
+    margin-left: 10px; /* Adjust as needed */
 }
 </style>

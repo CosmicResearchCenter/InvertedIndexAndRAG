@@ -5,4 +5,3 @@ from .source_document import SourceDocumentReRanked
 class ResultByDoc(BaseModel):
     source:List[SourceDocumentReRanked]
     query:str
-    answer:str

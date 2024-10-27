@@ -4,11 +4,11 @@ from openai.types.chat import ChatCompletionToolParam,ChatCompletionToolChoiceOp
 from typing import List,Iterable
 import sys
 # sys.path.append('..')
-from config.config import OPENAI_API_KEY,OPENAI_BASE_URL,LLM_MODEL
+from config.config_info import settings as llm_Settings
 from .llm import LLM
 
 class OpenAILLM(LLM):
-    def __init__(self, api_key: str=OPENAI_API_KEY,base_url:str=OPENAI_BASE_URL,model:str=LLM_MODEL) -> None:
+    def __init__(self, api_key: str=llm_Settings.OPENAI_API_KEY,base_url:str=llm_Settings.OPENAI_BASE_URL,model:str=llm_Settings.OPENAI_MODEL) -> None:
         self.client = OpenAI(api_key=api_key,base_url=base_url)
         self.messages: List[Iterable[dict]] = []
         self.model = model
@@ -35,23 +35,15 @@ class OpenAILLM(LLM):
         message_content = response.choices[0].message.content
         self.addHistory_Assistant(message_content)
         return message_content
-    def functionCalling(self, content: str):
+    def ChatToBotWithSteam(self, content: str):
         self.addHistory_User(content)
         response = self.client.chat.completions.create(
-            model=self.model ,
+            model=self.model,
             messages=self.messages,
-            tool_choice="auto",
-            tools=[ChatCompletionToolParam(
-                function=ChatCompletionToolChoiceOptionParam(
-                    name="function",
-                    params={
-                        "input": content,
-                    },
-                ))],
+            stream=True
         )
-        message_content = response.choices[0].message.content
-        self.addHistory_Assistant(message_content)
-        return message_content 
+        for chunk in response:
+            yield chunk.choices[0].delta.content
 if __name__ == "__main__":
     # api_key = "sk-proj-W7tB90AAlJGsYfTN5nh6T3BlbkFJLbQV6lpH9RYU34FgfUr3"
     # url = "https://api.openai.com/v1/"
