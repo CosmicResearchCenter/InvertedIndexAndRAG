@@ -45,7 +45,9 @@
                     <el-table-column prop="uploadDate" label="上传时间"></el-table-column>
                     <el-table-column prop="status" label="状态" width="100">
                         <template v-slot="scope">
-                            <el-tag v-if="scope.row.status === 'available'" type="success">可用</el-tag>
+                            <el-tag :type="scope.row.status === '可用' ? 'success' : 'warning'">
+                                {{ scope.row.status }}
+                            </el-tag>
                         </template>
                     </el-table-column>
                     <el-table-column label="操作" width="100">
@@ -76,6 +78,7 @@
         </el-col>
     </el-row>
 </template>
+
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -89,6 +92,7 @@ interface File {
     recalls: number;
     uploadDate: string;
     status: string;
+    docId: string;
 }
 
 export default defineComponent({
@@ -100,19 +104,27 @@ export default defineComponent({
         const searchText = ref('');
         const files = ref<File[]>([]);
 
-        // Fetch documents from the backend API
+        // 获取文档列表并获取每个文档的索引状态
         const fetchFiles = async () => {
             const baseId = route.params.base_id as string;
             try {
                 const response: any = await getRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}`);
                 if (response.code === 200) {
-                    files.value = response.data.map((doc: any, index: number) => ({
-                        index: index + 1,
-                        name: doc.doc_name,
-                        size: (doc.doc_size / 1024).toFixed(1) + 'k', // Convert size to kB
-                        recalls: 0, // Set default or calculate based on your logic
-                        uploadDate: new Date(doc.create_time).toLocaleString(),
-                        status: 'available',
+                    files.value = await Promise.all(response.data.map(async (doc: any, index: number) => {
+                        // 获取索引状态
+                        const statusResponse: any = await getRequest(
+                            `http://localhost:9988/v1/api/mark/knowledgebase/${baseId}/doc/${doc.doc_id}/index_status`
+                        );
+                        const status = statusResponse.code === 200 && statusResponse.data[0].index_status === 1 ? '可用' : '未索引';
+                        return {
+                            index: index + 1,
+                            name: doc.doc_name,
+                            size: (doc.doc_size / 1024).toFixed(1) + 'k',
+                            recalls: 0,
+                            uploadDate: new Date(doc.create_time).toLocaleString(),
+                            status,
+                            docId: doc.doc_id
+                        };
                     }));
                     ElMessage.success(response.message);
                 } else {
@@ -136,7 +148,6 @@ export default defineComponent({
             const baseId = route.params.base_id as string;
             router.push(`/manager/${baseId}/create`);
         };
-
 
         onMounted(() => {
             fetchFiles();
