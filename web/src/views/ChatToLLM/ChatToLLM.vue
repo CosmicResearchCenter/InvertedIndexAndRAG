@@ -53,12 +53,11 @@
                     :class="{ active: choosedKnowledgeBaseId === item.id }"
                     :knowledgeBaseName="String(item.knowledgeBaseName)"
                     :knowledgeBaseId="String(item.id)"
-                    @click="choosedKnowledgeBaseId = item.id" />
+                    @click="switchKnowledgeBase(item.id)" />
             </div>
         </el-aside>
     </el-container>
 </template>
-
 <script lang="ts" setup>
 import { ref, onMounted, nextTick } from 'vue';
 import MessageItem_User from "@/components/MessageItem_User.vue";
@@ -67,16 +66,15 @@ import ChatLogItem from '@/components/ChatLogItem.vue';
 import KnowledgeBaseItem from '@/components/KnowledgeBaseItem.vue';
 import { getRequest, postRequest } from '@/utils/http';
 
-const conversionsList = ref([]);
-const conversionMessage = ref([]);
-const knowledgebaseList = ref([]);
-const choosedKnowledgeBaseId = ref('');
-const message = ref('');
-const currentConversationId = ref('');
-const chatContent = ref(null);
+const conversionsList = ref<any>([]);
+const conversionMessage = ref<any>([]);
+const knowledgebaseList = ref<any>([]);
+const choosedKnowledgeBaseId = ref<any>('');
+const message = ref<any>('');
+const currentConversationId = ref<any>('');
+let chatContent = ref<any>(null);
 
 async function sendMessage() {
-    console.log(currentConversationId.value)
     if (message.value === '') return;
     const data:any = await postRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message', {
         "conversation_id": currentConversationId.value.toString(),
@@ -100,7 +98,6 @@ async function getConversionsList() {
     const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message/mark');
     conversionsList.value = data.data.reverse();
 
-    // 如果有可用对话列表，将第一个对话设置为当前对话
     if (conversionsList.value.length > 0) {
         const latestConversationId = conversionsList.value[0].conversation_id;
         handleItemClick(latestConversationId);
@@ -108,18 +105,36 @@ async function getConversionsList() {
 }
 
 async function handleItemClick(conversation_id: string) {
-    choosedKnowledgeBaseId.value = conversation_id;
+    currentConversationId.value = conversation_id;
+    
+    // 加载当前对话的历史消息
     const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-history/' + conversation_id);
     conversionMessage.value = data.data;
-    currentConversationId.value = conversation_id;
+
+    // 设置为当前对话关联的知识库 ID
+    let dataLength = data.data.length;
+    choosedKnowledgeBaseId.value = data.data[dataLength-1]?.current_knowledge_baseid || '';
+
     scrollToBottom();
 }
 
 async function getKnowledgeBaseList() {
     const data = await getRequest<any>('http://localhost:9988/v1/api/mark/knowledgebase');
     knowledgebaseList.value = data.data;
-    for (const item of data.data) {
-        console.log(item);
+}
+
+async function switchKnowledgeBase(knowledgeBaseId: string) {
+    choosedKnowledgeBaseId.value = knowledgeBaseId;
+    if (!currentConversationId.value) return;
+
+    const response:any = await postRequest<any>('http://localhost:9988/v1/api/mark/chat/knowledge_base', {
+        "user_id": "mark",
+        "conversation_id": currentConversationId.value.toString(),
+        "knowledge_base_id": knowledgeBaseId
+    });
+
+    if (response.code === 200) {
+        await handleItemClick(currentConversationId.value);
     }
 }
 
@@ -134,7 +149,6 @@ async function createConversation() {
     handleItemClick(data.data.conversation_id);
 }
 
-// 更新对话标题
 function updateConversationTitle(conversationId: string, newTitle: string) {
     const conversation = conversionsList.value.find(item => item.conversation_id === conversationId);
     if (conversation) {
@@ -168,10 +182,22 @@ onMounted(() => {
     cursor: pointer;
 }
 .chat-log-item.active {
-    background-color: #e6f7ff; /* 蓝色背景 */
-    color: #1890ff; /* 文字颜色 */
+    background-color: #e6f7ff;
+    color: #1890ff;
     font-weight: bold;
 }
+
+.knowledge-base-item {
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.knowledge-base-item.active {
+    background-color: #e6f7ff;
+    color: #1890ff;
+    font-weight: bold;
+}
+
 .create-button {
     margin-top: 10px;
     width: 100%;
@@ -219,10 +245,5 @@ onMounted(() => {
 
 .input-box {
     flex-grow: 1;
-}
-
-.knowledge-base-item {
-    margin-bottom: 10px;
-    cursor: pointer;
 }
 </style>
