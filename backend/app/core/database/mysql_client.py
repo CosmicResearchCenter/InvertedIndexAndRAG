@@ -3,8 +3,16 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Callable, Optional
 from typing import List
+from config.config_info import settings
+
+user = settings.MYSQL_USER
+password = settings.MYSQL_PASSWORD
+ip = settings.MYSQL_IP
+port = settings.MYSQL_PORT
+basename = settings.MYSQL_BASE
+
 # 数据库设置
-DATABASE_URL = "mysql+pymysql://llmqa_user:www123...@222.199.255.41:3308/llmqa"
+DATABASE_URL = f"mysql+pymysql://{user}:{password}@{ip}:{port}/{basename}"
 # DATABASE_URL = "postgresql://ally:2024@127.0.0.1/sensing"
 # engine = create_engine(DATABASE_URL)
 # SessionLocal = 
