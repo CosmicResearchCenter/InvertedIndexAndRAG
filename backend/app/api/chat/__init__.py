@@ -4,7 +4,7 @@
 
 from fastapi import APIRouter
 from starlette.responses import StreamingResponse
-from app.models.chat_models import ChatMessageRequest,ChatClearResponse,ChatMessageResponse,ChatMessageHistoryResponse,ConversationCreateRequest,ConversationCreateResponse,ChatConversationResponse,ReNameRequest,ReNameResponse,DeleteConversationResponse
+from app.models.chat_models import ChatMessageRequest,KnowledgeBaseSelectRequest,ChatClearResponse,KnowledgeBaseSelectResponse,ChatMessageResponse,ChatMessageHistoryResponse,ConversationCreateRequest,ConversationCreateResponse,ChatConversationResponse,ReNameRequest,ReNameResponse,DeleteConversationResponse
 from app.core.rag.rag_pipeline import RAG_Pipeline
 from app.core.chat.chat import Chat
 from app.core.database.models import Chat_Messages
@@ -61,10 +61,31 @@ def chat_message(user_id: str):
     return ChatConversationResponse(data=conversations_prased,code = 200,message="Get chat message successfully!" )
 
 
-@router.post("/knowledge_base", response_model=ChatMessageResponse)
-def knowledge_base(query: ChatMessageRequest):
-    return {"code": 200}
+@router.post("/knowledge_base",tags=["切换知识库"] ,response_model=KnowledgeBaseSelectResponse)
+def knowledge_base(knowledgeBaseSelectRequest: KnowledgeBaseSelectRequest):
 
+    chat:Chat = Chat(conversation_id="",user_id=knowledgeBaseSelectRequest.user_id)
+
+    try:
+        result = chat.change_knowledgebase(
+            conversation_id=knowledgeBaseSelectRequest.conversation_id,
+            knowledgeBaseId=knowledgeBaseSelectRequest.knowledge_base_id,
+            user_id=knowledgeBaseSelectRequest.user_id
+            )
+        if result == None:
+            raise Exception("No results found.")
+        del chat
+
+
+
+        return KnowledgeBaseSelectResponse(data=[{
+            "conversation_id":result.knowledgeBaseId,
+            "conversation_name":result.conversationName
+        }],code = 200,message="Get chat message successfully!" )
+
+    except Exception as e:
+        print(e)
+        return KnowledgeBaseSelectResponse(code=400,message="No results found.")
 
 @router.post("/chat-clear", response_model=ChatClearResponse)
 def clear():

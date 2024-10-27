@@ -41,7 +41,7 @@ async def get_base_detail(base_id:str):
         info = {
             'create_time':index_info.create_time,
             'doc_name':index_info.doc_name,
-            'doc_id':index_info.id,
+            'doc_id':index_info.save_id,
             'doc_size':index_info.doc_size,
         }
         infos_prased.append(info)

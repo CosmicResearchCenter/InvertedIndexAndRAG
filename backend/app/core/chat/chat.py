@@ -53,6 +53,17 @@ class Chat:
             
         except Exception as e:
             print(f"Erreor:{e}")
+
+    # 更改知识库
+    def change_knowledgebase(self, conversation_id,knowledgeBaseId,user_id):
+        try:
+            conversation = self.match_conversations(conversation_id,user_id)
+            conversation.knowledgeBaseId = knowledgeBaseId
+            self.mysql_session.commit()
+            self.mysql_session.refresh(conversation)
+            return conversation
+        except Exception as e:
+            print(e)
     # 删除对话
     def delete_conversation(self, conversation_id):
         try:
@@ -95,6 +106,7 @@ class Chat:
                     conversation_id=message.conversationID,
                     query=message.query,
                     answer=message.answer,
+                    current_knowledge_baseid=message.knowledgeBaseId,
                     retriever_docs=[]
                 )
                 retriever_docs = self.mysql_session.query(RetrieverDoc).filter(RetrieverDoc.messageId == message.id).all()
