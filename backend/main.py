@@ -3,9 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 from app.api import AccountRouter,ChatRouter,KnowledgeBaseRouter
 
 origins = [
-    "http://localhost:5173",  # 你的 Vite 项目
-    "http://localhost:3000",  # 其他本地开发环境端口
-    # 可以根据需要添加其他来源
+    "*"
 ]
 
 
