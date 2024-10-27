@@ -2,7 +2,7 @@ import os
 
 def generate_file_tree(root_dir, indent='', ignore=None):
     if ignore is None:
-        ignore = {'venv', '__pycache__','.git'}  # 默认忽略的目录和文件
+        ignore = {'venv', '__pycache__','.git','node_modules','.vscode'}  # 默认忽略的目录和文件
     
     # 获取当前目录下的所有文件和子目录
     entries = [entry for entry in os.listdir(root_dir) if entry not in ignore]
@@ -21,7 +21,7 @@ def generate_file_tree(root_dir, indent='', ignore=None):
             sub_indent = '    ' if is_last else '│   '
             generate_file_tree(path, indent + sub_indent, ignore)
 # 设置根目录路径
-root_directory = '/Users/markyangkp/Desktop/Projects/InvertedIndexAndRAGAI'
+root_directory = 'E:\Projects\InvertedIndexAndRAG'
 
 # 打印文件树
 print('/')
