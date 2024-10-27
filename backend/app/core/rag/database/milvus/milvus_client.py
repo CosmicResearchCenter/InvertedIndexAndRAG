@@ -1,9 +1,10 @@
 from pymilvus import connections, Collection, FieldSchema, CollectionSchema, DataType,IndexType
 from pymilvus import SearchResult,Hits,Hit
 import numpy as np
-from config.config import MILVUS_PORT, MILVUS_HOST
+from config.config_info import settings
+
 class MilvusCollectionManager:
-    def __init__(self, host: str = MILVUS_HOST, port: int = MILVUS_PORT):
+    def __init__(self, host: str = settings.MILVUS_HOST, port: int = settings.MILVUS_PORT):
         self.host = host
         self.port = port
         self.collection = None
