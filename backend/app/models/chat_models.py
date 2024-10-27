@@ -34,13 +34,14 @@ class ConversationCreateResponse(BaseModel):
 
 # Knowledge base selection request
 class KnowledgeBaseSelectRequest(BaseModel):
+    user_id: str
     conversation_id: str
     knowledge_base_id: str
 
 # Knowledge base selection response
 class KnowledgeBaseSelectResponse(BaseModel):
     code: int
-    data: List[Optional[dict]]
+    data: List[Any]
     message: str
 
 # Clear chat request
