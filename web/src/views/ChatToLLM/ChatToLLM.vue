@@ -180,7 +180,7 @@ async function createConversation() {
 }
 
 function updateConversationTitle(conversationId: string, newTitle: string) {
-    const conversation = conversionsList.value.find(item => item.conversation_id === conversationId);
+    const conversation = conversionsList.value.find((item: { conversation_id: string; }) => item.conversation_id === conversationId);
     if (conversation) {
         conversation.conversationName = newTitle;
     }
