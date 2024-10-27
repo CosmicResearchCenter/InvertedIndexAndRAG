@@ -152,74 +152,100 @@ class Chat:
             print(e)
     
     # 回答问题
-    def answer_question(self, question,knowledgebase_id,history_message=[])->ResultByDoc:
+    def answer_question(self, resultByDoc: ResultByDoc,history_message=[],streaming=False):
         rAG_Pipeline = RAG_Pipeline()
+            
+        answer = rAG_Pipeline.generate_answer_by_knowledgebase(resultByDoc=resultByDoc,history_messages=history_message,streaming=streaming)
+        if isinstance(answer, str):
+            print("Answer:", answer)
+            return answer
+        else:
+            for item in answer:
+                yield item
 
-        resultByDoc:ResultByDoc = rAG_Pipeline.generate_answer_by_knowledgebase(question=question,knowledge_base_id=knowledgebase_id,history_messages=history_message)
 
-        return resultByDoc
     # 获取对话列表
     def get_conversation_list(self,user_id):
         conversations = self.mysql_session.query(Conversation).filter(Conversation.delete_sign == False , Conversation.userId == user_id ).all()
         return conversations
-    # 生成回复
-    def generate_response(self, input_text):
-        pass
+    # 先获取召唤文档
+    def get_retrieve_documents(self, question,knowledgebase_id)->ResultByDoc:
+        rAG_Pipeline = RAG_Pipeline()
+        try:
+            resultByDoc:ResultByDoc = rAG_Pipeline.retrieve_documents(question=question,knowledge_base_id=knowledgebase_id)
+            return resultByDoc
+        except Exception as e:
+            print(e)
     # 处理用户输入
-    def run(self,chatMessageRequest:ChatMessageRequest):
+    def run(self, chatMessageRequest: ChatMessageRequest, streaming=False):
         # 获取用户输入
         convseration_id = chatMessageRequest.conversation_id
         user_id = chatMessageRequest.user_id
         message = chatMessageRequest.message
-
+        # streaming = chatMessageRequest.streaming
         # 匹配对话
         try:
-            conversation:Conversation = self.match_conversations(convseration_id,user_id)
-            knowledgebase = self.match_knowledgebase(convseration_id,user_id)
+            conversation: Conversation = self.match_conversations(convseration_id, user_id)
+            knowledgebase = self.match_knowledgebase(convseration_id, user_id)
 
             # 加载对话记录
             messages = self.load_conversation(conversation.id)
             messageLog = self.format_conversation_Log(messages)
-            try:
-                resultByDoc:ResultByDoc = self.answer_question(question=message,knowledgebase_id=knowledgebase.id,history_message=messageLog)
-                print("123")
-                # 保存对话记录
-                new_message = Chat_Messages(
-                    conversationID=conversation.id,
-                    query=message,
-                    answer=resultByDoc.answer,
-                    userId=user_id,
+
+            # 获取检索文档
+            resultByDoc: ResultByDoc = self.get_retrieve_documents(question=message, knowledgebase_id=knowledgebase.id)
+
+            # 保存对话记录
+            new_message = Chat_Messages(
+                conversationID=conversation.id,
+                query=message,
+                answer="",
+                userId=user_id,
+                knowledgeBaseId=knowledgebase.id,
+            )
+            self.save_conversation(new_message)
+
+            # 保存检索文档
+            for doc in resultByDoc.source:
+                retriever_doc = RetrieverDoc(
+                    content=doc.content,
+                    knowledge_doc_name=doc.knowledge_doc_name,
                     knowledgeBaseId=knowledgebase.id,
+                    messageId=new_message.id
                 )
-                self.save_conversation(new_message)
-                print("1234")
-                # 保存检索文档
-                for doc in resultByDoc.source:
-                    print("12345")
-                    retriever_doc = RetrieverDoc(
-                        content=doc.content,
-                        knowledge_doc_name=doc.knowledge_doc_name,
-                        knowledgeBaseId=knowledgebase.id,
-                        messageId=new_message.id
-                    )
-                    self.mysql_session.add(retriever_doc)
-                    self.mysql_session.commit()
+                self.mysql_session.add(retriever_doc)
+            self.mysql_session.commit()
+
+            answer = ""
+            # 生成回答
+            if streaming:
+                answer_generator  = self.answer_question(resultByDoc=resultByDoc,  history_message=messageLog, streaming=True)
+                if isinstance(answer_generator, str):
+                    pass
+                else:
                     
-
-
-                
-
-            # 返回历史聊天记录、检索文档和答案，聊天记录并附带聊天文档
-                return resultByDoc
-            except Exception as e:
-                print(f"1:{e}")
-
+                    for item in answer_generator :
+                        yield item
+                        answer+=item
+                    # 流式输出完成后更新答案到数据库
+                    new_message.answer = answer
+                    self.mysql_session.commit()  # 更新数据库
+                    self.mysql_session.refresh(new_message)
+            else:
+                answer = self.answer_question(resultByDoc=resultByDoc,  history_message=messageLog, streaming=False)
+                if isinstance(answer, str):
+                    
+                    new_message.answer = answer
+                    self.mysql_session.commit()  # 更新数据库
+                    self.mysql_session.refresh(new_message)
+                    return answer
+                else:
+                    for item in answer:
+                        yield item
 
         except Exception as e:
-            print(f"2:{e}")
+            print(f"Error: {e}")
 
-        pass
-    
     
 
 

@@ -28,11 +28,14 @@ def chat(query: ChatMessageRequest):
     chat:Chat = Chat(conversation_id,query.user_id)
 
     try:
-        result = chat.run(query)
-        if result == None:
-            raise Exception("No results found.")
-        del chat
-        return ChatMessageResponse(data=result,code = 200,message="Get chat message successfully!")
+        if query.streaming:
+            return StreamingResponse(chat.run(query,streaming=True), media_type="text/event-stream")
+        else:
+            result = chat.run(query,streaming=False)
+            if result == None:
+                raise Exception("No results found.")
+            del chat
+            return ChatMessageResponse(data=[result],code = 200,message="Get chat message successfully!")
     except Exception as e:
         print(f"ChatMessage Error:{e}")
         return ChatMessageResponse(code=400,message="No results found.")
