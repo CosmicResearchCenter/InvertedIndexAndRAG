@@ -90,7 +90,7 @@ export default defineComponent({
                         files.value.push({
                             id: kb.id,
                             name: kb.knowledgeBaseName,
-                            details: '1 文档 | 1 千字符 | 0 关联应用' // 示例细节
+                            details: 'xxx 文档 | xxx 千字符 | xxx 关联对话' // 示例细节
                         });
                     });
                 } else {
@@ -138,6 +138,7 @@ export default defineComponent({
                         const index = files.value.findIndex(f => f.id === file.id);
                         if (index !== -1) files.value.splice(index, 1);
                         console.log('删除成功:', response.message);
+                        await fetchKnowledgeBases();
                     } else {
                         console.error('删除失败:', response.message);
                     }
