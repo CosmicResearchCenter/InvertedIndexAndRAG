@@ -1,11 +1,11 @@
 import requests
 from langchain_core.documents import Document
 from typing import List
-from config.config import ES_BASE_URL,ES_BASE_PORT
+from config.config_info import settings
 from elasticsearch import Elasticsearch,helpers
 
 class ElasticClient:
-    def __init__(self, base_url: str = ES_BASE_URL, port: int = ES_BASE_PORT, scheme: str = "http") -> None:
+    def __init__(self, base_url: str = settings.ES_BASE_URL, port: int = settings.ES_BASE_PORT, scheme: str = "http") -> None:
         self.base_url = base_url
         self.port = port
         self.scheme = scheme
