@@ -2,6 +2,7 @@ from typing import List,Optional
 from app.core.rag.database import ElasticClient,MysqlClient,MilvusCollectionManager
 from app.core.rag.embedding import EmbeddingManager,OpenAIEmbedding,DouBaoEmbedding,Embedding
 from config.config import EMBEDDING_MODEL_PROVIDER,SPPLITTER_MODEL,LLM_MODEL
+from config.config_info import settings
 from config.splitter_model import SplitterModel
 from .utils.split_file import split_file
 from .models.source_document import SourceDocument,SourceDocumentReRanked
@@ -46,7 +47,7 @@ class RAG_Pipeline:
         # print("插入数据库")
         #### 写入向量数据库
         print("写入向量数据库")
-        emb_model = EmbeddingManager().create_embedding(EMBEDDING_MODEL_PROVIDER)
+        emb_model = EmbeddingManager().create_embedding(settings.EMBEDDING_MODEL_PROVIDER)
         mdata = []
         knowledge_doc_name = os.path.basename(file_path)
         for doc in docs:
@@ -69,7 +70,7 @@ class RAG_Pipeline:
     #文档召回
     def retriever_by_knowledgebase(self,question:str, knowledge_base_id: str):
         
-        embeddingMode = EmbeddingManager().create_embedding(EMBEDDING_MODEL_PROVIDER)
+        embeddingMode = EmbeddingManager().create_embedding(settings.EMBEDDING_MODEL_PROVIDER)
         vecotr = embeddingMode.embed_with_str(question,"query")
         
         result:List[SourceDocument] = []
@@ -162,7 +163,7 @@ class RAG_Pipeline:
             """
 
 
-        llm = LLM_Manager().creatLLM(mode_provider="OPENAI")
+        llm = LLM_Manager().creatLLM(mode_provider=settings.LLM_PROVIDER)
         prompt_system =f"""
 你是一个基于文档提供高质量回答的助手。你的任务是根据提供的文档内容，准确、清晰地回答用户的问题。请确保以下几点：
 
