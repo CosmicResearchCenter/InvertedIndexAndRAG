@@ -65,6 +65,7 @@ import MessageItem_Assistant from "@/components/MessageItem_Assistant.vue";
 import ChatLogItem from '@/components/ChatLogItem.vue';
 import KnowledgeBaseItem from '@/components/KnowledgeBaseItem.vue';
 import { getRequest, postRequest } from '@/utils/http';
+import { ElMessageBox, ElMessage } from 'element-plus';
 
 const conversionsList = ref<any>([]);
 const conversionMessage = ref<any>([]);
@@ -134,7 +135,8 @@ async function switchKnowledgeBase(knowledgeBaseId: string) {
     });
 
     if (response.code === 200) {
-        await handleItemClick(currentConversationId.value);
+        ElMessage.info('切换知识库成功！');
+        // await handleItemClick(currentConversationId.value);
     }
 }
 
