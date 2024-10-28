@@ -5,14 +5,17 @@ from app.models.chat_models import ChatMessageRequest
 from app.core.rag.rag_pipeline import RAG_Pipeline
 from app.core.rag.models.knolwedge_base import ResultByDoc
 from app.core.chat.chat_type import ChatMessageHistory,RetrieverDoc as RetrieverDocs
+from app.core.llm.llm_manager import LLM_Manager
+from config.config_info import settings
 import datetime
 from typing import List
 
 class Chat:
-    def __init__(self, conversation_id,user_id):
+    def __init__(self, conversation_id,user_id,rag:RAG_Pipeline):
         self.conversation_id = conversation_id
         self.user_id = user_id
         self.mysql_session = MysqlClient().SessionLocal()
+        self.rag:RAG_Pipeline  = rag
     
     def __del__(self):
         self.mysql_session.close()
@@ -53,7 +56,35 @@ class Chat:
             
         except Exception as e:
             print(f"Erreor:{e}")
-
+    # 生成对话标题
+    def generate_conversation_title(self, conversation_id)->str:
+        llm = LLM_Manager().creatLLM(settings.LLM_PROVIDER)
+                
+        conversation_messages = self.load_conversation(conversation_id)
+        messageLogs = self.format_conversation_Log(conversation_messages)
+        messageLogs_txt = ""
+        limit_length = 6
+        i = 0
+        for item in messageLogs:
+            if i >= limit_length:
+                break
+            i += 1
+            messageLogs_txt += f"""
+role: {item['role']}
+content: {item['content']}
+#########################
+            """
+        prompt = f"""
+请根据以下对话内容生成一个对话标题，对话内容如下：\n
+{messageLogs_txt}\n
+请生成一个简洁明了的对话标题，不超过10个字,且仅需要输出标题。
+"""
+            
+        llm.setPrompt("你是一个对话标题生成器")
+        title = llm.ChatToBot(prompt)
+        
+        return title
+        
     # 更改知识库
     def change_knowledgebase(self, conversation_id,knowledgeBaseId,user_id):
         try:
@@ -121,7 +152,6 @@ class Chat:
                 messages_history.append(messages_history_item)
 
 
-
             return messages_history
         except Exception as e:
             print(e)
@@ -153,9 +183,9 @@ class Chat:
     
     # 回答问题
     def answer_question(self, resultByDoc: ResultByDoc,history_message=[],streaming=False):
-        rAG_Pipeline = RAG_Pipeline()
+        # rAG_Pipeline = RAG_Pipeline()
             
-        answer = rAG_Pipeline.generate_answer_by_knowledgebase(resultByDoc=resultByDoc,history_messages=history_message,streaming=streaming)
+        answer = self.rag.generate_answer_by_knowledgebase(resultByDoc=resultByDoc,history_messages=history_message,streaming=streaming)
         if isinstance(answer, str):
             print("Answer:", answer)
             return answer
@@ -170,9 +200,9 @@ class Chat:
         return conversations
     # 先获取召唤文档
     def get_retrieve_documents(self, question,knowledgebase_id)->ResultByDoc:
-        rAG_Pipeline = RAG_Pipeline()
+        # rAG_Pipeline = RAG_Pipeline()
         try:
-            resultByDoc:ResultByDoc = rAG_Pipeline.retrieve_documents(question=question,knowledge_base_id=knowledgebase_id)
+            resultByDoc:ResultByDoc =  self.rag.retrieve_documents(question=question,knowledge_base_id=knowledgebase_id)
             return resultByDoc
         except Exception as e:
             print(e)
@@ -190,6 +220,9 @@ class Chat:
 
             # 加载对话记录
             messages = self.load_conversation(conversation.id)
+            if len(messages) < 6:
+                title = self.generate_conversation_title(conversation_id=conversation.id)
+                self.rename_conversation(conversation.id, title)
             messageLog = self.format_conversation_Log(messages)
 
             # 获取检索文档

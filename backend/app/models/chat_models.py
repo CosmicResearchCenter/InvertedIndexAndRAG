@@ -107,3 +107,12 @@ class ReNameResponse(BaseModel):
     code: int
     data: Optional[dict]
     message: str
+
+class ConversationTitleCreateRequest(BaseModel):
+    conversation_id: str
+    user_id: str
+
+class ConversationTitleCreateResponse(BaseModel):
+    code: int
+    data: Optional[Any]
+    message: str
