@@ -28,7 +28,9 @@
             <!-- Input Area -->
             <div class="input-area">
                 <el-input v-model="message" class="input-box" autosize type="textarea"
-                    placeholder="Type your message..." />
+                    placeholder="Type your message..." 
+                    @keyup.enter="sendMessage"
+                    />
                 <el-button type="primary" @click="sendMessage">Send</el-button>
                 <el-loading v-if="loading" text="Sending..."></el-loading> <!-- Loading indicator -->
             </div>
@@ -67,16 +69,18 @@ const  loading = ref<boolean>(false);
 
 async function sendMessage() {
     if (message.value === '') return;
-
+    let tempValue = message.value;
+    
     loading.value = true; // 显示加载状态
     let chatItemUser:any ={
         id: Date.now(),
-        query: message.value,
+        query: tempValue,
         answer: '',
 
     };
-    
+    message.value = ''; 
     conversionMessage.value.push(chatItemUser);
+    scrollToBottom();
     let message_length = conversionMessage.value.length;
     try {
         const response:any = await fetch('http://localhost:9988/v1/api/mark/chat/chat-message', {
@@ -84,7 +88,7 @@ async function sendMessage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 "conversation_id": currentConversationId.value.toString(),
-                "message": message.value,
+                "message": tempValue,
                 "user_id": "mark",
                 "streaming": true
             })
@@ -106,11 +110,14 @@ async function sendMessage() {
             scrollToBottom();
         }
 
-        message.value = '';
     } catch (error:any) {
         console.error(error);
+        message.value = tempValue;
+        ElMessage.error('发送失败，请重试');
+        
     } finally {
         loading.value = false; // 隐藏加载状态
+        reGetConversionsList();
     }
 }
 
@@ -132,7 +139,10 @@ async function getConversionsList() {
         handleItemClick(latestConversationId);
     }
 }
-
+async function reGetConversionsList() {
+    const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message/mark');
+    conversionsList.value = data.data.reverse();
+}
 async function handleItemClick(conversation_id: string) {
     currentConversationId.value = conversation_id;
 
