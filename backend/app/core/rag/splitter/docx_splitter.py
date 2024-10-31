@@ -9,8 +9,8 @@ from typing import List
 
 
 class DocxSplitter(TextSplitter):
-    def __init__(self, file_path: str, splitter_model: SplitterModel = SPPLITTER_MODEL, *args, **kwargs):
-        super().__init__(SPPLITTER_MODEL=splitter_model,*args, **kwargs)
+    def __init__(self, file_path: str,splitter_args=None, splitter_model: SplitterModel = SPPLITTER_MODEL, *args, **kwargs):
+        super().__init__(splitter_args=splitter_args,SPPLITTER_MODEL=splitter_model,*args, **kwargs)
         self.ocr_model = OCR_Model()
         self.file_path = file_path
         # self.splitter_pattern = splitter_pattern
@@ -24,11 +24,17 @@ class DocxSplitter(TextSplitter):
             full_text += para.text + "\n"
             # print(para.text)
         for table in doc.tables:
+            # 获取表格行数与列数
+            num_cols = len(table.columns)
+            # 创建表头分隔行
+            full_text += "|" + " | ".join(["---"] * num_cols) + "|\n"
+            
             for row in table.rows:
-                for cell in row.cells:
-                    full_text += cell.text + " "
-                full_text += "\n\n"
+                # 逐行读取单元格内容并添加分隔符
+                row_text = "| " + " | ".join(cell.text.strip() for cell in row.cells) + " |\n"
+                full_text += row_text
             full_text += "\n\n"
+
         print(full_text)
         
         return full_text
@@ -37,5 +43,5 @@ class DocxSplitter(TextSplitter):
         return super().split(full_text)
 
 if __name__ == "__main__":
-    docx_splitter = DocxSplitter("/Users/markyangkp/Documents/信息整理/常用校园信息集合.docx", "[Image OCR Text]: \n")
+    docx_splitter = DocxSplitter("/Users/markyangkp/Documents/信息整理/常用校园信息集合.docx")
     docx_splitter.load()
