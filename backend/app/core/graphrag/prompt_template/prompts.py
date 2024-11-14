@@ -3,7 +3,7 @@ entity_abstract_prompt = """
 提取给定文本中的所有实体的标签，你仅需要给出实体标签的英文名，不需要给出实体.
 ########################################################
 注意下面是已经提取过的实体标签，请不要输出下面的实体标签:
-{{entity_lable_list}}
+{{entity_label_list}}
 ########################################################
 示例文本:
 星海市的市长李建国在任职期间与多家企业和非营利组织保持着紧密联系。
@@ -23,13 +23,13 @@ entity_extraction_prompt = """
 ########################################################
 输出格式(纯json格式的文本):
 [
-{"lable":"实体标签","attribute":[{"key":"value"}}
+{"label":"实体标签","attribute":{"key":"value"}}
 ]
  注意，不要是markdown的json输出，我要的是纯文本的json
 错误输出:
 ```json
 [
-{"lable":"实体标签","attribute":[{"key":"value"}}
+{"label":"实体标签","attribute":{"key":"value"}}
 ]
 ```
 ########################################################
@@ -44,19 +44,19 @@ People,School,Skill,Hobby
 ########################################################
 示例输出:
 [
-{"lable":"People","attribute":[{"name":"小明","both":"2022-01-05"}},
-{"lable":"People","attribute":[{"name":"小美"}},
-{"lable":"People","attribute":[{"name":"小王"}},
-{"lable":"School","attribute":[{"name":"清华大学","level":"大学"}},
-{"lable":"School","attribute":[{"name":"京海市第一中学","level":"高中"}},
-{"lable":"Hobby","attribute":[{"name":"打篮球"}},
-{"lable":"Hobby","attribute":[{"name":"摄影"}},
-{"lable":"Skill","attribute":[{"name":"修电脑"}},
-{"lable":"Skill","attribute":[{"name":"写代码"}},
+{"label":"People","attribute":{"name":"小明","both":"2022-01-05"}},
+{"label":"People","attribute":{"name":"小美"}},
+{"label":"People","attribute":{"name":"小王"}},
+{"label":"School","attribute":{"name":"清华大学","level":"大学"}},
+{"label":"School","attribute":{"name":"京海市第一中学","level":"高中"}},
+{"label":"Hobby","attribute":{"name":"打篮球"}},
+{"label":"Hobby","attribute":{"name":"摄影"}},
+{"label":"Skill","attribute":{"name":"修电脑"}},
+{"label":"Skill","attribute":{"name":"写代码"}},
 ]
 ########################################################
 给定实体标签:
-{{entity_lable_list}}
+{{entity_label_list}}
 ########################################################
 现在是给定文本:
 {{text}}
@@ -71,12 +71,12 @@ entity_relation_prompt = """
 输出格式(纯json格式的文本):
 正确输出格式:
 [
-    {"name1":"实体名","entity_lable1":"实体标签","relation":"关系","name2":"实体名","entity_lable2":"实体标签"}
+    {"name1":"实体名","entity_label1":"实体标签","relation":"关系","name2":"实体名","entity_label2":"实体标签"}
 ]
 错误输出格式:
 ```json
 [
-    {"name1":"实体名","entity_lable1":"实体标签","relation":"关系","name2":"实体名","entity_lable2":"实体标签"}
+    {"name1":"实体名","entity_label1":"实体标签","relation":"关系","name2":"实体名","entity_label2":"实体标签"}
 ]
 ```
 ########################################################
@@ -85,15 +85,15 @@ entity_relation_prompt = """
 ########################################################
 示例实体:
 [
-{"lable":"People","attribute":[{"name":"小明","both":"2022-01-05"}},
-{"lable":"People","attribute":[{"name":"小美"}},
-{"lable":"People","attribute":[{"name":"小王"}},
-{"lable":"School","attribute":[{"name":"清华大学","level":"大学"}},
-{"lable":"School","attribute":[{"name":"京海市第一中学","level":"高中"}},
-{"lable":"Hobby","attribute":[{"name":"打篮球"}},
-{"lable":"Hobby","attribute":[{"name":"摄影"}},
-{"lable":"Skill","attribute":[{"name":"修电脑"}},
-{"lable":"Skill","attribute":[{"name":"写代码"}},
+{"label":"People","attribute":{"name":"小明","both":"2022-01-05"}},
+{"label":"People","attribute":{"name":"小美"}},
+{"label":"People","attribute":{"name":"小王"}},
+{"label":"School","attribute":{"name":"清华大学","level":"大学"}},
+{"label":"School","attribute":{"name":"京海市第一中学","level":"高中"}},
+{"label":"Hobby","attribute":{"name":"打篮球"}},
+{"label":"Hobby","attribute":{"name":"摄影"}},
+{"label":"Skill","attribute":{"name":"修电脑"}},
+{"label":"Skill","attribute":{"name":"写代码"}},
 ]
 ########################################################
 示例文本:
@@ -101,15 +101,15 @@ entity_relation_prompt = """
 ########################################################
 示例输出:
 [
-    {"name1":"小明","entity_lable1":"People","relation":"喜欢","name2":"小美","entity_lable2":"People"},
-    {"name1":"小明","entity_lable1":"People","relation":"同班同学","name2":"小美","entity_lable2":"People"},
-    {"name1":"小王","entity_lable1":"People","relation":"追求","name2":"小美","entity_lable2":"People"},
-    {"name1":"小明","entity_lable1":"People","relation":"喜欢","name2":"打篮球","entity_lable2":"Hobby"},
-    {"name1":"小明","entity_lable1":"People","relation":"喜欢","name2":"摄影","entity_lable2":"Hobby"},
-    {"name1":"小明","entity_lable1":"People","relation":"拥有技能","name2":"修电脑","entity_lable2":"Skill"},
-    {"name1":"小明","entity_lable1":"People","relation":"拥有技能","name2":"写代码","entity_lable2":"Skill"},
-    {"name1":"小明","entity_lable1":"People","relation":"高中毕业","name2":"京海市第一中学","entity_lable2":"School"},
-    {"name1":"小明","entity_lable1":"People","relation":"大学毕业","name2":"清华大学","entity_lable2":"School"}
+    {"name1":"小明","entity_label1":"People","relation":"喜欢","name2":"小美","entity_label2":"People"},
+    {"name1":"小明","entity_label1":"People","relation":"同班同学","name2":"小美","entity_label2":"People"},
+    {"name1":"小王","entity_label1":"People","relation":"追求","name2":"小美","entity_label2":"People"},
+    {"name1":"小明","entity_label1":"People","relation":"喜欢","name2":"打篮球","entity_label2":"Hobby"},
+    {"name1":"小明","entity_label1":"People","relation":"喜欢","name2":"摄影","entity_label2":"Hobby"},
+    {"name1":"小明","entity_label1":"People","relation":"拥有技能","name2":"修电脑","entity_label2":"Skill"},
+    {"name1":"小明","entity_label1":"People","relation":"拥有技能","name2":"写代码","entity_label2":"Skill"},
+    {"name1":"小明","entity_label1":"People","relation":"高中毕业","name2":"京海市第一中学","entity_label2":"School"},
+    {"name1":"小明","entity_label1":"People","relation":"大学毕业","name2":"清华大学","entity_label2":"School"}
 ]
 ########################################################
 给定实体:
@@ -131,5 +131,5 @@ entity_relation_prompt = """
 #         return self.template.render(**kwargs)
 
 # p = PromptTemplate(entity_relation_prompt,['entity_list','text'])
-# print(p.render(entity_lable_list="Person,Organization",text="星海市的市长李建国在任职期间与多家企业和非营利组织保持着紧密联系。"))  
+# print(p.render(entity_label_list="Person,Organization",text="星海市的市长李建国在任职期间与多家企业和非营利组织保持着紧密联系。"))  
 # # print(p)
