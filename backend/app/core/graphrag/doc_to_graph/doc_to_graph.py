@@ -3,9 +3,10 @@ from ..prompt_template.prompts import entity_relation_prompt,entity_abstract_pro
 from app.core.llm.llm_manager import LLM_Manager
 from config.config_info import settings
 import json
+from ..graph_to_base.neo4j_client import Neo4jClient
 class DocToGraph:
     def __init__(self) -> None:
-        self.entity_lable_list = []
+        self.entity_label_list = []
         # self.entity_abstract_list = []
         self.entity_list = []
         self.entity_relation_list = []
@@ -23,6 +24,7 @@ class DocToGraph:
         try:
             # 尝试将文本解析为JSON对象
             json_obj = json.loads(text)
+            
             return json_obj
         except json.JSONDecodeError as e:
             print(f"JSON解析错误: {e}")
@@ -33,19 +35,19 @@ class DocToGraph:
     def entity_abstract(self, text: str) -> str:
         prompt = PromptTemplate(
                         template=entity_abstract_prompt,
-                        input_variables=['entity_lable_list','text']            
+                        input_variables=['entity_label_list','text']            
                     )
         llm = LLM_Manager().creatLLM(settings.LLM_PROVIDER)
-        entity_lable_list_str = ",".join(self.entity_lable_list)
+        entity_label_list_str = ",".join(self.entity_label_list)
         prompt = prompt.render(
-            entity_lable_list = entity_lable_list_str,
+            entity_label_list = entity_label_list_str,
             text = text
         )
         answer:str = llm.ChatToBot(prompt)
         
         answer.replace(" ","") 
-        entity_lable_list = answer.split(",")
-        self.entity_lable_list.extend(entity_lable_list)
+        entity_label_list = answer.split(",")
+        self.entity_label_list.extend(entity_label_list)
     
     # 提取文档中的实体
     def entity_extraction(self, text: str) -> str:
@@ -54,11 +56,11 @@ class DocToGraph:
                         input_variables=['entity_list', 'text']
                     )
         llm = LLM_Manager().creatLLM(settings.LLM_PROVIDER)
-        
-        entity_lable_list_str = ",".join(self.entity_lable_list) 
+          
+        entity_label_list_str = ",".join(self.entity_label_list) 
         answer: str = prompt.render(
             entity_list=str(self.entity_list),
-            entity_lable_list=entity_lable_list_str,
+            entity_label_list=entity_label_list_str,
             text=text
         )
         
@@ -98,7 +100,16 @@ class DocToGraph:
         
 if __name__ == "__main__":
     doc_to_graph = DocToGraph()
-    text = doc_to_graph.read_doc('/Users/markyangkp/Desktop/Projects/InvertedIndexAndRAGAI/docs/graphrag_test_txt.txt')
+    neo4j_client = Neo4jClient(uri="bolt://222.199.255.41:7687", username="neo4j", password="www123...")
+    text = doc_to_graph.read_doc('/Users/markyangkp/Desktop/Projects/InvertedIndexAndRAGAI/docs/test_text.txt')
     doc_to_graph.entity_abstract(text)
+    print(doc_to_graph.entity_label_list)
     doc_to_graph.entity_extraction(text)
+    for entity in doc_to_graph.entity_list:
+        print(entity)
+        neo4j_client.create_entity(entity)
     doc_to_graph.entity_relation(text)
+    for entity_relation in doc_to_graph.entity_relation_list:
+        print(entity_relation)
+        neo4j_client.create_entity_relation(entity_relation)
+    neo4j_client.close()
