@@ -1,4 +1,4 @@
-from ..splitter import PDFSplitter,TextSplitter,DocxSplitter
+from ..splitter import PDFSplitter,TextSplitter,DocxSplitter,ExcelSplitter
 from langchain_core.documents import Document
 from typing import List
 from app.core.ocr.ocr_model import OCR_Model
@@ -27,9 +27,11 @@ def split_file(file_path:str,splitter_args,splitterModel:SplitterModel=SPPLITTER
         loader = DocxSplitter(file_path=file_path,splitter_args=splitter_args,splitter_model=splitterModel)
         docs = loader.split()
     elif file_path.lower().endswith(".xls"):
-        pass
+        loader = ExcelSplitter(file_path=file_path,splitter_args=splitter_args,splitter_model=splitterModel)
+        docs = loader.split()
     elif file_path.lower().endswith(".xlsx"):
-        pass
+        loader = ExcelSplitter(file_path=file_path,splitter_args=splitter_args,splitter_model=splitterModel)
+        docs = loader.split()
     elif file_path.lower().endswith(".ppt"):
         pass
     elif file_path.lower().endswith(".pptx"):
