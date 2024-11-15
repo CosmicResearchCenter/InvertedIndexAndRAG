@@ -38,6 +38,7 @@ class OpenAILLM(LLM):
     def ChatToBotWithSteam(self, content: str):
         self.addHistory_User(content)
         response = self.client.chat.completions.create(
+            max_tokens=40960,
             model=self.model,
             messages=self.messages,
             stream=True
