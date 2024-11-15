@@ -19,7 +19,7 @@ import asyncio
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'docx','doc','ppt','pptx','excel'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'docx','doc','ppt','pptx','excel','xlsx','xls'}
 
 class KBase(MysqlClient):
     def __init__(self):
