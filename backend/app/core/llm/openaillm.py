@@ -29,6 +29,7 @@ class OpenAILLM(LLM):
     def ChatToBot(self, content: str):
         self.addHistory_User(content)
         response = self.client.chat.completions.create(
+            max_tokens=10240,
             model=self.model ,
             messages=self.messages
         )
@@ -38,7 +39,7 @@ class OpenAILLM(LLM):
     def ChatToBotWithSteam(self, content: str):
         self.addHistory_User(content)
         response = self.client.chat.completions.create(
-            max_tokens=40960,
+            max_tokens=10240,
             model=self.model,
             messages=self.messages,
             stream=True
