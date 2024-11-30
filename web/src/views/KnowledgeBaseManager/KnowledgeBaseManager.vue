@@ -73,7 +73,24 @@
             </div>
 
             <div class="settingBox" v-else>
-                这是设置
+                <el-form :model="settings" label-width="120px">
+                    <el-form-item label="知识库名字">
+                        <el-input v-model="settings.knowledgeBaseName" placeholder="请输入知识库名字" />
+                    </el-form-item>
+                    <el-form-item label="RAG模式">
+                        <el-radio-group v-model="settings.ragMode">
+                            <el-radio label="1">混合检索（向量+模糊查询）</el-radio>
+                            <el-radio label="2">向量检索</el-radio>
+                            <el-radio label="3">模糊检索</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="启用二阶段重排">
+                        <el-switch v-model="settings.enableReRank" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="saveSettings">保存设置</el-button>
+                    </el-form-item>
+                </el-form>
             </div>
         </el-col>
     </el-row>
@@ -83,7 +100,7 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter, useRoute } from 'vue-router';
-import { getRequest } from '@/utils/http';
+import { getRequest, postRequest } from '@/utils/http';
 
 interface File {
     index: number;
@@ -103,6 +120,12 @@ export default defineComponent({
         const activeMenu = ref('1');
         const searchText = ref('');
         const files = ref<File[]>([]);
+
+        const settings = ref({
+            knowledgeBaseName: '',
+            ragMode: '1',
+            enableReRank: false
+        });
 
         // 获取文档列表并获取每个文档的索引状态
         const fetchFiles = async () => {
@@ -149,6 +172,21 @@ export default defineComponent({
             router.push(`/manager/${baseId}/create`);
         };
 
+        const saveSettings = async () => {
+            const baseId = route.params.base_id as string;
+            try {
+                const response: any = await postRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}/settings`, settings.value);
+                if (response.code === 200) {
+                    ElMessage.success("设置已保存");
+                } else {
+                    ElMessage.error("保存设置失败");
+                }
+            } catch (error) {
+                console.error(error);
+                ElMessage.error("保存设置时出错");
+            }
+        };
+
         onMounted(() => {
             fetchFiles();
         });
@@ -159,7 +197,9 @@ export default defineComponent({
             searchText,
             files,
             toggleSwitch,
-            addFile
+            addFile,
+            settings,
+            saveSettings
         };
     }
 });
