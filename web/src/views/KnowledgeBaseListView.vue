@@ -34,8 +34,8 @@
                         </span>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item
-                                    @click.stop="handleMenuCommand(file)('settings')">设置</el-dropdown-item>
+                                <!-- <el-dropdown-item -->
+                                    <!-- @click.stop="handleMenuCommand(file)('settings')">设置</el-dropdown-item> -->
                                 <el-dropdown-item @click.stop="handleMenuCommand(file)('delete')">删除</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
