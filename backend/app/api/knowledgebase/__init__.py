@@ -116,3 +116,15 @@ async def get_config(base_id:str):
     kb_manager = KBase()
     config = kb_manager.get_kb_config(base_id)
     return GenericResponse(message="获取成功",code=200,data=[config])
+
+# 重命名文档名字
+@router.put("/{base_id}/doc/{doc_id}/rename",tags=["重命名文档"],response_model=GenericResponse)
+async def rename_doc_name(base_id:str,doc_id:str,new_name:str):
+    kb_manager = KBase()
+    return kb_manager.rename_doc_name(doc_id,new_name)
+
+# 归档文档
+@router.put("/{base_id}/doc/{doc_id}/archive",tags=["归档文档"],response_model=GenericResponse)
+async def archive_doc(base_id:str,doc_id:str):
+    kb_manager = KBase()
+    return kb_manager.archive_doc(doc_id)
