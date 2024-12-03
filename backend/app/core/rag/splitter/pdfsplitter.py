@@ -23,15 +23,21 @@ class PDFSplitter(TextSplitter):
             images = page.get_images(full=True)
             
             if text.strip():  # 提取到文字
+                print("遇到文字")
                 full_text += text
             
             if images:  # 如果页面中有图片
+                print("遇到图片")
                 for img in images:
                     xref = img[0]
-                    base_image = doc.extract_image(xref)
-                    image_bytes = base_image["image"]
-                    ocr_text = self.ocr_model.ocr_image_by_image_bytes(image_bytes)
-                    full_text += ocr_text  # 将OCR识别结果添加到全文本中
+                    try:
+                        base_image = doc.extract_image(xref)
+                        image_bytes = base_image["image"]
+                        ocr_text = self.ocr_model.ocr_image_by_image_bytes(image_bytes)
+                        full_text += ocr_text  # 将OCR识别结果添加到全文本中
+                    except Exception as e:
+                        print(f"Error processing image on page {page_num}: {e}")
+                        continue  # 跳过无法处理的图像
                     # print(ocr_text) 
         # print(full_text)
         return full_text 
