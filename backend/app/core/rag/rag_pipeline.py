@@ -68,36 +68,38 @@ class RAG_Pipeline:
         print(f"成功插入 {success} 条数据，失败 {len(failed)} 条数据")
         # return success,failed
     #文档召回
-    def retriever_by_knowledgebase(self,question:str, knowledge_base_id: str):
+    def retriever_by_knowledgebase(self, question: str, knowledge_base_id: str, rag_model: int = 0):
+        # 0 混合检索 1 向量检索 2 文档检索
         
         embeddingMode = EmbeddingManager().create_embedding(settings.EMBEDDING_MODEL_PROVIDER)
-        vecotr = embeddingMode.embed_with_str(question,"query")
+        vector = embeddingMode.embed_with_str(question, "query")
         
-        result:List[SourceDocument] = []
+        result: List[SourceDocument] = []
         
-        result_milvus = self.milvus_client.search(vecotr,knowledge_base_id)
-        i = 0
-        for item in result_milvus[0]:
-            # print("1")
-            content = item.entity.content
-            knowledge_doc_name = item.entity.knowledge_doc_name
-            sourceDoc = SourceDocument(content=content,knowledge_doc_name=knowledge_doc_name)
-            result.append(sourceDoc)
-            i += 1
-            if i == 5:
-                break
+        if rag_model == 0 or rag_model == 1:
+            result_milvus = self.milvus_client.search(vector, knowledge_base_id)
+            i = 0
+            for item in result_milvus[0]:
+                content = item.entity.content
+                knowledge_doc_name = item.entity.knowledge_doc_name
+                sourceDoc = SourceDocument(content=content, knowledge_doc_name=knowledge_doc_name)
+                result.append(sourceDoc)
+                i += 1
+                if i == 5:
+                    break
         
-        result_elastic = self.es_client.search(question,knowledge_base_id)
-        # print("Milvus没问题")
-        i = 0
-        for item in result_elastic:
-            content = item["_source"]["content"]
-            knowledge_doc_name = item["_source"]["knowledgeDocName"]
-            sourceDoc = SourceDocument(content=content,knowledge_doc_name=knowledge_doc_name)
-            result.append(sourceDoc)
-            i += 1
-            if i == 5:
-                break
+        if rag_model == 0 or rag_model == 2:
+            result_elastic = self.es_client.search(question, knowledge_base_id)
+            i = 0
+            for item in result_elastic:
+                content = item["_source"]["content"]
+                knowledge_doc_name = item["_source"]["knowledgeDocName"]
+                sourceDoc = SourceDocument(content=content, knowledge_doc_name=knowledge_doc_name)
+                result.append(sourceDoc)
+                i += 1
+                if i == 5:
+                    break
+        
         return result
     
     # ReRank评估
@@ -111,10 +113,10 @@ class RAG_Pipeline:
         
         return rerank_result
     # 找回文档
-    def retrieve_documents(self,question:str,knowledge_base_id: str)->SourceDocumentReRanked:
+    def retrieve_documents(self,question:str,knowledge_base_id: str,rag_model:int=0,is_rerank:bool=False)->SourceDocumentReRanked:
         print("generate_answer_by_knowledgebase")
         # 获取文档源信息
-        source_docs:List[SourceDocument] = self.retriever_by_knowledgebase(question,knowledge_base_id)
+        source_docs:List[SourceDocument] = self.retriever_by_knowledgebase(question,knowledge_base_id,rag_model)
 
         documents:List[Document] = []
         for source in source_docs:
@@ -125,31 +127,30 @@ class RAG_Pipeline:
                                         "knowledge_doc_name": source.knowledge_doc_name
                                     })
                             )
+        source_docs_result:List[SourceDocumentReRanked] = []
         # ReRank评估
-        # rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.001,top_n=4)
+        if is_rerank:
+            rerank_result = self.re_rank(question=question,documents=documents,score_threshold=0.001,top_n=4)
+            for result in rerank_result:
+                # prompt_source += f"""
+                # {result.page_content}\n
+                # """
+                source_docs_result.append(SourceDocumentReRanked(
+                                    content=result.page_content,
+                                    knowledge_doc_name=result.metadata['knowledge_doc_name'],
+                                    socre=result.metadata['score']
+                                ))
+                # print(result.metadata['score'])
+        else: 
+            for result in source_docs:
 
-        source_docs_reranked:List[SourceDocumentReRanked] = []
-
-        # for result in rerank_result:
-        #     prompt_source += f"""
-        #     {result.page_content}\n
-        #     """
-        #     source_docs_reranked.append(SourceDocumentReRanked(
-        #                         content=result.page_content,
-        #                         knowledge_doc_name=result.metadata['knowledge_doc_name'],
-        #                         socre=result.metadata['score']
-        #                     ))
-        #     # print(result.metadata['score'])
-        
-        for result in source_docs:
-
-            source_docs_reranked.append(SourceDocumentReRanked(
-                                content=result.content,
-                                knowledge_doc_name=result.knowledge_doc_name,
-                                socre=0.00
-                            ))
-            # print(result.metadata['score'])
-        resultByDoc:ResultByDoc = ResultByDoc(source=source_docs_reranked,query=question)
+                source_docs_result.append(SourceDocumentReRanked(
+                                    content=result.content,
+                                    knowledge_doc_name=result.knowledge_doc_name,
+                                    socre=0.00
+                                ))
+                # print(result.metadata['score'])
+        resultByDoc:ResultByDoc = ResultByDoc(source=source_docs_result,query=question)
         return resultByDoc
 
     #生成回答
