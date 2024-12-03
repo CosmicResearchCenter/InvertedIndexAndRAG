@@ -36,7 +36,9 @@ class KBase(MysqlClient):
         is_rerank = False
         try:
             kb_id = rAG_Pipeline.create_knowledgebase(kb_name)
-            self.db.add(KnowledgeBaseConfig(knowledgeBaseId=kb_id,rag_model=rag_model,is_rerank=is_rerank))
+            print(f'create_kb kb_id: {kb_id}')
+            config = KnowledgeConfig(knowledgeBaseId=kb_id,rag_model=rag_model,is_rerank=is_rerank,create_time=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),update_time=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+            self.db.add(config)
             self.db.commit()
             return kb_id
         except Exception as e:
