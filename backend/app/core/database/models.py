@@ -92,7 +92,7 @@ class DocIndexStatus(Base):
 # 知识库配置信息
 class KnowledgeConfig(Base):
     __tablename__ = 'knowledgeConfig'
-    id = Column(String(255), primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     knowledgeBaseId = Column(String(255))
     rag_model = Column(Integer) # 0: 混合检索 1:向量检索 2:文档检索
     is_rerank = Column(Boolean, default=False)
