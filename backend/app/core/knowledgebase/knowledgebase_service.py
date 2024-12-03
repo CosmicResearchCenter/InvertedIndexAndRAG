@@ -30,7 +30,18 @@ class KBase(MysqlClient):
     # 创建知识库
     def create_kb(self, kb_name:str)->KnowledgeBase:
         rAG_Pipeline:RAG_Pipeline = RAG_Pipeline()
-        return rAG_Pipeline.create_knowledgebase(kb_name)
+        
+        # 设置默认配置
+        rag_model = 0
+        is_rerank = False
+        try:
+            kb_id = rAG_Pipeline.create_knowledgebase(kb_name)
+            self.db.add(KnowledgeBaseConfig(knowledgeBaseId=kb_id,rag_model=rag_model,is_rerank=is_rerank))
+            self.db.commit()
+            return kb_id
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e)) 
+        
     # 获取所有知识库
     def get_all_kbs(self)->List[KnowledgeBase]:
         # all_kbs = self.db.query(KnowledgeBase).all()
