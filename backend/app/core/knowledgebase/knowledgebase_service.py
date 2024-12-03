@@ -233,3 +233,13 @@ class KBase(MysqlClient):
         self.db.commit()
         self.db.refresh(doc)
         return GenericResponse(message="Document name updated successfully", code=200,data=[])
+    
+    # 归档文档
+    def archive_doc(self, doc_id:int)->GenericResponse:
+        doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+        doc.delete_sign = True
+        self.db.commit()
+        self.db.refresh(doc)
+        return GenericResponse(message="Document archived successfully", code=200,data=[])
