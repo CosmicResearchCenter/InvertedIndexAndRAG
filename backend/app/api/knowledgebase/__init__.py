@@ -109,3 +109,10 @@ async def delete_doc():
 async def update_config(base_id:str,config:KnowledgeBaseConfig):
     kb_manager = KBase()
     return kb_manager.update_kb_config(kb_id=base_id,config=config)
+
+# 获取知识库配置
+@router.get("/{base_id}/config",tags=["获取知识库配置"],response_model=GenericResponse)
+async def get_config(base_id:str):
+    kb_manager = KBase()
+    config = kb_manager.get_kb_config(base_id)
+    return GenericResponse(message="获取成功",code=200,data=[config])
