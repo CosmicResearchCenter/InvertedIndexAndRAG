@@ -223,3 +223,13 @@ class KBase(MysqlClient):
         self.db.refresh(config_db)
         
         return GenericResponse(message="KnowledgeBase config updated successfully", code=200,data=[])
+    
+    # 重命名文档名字
+    def rename_doc_name(self, doc_id:int,new_name:str)->GenericResponse:
+        doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+        doc.doc_name = new_name
+        self.db.commit()
+        self.db.refresh(doc)
+        return GenericResponse(message="Document name updated successfully", code=200,data=[])
