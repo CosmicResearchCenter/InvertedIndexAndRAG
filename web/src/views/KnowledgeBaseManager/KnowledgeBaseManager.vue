@@ -61,7 +61,7 @@
                                 <template #dropdown>
                                     <el-dropdown-menu>
                                         <el-dropdown-item>重命名</el-dropdown-item>
-                                        <el-dropdown-item>分段设置</el-dropdown-item>
+                                        <!-- <el-dropdown-item>分段设置</el-dropdown-item> -->
                                         <el-dropdown-item>归档</el-dropdown-item>
                                         <el-dropdown-item>删除</el-dropdown-item>
                                     </el-dropdown-menu>
