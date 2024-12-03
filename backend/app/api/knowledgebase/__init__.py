@@ -4,7 +4,7 @@
 
 from fastapi import APIRouter,File, UploadFile,Form,BackgroundTasks
 from app.core.knowledgebase.knowledgebase_service import KBase
-from app.core.knowledgebase.knowledgebase_type import CreateBaseRequest,IndexStatusRequest,DocumentSplitArgs
+from app.core.knowledgebase.knowledgebase_type import CreateBaseRequest,IndexStatusRequest,DocumentSplitArgs,KnowledgeBaseConfig
 from app.models.general_models import GenericResponse
 from typing import List
 
@@ -103,3 +103,9 @@ async def delete(base_id:str):
 @router.delete("/{base_id}/doc/{doc_id}",tags=["删除文档"],response_model=GenericResponse)
 async def delete_doc():
     pass
+
+# 更新知识库配置
+@router.put("/{base_id}/config",tags=["更新知识库配置"],response_model=GenericResponse)
+async def update_config(base_id:str,config:KnowledgeBaseConfig):
+    kb_manager = KBase()
+    return kb_manager.update_kb_config(kb_id=base_id,config=config)

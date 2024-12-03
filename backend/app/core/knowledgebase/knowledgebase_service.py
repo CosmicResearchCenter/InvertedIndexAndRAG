@@ -1,12 +1,12 @@
 from app.core.rag.database.mysql.model import KnowledgeBase
-from app.core.database.models import DocInfo,DocIndexStatus
+from app.core.database.models import DocInfo,DocIndexStatus,KnowledgeConfig
 from app.core.database.mysql_client import MysqlClient
 from fastapi import HTTPException
 from app.models.general_models import GenericResponse
 from app.core.rag.database.milvus.milvus_client import MilvusCollectionManager
 from app.core.rag.database.elasticsearch.elastic_client import ElasticClient
 from app.core.rag.rag_pipeline import RAG_Pipeline
-from .knowledgebase_type import CreateBaseRequest,IndexStatusRequest,DocumentSplitArgs
+from .knowledgebase_type import CreateBaseRequest,IndexStatusRequest,DocumentSplitArgs,KnowledgeBaseConfig
 from fastapi import UploadFile,BackgroundTasks
 from config.splitter_model import SplitterModel
 from typing import List
@@ -178,3 +178,35 @@ class KBase(MysqlClient):
         if not index_status:
             raise HTTPException(status_code=404, detail="Index status not found")
         return index_status
+    
+    # 获取知识库配置信息
+    def get_kb_config(self, kb_id:str)->KnowledgeBaseConfig:
+         
+        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
+        if not knowledgeBase:
+            raise HTTPException(status_code=404, detail="KnowledgeBase not found")
+        knowledgeBaseName = knowledgeBase.knowledgeBaseName
+        config = self.db.query(KnowledgeConfig).filter(KnowledgeConfig.knowledgeBaseId == kb_id).first()
+        if not config:
+            raise HTTPException(status_code=404, detail="KnowledgeBase config not found")
+        
+        return KnowledgeBaseConfig(knowledgeBaseId=kb_id,knowledgeBaseName=knowledgeBaseName,rag_model=config.rag_model,is_rerank=config.is_rerank)
+    # 更新知识库配置信息
+    def update_kb_config(self, kb_id:str,config:KnowledgeBaseConfig)->GenericResponse:
+        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
+        if not knowledgeBase:
+            raise HTTPException(status_code=404, detail="KnowledgeBase not found")
+        
+        knowledgeBase.knowledgeBaseName = config.knowledgeBaseName
+        self.db.commit()
+        self.db.refresh(knowledgeBase)
+        
+        config_db = self.db.query(KnowledgeConfig).filter(KnowledgeConfig.knowledgeBaseId == kb_id).first()
+        if not config_db:
+            raise HTTPException(status_code=404, detail="KnowledgeBase config not found")
+        config_db.rag_model = config.rag_model
+        config_db.is_rerank = config.is_rerank
+        self.db.commit()
+        self.db.refresh(config_db)
+        
+        return GenericResponse(message="KnowledgeBase config updated successfully", code=200,data=[])
