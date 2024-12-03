@@ -78,14 +78,14 @@
                         <el-input v-model="settings.knowledgeBaseName" placeholder="请输入知识库名字" />
                     </el-form-item>
                     <el-form-item label="RAG模式">
-                        <el-radio-group v-model="settings.ragMode">
-                            <el-radio label="1">混合检索（向量+模糊查询）</el-radio>
-                            <el-radio label="2">向量检索</el-radio>
-                            <el-radio label="3">模糊检索</el-radio>
+                        <el-radio-group v-model="settings.rag_model">
+                            <el-radio label="0">混合检索（向量+模糊查询）</el-radio>
+                            <el-radio label="1">向量检索</el-radio>
+                            <el-radio label="2">模糊检索</el-radio>
                         </el-radio-group>
                     </el-form-item>
                     <el-form-item label="启用二阶段重排">
-                        <el-switch v-model="settings.enableReRank" />
+                        <el-switch v-model="settings.is_rerank" />
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" @click="saveSettings">保存设置</el-button>
@@ -100,7 +100,7 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter, useRoute } from 'vue-router';
-import { getRequest, postRequest } from '@/utils/http';
+import { getRequest, postRequest, putRequest } from '@/utils/http';
 
 interface File {
     index: number;
@@ -122,9 +122,10 @@ export default defineComponent({
         const files = ref<File[]>([]);
 
         const settings = ref({
+            knowledgeBaseId:"",
             knowledgeBaseName: '',
-            ragMode: '1',
-            enableReRank: false
+            rag_model: '0',
+            is_rerank: false
         });
 
         // 获取文档列表并获取每个文档的索引状态
@@ -174,8 +175,9 @@ export default defineComponent({
 
         const saveSettings = async () => {
             const baseId = route.params.base_id as string;
+            settings.value.knowledgeBaseId = baseId;
             try {
-                const response: any = await postRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}/settings`, settings.value);
+                const response: any = await putRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}/config`, settings.value);
                 if (response.code === 200) {
                     ElMessage.success("设置已保存");
                 } else {
