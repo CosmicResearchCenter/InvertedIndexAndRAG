@@ -22,6 +22,7 @@ const router = createRouter({
       name: 'knowledge-base',
       component: () => import('../views/KnowledgeBaseManager/KnowledgeBaseManager.vue')
     },
+    
     {
       path: '/manager/:base_id/create',
       name: 'knowledge-base-create',

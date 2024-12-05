@@ -41,14 +41,19 @@ import { ChatDotRound, Folder, Setting } from '@element-plus/icons-vue'
   height: 100vh;
   overflow: hidden;
   background: #1e1e2f;
-  color: #000000;
+  color: #cfd8dc;
 }
 
 nav {
+  width: 100%;
   background: linear-gradient(to right, #2c3e50, #3498db);
   padding: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid #3a3a4f;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 }
 
 ul {
@@ -57,6 +62,7 @@ ul {
   padding: 0;
   margin: 0;
   justify-content: center;
+  width: 100%;
 }
 
 li {
@@ -92,8 +98,9 @@ main {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
-  background: #ffffff;
+  background: #2a2a3c;
   border-top: 1px solid #3a3a4f;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 4rem; /* 确保内容不被固定导航栏遮挡 */
 }
 </style>
