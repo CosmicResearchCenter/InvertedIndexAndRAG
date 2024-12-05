@@ -20,7 +20,7 @@
                         <MessageItem_User :message="String(item.query)" />
                     </div>
                     <div class="message-item-assistant">
-                        <MessageItem_Assistant :message="String(item.answer)" />
+                        <MessageItem_Assistant :message="String(item.answer)" :retrievedDocs=item.retriever_docs />
                     </div>
                 </div>
             </div>
@@ -118,6 +118,7 @@ async function sendMessage() {
     } finally {
         loading.value = false; // 隐藏加载状态
         reGetConversionsList();
+        handleItemClick(currentConversationId.value);
     }
 }
 
