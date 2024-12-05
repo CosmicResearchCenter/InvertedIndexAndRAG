@@ -3,9 +3,20 @@
         <div  class="avatar-box">
             <el-avatar class="avatar" shape="circle" size="100" fit="fit" :src="avatar_url" />
         </div>
-        <v-md-preview  :text="message" class="msg"></v-md-preview >
+        <v-md-preview  :text="message" class="msg"></v-md-preview > 
     </div>
-
+    <!-- 显示召回文档的Box -->
+    <div class="retriever-box">
+        <el-collapse accordion>
+            <el-collapse-item title="召回文档">
+                <el-collapse accordion>
+                    <el-collapse-item v-for="(doc, index) in retrievedDocs" :key="index" :title="(doc.knowledge_doc_name)">
+                        <p>{{ doc.content }}</p>
+                    </el-collapse-item>
+                </el-collapse>
+            </el-collapse-item> 
+        </el-collapse>  
+    </div>
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue';
@@ -20,6 +31,10 @@ export default defineComponent({
         avatar_url: {
             type: String as PropType<string>,
             required: false
+        },
+        retrievedDocs: {
+            type: Array as PropType<Array<{ content: string, knowledge_doc_name: string }>>,
+            required: true
         }
     },
 });
