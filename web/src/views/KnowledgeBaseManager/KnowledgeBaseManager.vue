@@ -124,7 +124,7 @@ export default defineComponent({
         const settings = ref({
             knowledgeBaseId:"",
             knowledgeBaseName: '',
-            rag_model: '0',
+            rag_model: 0,
             is_rerank: false
         });
 
@@ -160,6 +160,21 @@ export default defineComponent({
             }
         };
 
+        const get_kb_config = async () => {
+            const baseId = route.params.base_id as string;
+            try {
+                const response: any = await getRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}/config`);
+                if (response.code === 200) {
+                    settings.value = response.data[0];
+                } else {
+                    ElMessage.error("Failed to retrieve settings.");
+                }
+            } catch (error) {
+                console.error(error);
+                ElMessage.error("Error fetching settings.");
+            }
+        };
+
         const toggleSwitch = (menuIndex: string) => {
             if (switchButton.value !== menuIndex) {
                 switchButton.value = menuIndex;
@@ -191,6 +206,7 @@ export default defineComponent({
 
         onMounted(() => {
             fetchFiles();
+            get_kb_config();
         });
 
         return {
@@ -201,7 +217,8 @@ export default defineComponent({
             toggleSwitch,
             addFile,
             settings,
-            saveSettings
+            saveSettings,
+            get_kb_config
         };
     }
 });
