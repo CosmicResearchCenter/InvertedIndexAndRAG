@@ -7,6 +7,7 @@ from app.core.rag.models.knolwedge_base import ResultByDoc
 from app.core.chat.chat_type import ChatMessageHistory,RetrieverDoc as RetrieverDocs
 from app.core.llm.llm_manager import LLM_Manager
 from config.config_info import settings
+from app.core.knowledgebase.knowledgebase_service import KBase
 import datetime
 from typing import List
 
@@ -199,10 +200,10 @@ content: {item['content']}
         conversations = self.mysql_session.query(Conversation).filter(Conversation.delete_sign == False , Conversation.userId == user_id ).all()
         return conversations
     # 先获取召唤文档
-    def get_retrieve_documents(self, question,knowledgebase_id)->ResultByDoc:
+    def get_retrieve_documents(self, question,knowledgebase_id,rag_model:int,is_rerank:bool)->ResultByDoc:
         # rAG_Pipeline = RAG_Pipeline()
         try:
-            resultByDoc:ResultByDoc =  self.rag.retrieve_documents(question=question,knowledge_base_id=knowledgebase_id)
+            resultByDoc:ResultByDoc =  self.rag.retrieve_documents(question=question,knowledge_base_id=knowledgebase_id,rag_model=rag_model,is_rerank=is_rerank)
             return resultByDoc
         except Exception as e:
             print(e)
@@ -225,8 +226,11 @@ content: {item['content']}
                 self.rename_conversation(conversation.id, title)
             messageLog = self.format_conversation_Log(messages)
 
+            # 获取知识库配置信息
+            kb_config = KBase().get_kb_config(knowledgebase.id)
+            
             # 获取检索文档
-            resultByDoc: ResultByDoc = self.get_retrieve_documents(question=message, knowledgebase_id=knowledgebase.id)
+            resultByDoc: ResultByDoc = self.get_retrieve_documents(question=message, knowledgebase_id=knowledgebase.id,rag_model=kb_config.rag_model,is_rerank=kb_config.is_rerank)
 
             # 保存对话记录
             new_message = Chat_Messages(
