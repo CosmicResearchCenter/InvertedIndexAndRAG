@@ -175,7 +175,7 @@ class KBase(MysqlClient):
         doc_path = Path(save_path_p)/ doc_newname
         try:
             docs = rAG_Pipeline.split_files(str(doc_path),splitter_args,splitterModel)
-            rAG_Pipeline.insert_knowledgebase(file_path=str(doc_path),docs=docs,knowledge_base_id=base_id)
+            rAG_Pipeline.insert_knowledgebase(file_path=str(doc_path),docs=docs,knowledge_base_id=base_id,doc_name=doc.doc_name)
         except Exception as e:
             print(f"Error parsing document {doc.doc_name}: {e}")
 

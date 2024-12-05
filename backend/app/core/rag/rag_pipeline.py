@@ -41,7 +41,7 @@ class RAG_Pipeline:
         return split_file(file_path,splitter_args=splitter_args,splitterModel=splitterModel)
     
     #文档插入知识库
-    def insert_knowledgebase(self,file_path:str,docs:List[LcDocument], knowledge_base_id: str):
+    def insert_knowledgebase(self,file_path:str,docs:List[LcDocument], knowledge_base_id: str,doc_name:str):
 
         ### 插入数据库
         # print("插入数据库")
@@ -49,7 +49,7 @@ class RAG_Pipeline:
         print("写入向量数据库")
         emb_model = EmbeddingManager().create_embedding(settings.EMBEDDING_MODEL_PROVIDER)
         mdata = []
-        knowledge_doc_name = os.path.basename(file_path)
+        knowledge_doc_name = doc_name or os.path.basename(file_path)
         for doc in docs:
             content = doc.page_content
             vector = emb_model.embed_with_str(content, "document")
