@@ -237,11 +237,13 @@ onMounted(() => {
   border: none;
   transition: all 0.3s ease;
   font-weight: 500;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 198, 251, 0.3);
 }
 
 .create-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 198, 251, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 198, 251, 0.5);
 }
 
 .chat-content {
@@ -305,6 +307,7 @@ onMounted(() => {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  background: rgba(248, 249, 250, 0.95);
 }
 
 .input-box :deep(.el-textarea__inner:focus) {
@@ -367,5 +370,21 @@ onMounted(() => {
 /* Add some styles for loading */
 .el-loading {
     margin-left: 10px; /* Adjust as needed */
+}
+
+.el-button {
+  border-radius: 12px;
+  height: 45px;
+  background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  border: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 198, 251, 0.3);
+}
+
+.el-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 198, 251, 0.5);
 }
 </style>
