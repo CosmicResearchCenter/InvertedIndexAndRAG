@@ -265,6 +265,22 @@ onMounted(() => {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
+.message-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.message-item-user {
+  align-self: flex-end;
+  max-width: 80%;
+  margin: 10px 0;
+}
+
+.message-item-assistant {
+  align-self: flex-start;
+  max-width: 80%;
+  margin: 10px 0;
+}
 
 .input-area {
   padding: 20px;
