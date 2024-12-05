@@ -7,7 +7,7 @@
                     <el-icon :size="60">
                         <Plus />
                     </el-icon>
-                    <div>创建知识库</div>
+                    <div class="title">创建知识库</div>
                     <div class="sub-text">导入您的文本数据以增强 LLM 的上下文。</div>
                 </div>
             </el-card>
@@ -20,8 +20,8 @@
                     <el-icon :size="60">
                         <Document />
                     </el-icon>
-                    <div>{{ file.name }}</div>
-                    <div>{{ file.details }}</div>
+                    <div class="title">{{ file.name }}</div>
+                    <div class="details">{{ file.details }}</div>
                 </div>
 
                 <!-- Add @click.stop to the container and dropdown items to prevent event propagation -->
@@ -101,7 +101,7 @@ export default defineComponent({
             }
         };
 
-        // 初始化时加载知识库数据
+        // 初始化时加��知识库数据
         onMounted(fetchKnowledgeBases);
 
         // 创建知识库
@@ -166,22 +166,45 @@ export default defineComponent({
 .new-base {
     width: 100%;
     height: 200px;
-    border-radius: 6px;
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     position: relative;
+    background: rgba(169, 166, 166, 0.599);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    color: #ffffff;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.box-card:hover,
+.new-base:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .new-base-content {
     text-align: center;
 }
 
+.title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
 .sub-text {
     font-size: 12px;
-    color: #375aa2;
+    color: #a0a0a0;
     margin-top: 10px;
+}
+
+.details {
+    font-size: 14px;
+    color: #c0c0c0;
+    margin-top: 5px;
 }
 
 .col-card {
