@@ -321,11 +321,31 @@ onMounted(() => {
 
 .knowledge-base-item {
   margin: 8px 0;
+  padding: 12px 16px;
+  border-radius: 12px;
   transition: all 0.3s ease;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .knowledge-base-item:hover {
   transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 198, 251, 0.15);
+}
+
+.knowledge-base-item.active {
+  background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  color: white;
+  box-shadow: 0 6px 16px rgba(0, 198, 251, 0.25);
+  border: none;
+}
+
+.knowledge-base-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* Add some styles for loading */
