@@ -86,6 +86,7 @@ export default defineComponent({
 
 .retriever-box {
   margin: 16px 60px;
+  padding: 15px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px) saturate(180%);

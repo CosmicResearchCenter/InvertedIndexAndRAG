@@ -247,8 +247,8 @@ onMounted(() => {
 .chat-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
-  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+  padding: 50px;
+  /* background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%); */
   scrollbar-width: thin;
 }
 
@@ -298,8 +298,8 @@ onMounted(() => {
 
 .message-item-user,
 .message-item-assistant {
-  margin: 16px 0;
-  max-width: 80%;
+  /* margin: 16px 0; */
+  /* max-width: 80%; */
 }
 
 .chat-log-item {
