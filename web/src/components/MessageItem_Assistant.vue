@@ -63,4 +63,20 @@ export default defineComponent({
         /* box-shadow:  2px 3px 6px #ccc; */
         background-color: #ffffff;
     }
+    .retriever-box {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    .retriever-box .el-collapse-item__header {
+        font-weight: bold;
+        color: #333;
+    }
+    .retriever-box .el-collapse-item__content {
+        padding: 10px;
+        background-color: #fff;
+        border-top: 1px solid #e0e0e0;
+    }
 </style>
