@@ -56,11 +56,15 @@ export default defineComponent({
 }
 
 .msg {
-  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 16px;
   padding: 16px 20px;
-  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.08),
-              -6px -6px 12px rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(209, 213, 219, 0.3);
+  box-shadow: 
+    0 4px 24px -1px rgba(0, 0, 0, 0.1),
+    0 2px 8px -1px rgba(0, 0, 0, 0.06);
   max-width: 80%;
   position: relative;
 }
@@ -72,32 +76,42 @@ export default defineComponent({
   top: 20px;
   width: 16px;
   height: 16px;
-  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   transform: rotate(45deg);
-  box-shadow: -3px 3px 6px rgba(0, 0, 0, 0.05);
+  border-left: 1px solid rgba(209, 213, 219, 0.3);
+  border-bottom: 1px solid rgba(209, 213, 219, 0.3);
 }
 
 .retriever-box {
   margin: 16px 60px;
-  border-radius: 12px;
-  background: rgba(248, 249, 250, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(209, 213, 219, 0.3);
+  box-shadow: 
+    0 4px 24px -1px rgba(0, 0, 0, 0.08),
+    0 2px 8px -1px rgba(0, 0, 0, 0.04);
 }
 
 .retriever-box :deep(.el-collapse-item__header) {
   padding: 16px;
   font-size: 14px;
   font-weight: 500;
-  color: #2c3e50;
+  color: #1a1a1a;
   background: transparent;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(209, 213, 219, 0.3);
+  transition: all 0.3s ease;
 }
 
 .retriever-box :deep(.el-collapse-item__content) {
   padding: 20px;
   line-height: 1.6;
-  color: #495057;
+  color: #262626;
   background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
 }
 </style>

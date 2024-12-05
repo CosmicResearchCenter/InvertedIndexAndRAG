@@ -45,10 +45,15 @@ export default defineComponent({
 }
 
 .msg {
-  background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 16px;
   padding: 16px 20px;
-  box-shadow: 0 8px 16px rgba(0, 198, 251, 0.2);
+  box-shadow: 
+    0 4px 24px -1px rgba(37, 99, 235, 0.2),
+    0 2px 8px -1px rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   max-width: 80%;
   position: relative;
 }
@@ -60,8 +65,10 @@ export default defineComponent({
   top: 20px;
   width: 16px;
   height: 16px;
-  background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
   transform: rotate(45deg);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .msg :deep(*) {
@@ -70,15 +77,19 @@ export default defineComponent({
 }
 
 .msg :deep(code) {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 6px;
   padding: 2px 6px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .msg :deep(pre) {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 12px;
   padding: 12px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .msg :deep(p) {
