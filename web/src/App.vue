@@ -27,7 +27,6 @@ import { ChatDotRound, Folder, Setting } from '@element-plus/icons-vue'
         </li>
       </ul>
     </nav>
-
     <main>
       <RouterView />
     </main>
@@ -38,10 +37,14 @@ import { ChatDotRound, Folder, Setting } from '@element-plus/icons-vue'
 .container {
   display: flex;
   flex-direction: column;
+  overflow-y: hidden;
   height: 100vh;
-  overflow: hidden;
+  width: 100vw;
   background: #1e1e2f;
-  color: #cfd8dc;
+  color: #000000;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
 nav {
@@ -96,7 +99,7 @@ li a.router-link-active {
 
 main {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden; 
   padding: 1rem;
   background: #2a2a3c;
   border-top: 1px solid #3a3a4f;
