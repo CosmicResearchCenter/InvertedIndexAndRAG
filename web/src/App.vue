@@ -7,13 +7,22 @@ import { RouterLink, RouterView } from 'vue-router'
     <nav>
       <ul>
         <li>
-          <RouterLink to="/">智能问答</RouterLink>
+          <RouterLink to="/">
+            <el-icon><ChatDotRound /></el-icon>
+            智能问答
+          </RouterLink>
         </li>
         <li>
-          <RouterLink to="/manager">知识库管理</RouterLink>
+          <RouterLink to="/manager">
+            <el-icon><Folder /></el-icon>
+            知识库管理
+          </RouterLink>
         </li>
         <li>
-          <RouterLink to="/settings">设置</RouterLink>
+          <RouterLink to="/settings">
+            <el-icon><Setting /></el-icon>
+            设置
+          </RouterLink>
         </li>
       </ul>
     </nav>
@@ -33,9 +42,9 @@ import { RouterLink, RouterView } from 'vue-router'
 }
 
 nav {
-  background-color: #f5f5f5;
+  background: linear-gradient(to right, #2c3e50, #3498db);
   padding: 1rem;
-  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 ul {
@@ -43,20 +52,36 @@ ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  justify-content: center;
 }
 
 li {
-  margin-right: 1rem;
+  margin: 0 2rem;
 }
 
 li a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   text-decoration: none;
-  color: #333;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+li a:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
 }
 
 li a.router-link-active {
-  font-weight: bold;
-  color: #007bff;
+  background: rgba(255,255,255,0.2);
+  font-weight: 500;
+}
+
+.el-icon {
+  margin-right: 4px;
 }
 
 main {

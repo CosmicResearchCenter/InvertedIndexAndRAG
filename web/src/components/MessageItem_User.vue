@@ -28,27 +28,61 @@ export default defineComponent({
 });
 </script>
 <style>
-    .msg-box {
-        display: flex;
-        flex-direction: row;
+.msg-box {
+  display: flex;
+  gap: 16px;
+  margin: 24px 0;
+  justify-content: flex-end;
+  position: relative;
+}
 
-    }
-    .avatar-box{
-        width:auto ;
-        height: auto;
-    }
-    .avatar {
-        margin: 10px;
-        width: 50px;
-        height: 50px;
-        border-radius: 100%;
-    }
-    .msg {
-        padding: 5px;
-        /* margin: 5px; */
-        height: auto;
-        width: auto;
-        /* background-color: #ffffff; */
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-    }
+.avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 2px solid #fff;
+}
+
+.msg {
+  background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 16px rgba(0, 198, 251, 0.2);
+  max-width: 80%;
+  position: relative;
+}
+
+.msg::before {
+  content: '';
+  position: absolute;
+  right: -8px;
+  top: 20px;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  transform: rotate(45deg);
+}
+
+.msg :deep(*) {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.msg :deep(code) {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.msg :deep(pre) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.msg :deep(p) {
+  margin: 0;
+  line-height: 1.6;
+}
 </style>
