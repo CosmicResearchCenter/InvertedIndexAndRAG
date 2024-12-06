@@ -42,7 +42,7 @@ class Conversation(Base):
     conversationName 	= Column(String(255))
     num_conversation = Column(Integer)
     knowledgeBaseId = Column(String(255))
-    userId = Column(String(255))
+    username = Column(String(255))
     delete_sign = Column(Boolean, default=False)
 
     def to_dict(self):
@@ -61,7 +61,7 @@ class Chat_Messages (Base):
     timeStamp = Column(TIMESTAMP)
     query = Column(String(255))
     answer = Column(Text)
-    userId = Column(String(255)) # 存储用户 ID
+    username = Column(String(255)) # 存储用户 ID
     knowledgeBaseId = Column(String(255)) # 存储知识库 ID
 
 class RetrieverDoc(Base):
@@ -124,7 +124,7 @@ class KnowledgeConfig(Base):
 class UserInfo(Base):
     __tablename__ = 'userInfo'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    userId = Column(String(18), default=lambda: str(generate_general_id(length=18)), unique=True, index=True)
+    # userId = Column(String(18), default=lambda: str(generate_general_id(length=18)), unique=True, index=True)
     username = Column(String(50), unique=True, index=True)
     password = Column(String(255))
     email = Column(String(100), unique=True, index=True)
