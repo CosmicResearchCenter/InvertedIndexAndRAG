@@ -54,23 +54,30 @@ else
 fi
 
 # 停止并删除旧容器
+# 停止并删除旧容器（处理所有状态的容器）
 for container_name in "${container_names[@]}"; do
-    if [ "$(docker ps -q -f name=$container_name)" ]; then
+    # 检查容器是否存在（包括已停止的容器）
+    if [ "$(docker ps -a -q -f name=$container_name)" ]; then
+        log "发现旧容器 $container_name..."
+
+        # 尝试停止旧容器
         log "停止旧容器 $container_name..."
-        if docker stop $container_name; then
+        if docker stop $container_name >/dev/null 2>&1; then
             log "停止旧容器 $container_name 成功"
         else
-            log "停止旧容器 $container_name 失败"
-            exit 1
+            log "停止旧容器 $container_name 失败或未运行"
         fi
 
+        # 尝试删除旧容器
         log "删除旧容器 $container_name..."
-        if docker rm $container_name; then
+        if docker rm $container_name >/dev/null 2>&1; then
             log "删除旧容器 $container_name 成功"
         else
             log "删除旧容器 $container_name 失败"
             exit 1
         fi
+    else
+        log "未发现需要删除的容器 $container_name"
     fi
 done
 
