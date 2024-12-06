@@ -13,13 +13,24 @@ def generate_id(length=18):
     return full_id[:length].replace('-', '')
 class KnowledgeBase(Base):
     __tablename__ = 'knowledgeBasesList'
-    id = Column(String, primary_key=True, default=lambda: str(generate_id()))
-    knowledgeBaseName 	= Column(String)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    knowledgeBaseId = Column(String(18), default=lambda: str(generate_id(length=18)))
+    knowledgeBaseName 	= Column(String(255))
+    docs_num = Column(Integer, default=0)
+    words_num = Column(Integer, default=0)
+    related_conversations = Column(Integer, default=0)
     delete_sign = Column(Boolean, default=False)
+    create_time = Column(TIMESTAMP)
+    update_time = Column(TIMESTAMP)
+    # 创建者
+    created_by = Column(String(255))
     
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": self.knowledgeBaseId,
+            "docs_num": self.docs_num,
+            "words_num": self.words_num,
+            "related_conversations": self.related_conversations,
             "knowledgeBaseName": self.knowledgeBaseName
         }
     
