@@ -9,8 +9,7 @@ frontend_image_name="chat2anything_dev_frontend"
 backend_image_name="chat2anything_dev_backend"
 
 # docker容器名
-frontend_container_name="chat2anything_container_dev_frontend"
-backend_container_name="chat2anything_container_dev_backend"
+container_names=("chat2anything_container_dev_frontend" "chat2anything_container_dev_backend")
 
 # 日志文件
 log_file="deploy.log"
@@ -50,7 +49,7 @@ else
 fi
 
 # 停止并删除旧容器（如果存在）
-for container_name in $frontend_container_name $backend_container_name; do
+for container_name in "${container_names[@]}"; do
     if [ "$(docker ps -q -f name=$container_name)" ]; then
         log "停止旧容器 $container_name..."
         if docker stop $container_name; then
