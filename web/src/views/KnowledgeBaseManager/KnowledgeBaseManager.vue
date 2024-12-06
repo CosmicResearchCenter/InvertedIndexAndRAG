@@ -132,12 +132,14 @@ export default defineComponent({
         const fetchFiles = async () => {
             const baseId = route.params.base_id as string;
             try {
-                const response: any = await getRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}`);
+                const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                const response: any = await getRequest(baseURL+`/v1/api/mark/knowledgebase/${baseId}`);
                 if (response.code === 200) {
                     files.value = await Promise.all(response.data.map(async (doc: any, index: number) => {
                         // 获取索引状态
+                        const baseURL = import.meta.env.VITE_APP_BASE_URL;
                         const statusResponse: any = await getRequest(
-                            `http://localhost:9988/v1/api/mark/knowledgebase/${baseId}/doc/${doc.doc_id}/index_status`
+                           baseURL+ `/v1/api/mark/knowledgebase/${baseId}/doc/${doc.doc_id}/index_status`
                         );
                         const status = statusResponse.code === 200 && statusResponse.data[0].index_status === 1 ? '可用' : '未索引';
                         return {
@@ -163,7 +165,8 @@ export default defineComponent({
         const get_kb_config = async () => {
             const baseId = route.params.base_id as string;
             try {
-                const response: any = await getRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}/config`);
+                const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                const response: any = await getRequest(baseURL+`/v1/api/mark/knowledgebase/${baseId}/config`);
                 if (response.code === 200) {
                     settings.value = response.data[0];
                 } else {
@@ -192,7 +195,8 @@ export default defineComponent({
             const baseId = route.params.base_id as string;
             settings.value.knowledgeBaseId = baseId;
             try {
-                const response: any = await putRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId}/config`, settings.value);
+                const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                const response: any = await putRequest(baseURL+`/v1/api/mark/knowledgebase/${baseId}/config`, settings.value);
                 if (response.code === 200) {
                     ElMessage.success("设置已保存");
                 } else {

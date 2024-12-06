@@ -45,8 +45,8 @@ export default defineComponent({
                     cancelButtonText: '取消',
                     type: 'warning',
                 });
-
-                const response: any = await deleteRequest(`http://localhost:9988/v1/api/mark/chat/conversation/mark/${this.conversation_id.toString()}`);
+                const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                const response: any = await deleteRequest(baseURL + `/v1/api/mark/chat/conversation/mark/${this.conversation_id.toString()}`);
                 console.log(response.code);
                 if (response.code === 200) {
                     ElMessage.success(response.message);
@@ -71,9 +71,9 @@ export default defineComponent({
             }).catch(() => null);
             console.log(newName);
             console.log(this.conversation_id);
-
+            const baseURL = import.meta.env.VITE_APP_BASE_URL;
             if (newName && newName.value) {
-                const response: any = await postRequest('http://localhost:9988/v1/api/mark/chat/conversation-rename/', {
+                const response: any = await postRequest(baseURL+'/v1/api/mark/chat/conversation-rename/', {
                     conversation_id: this.conversation_id.toString(),
                     new_name: newName.value,
                     user_id: 'mark',

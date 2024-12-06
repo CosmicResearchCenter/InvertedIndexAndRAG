@@ -1,51 +1,47 @@
 <template>
-    <el-container style="height: 100%; width: 100%;">
-        <!-- Left Sidebar for Chat List -->
-        <el-aside class="chat-aside">
-            <el-button type="primary" @click="createConversation" class="create-button">新建对话</el-button>
-            <div class="chat-list">
-                <ChatLogItem class="chat-log-item" :class="{ active: currentConversationId === item.conversation_id }"
-                    v-for="item in conversionsList" :key="item.conversation_id" :title="String(item.conversationName)"
-                    :conversation_id="item.conversation_id" @click="handleItemClick(item.conversation_id)"
-                    @updateTitle="updateConversationTitle(item.conversation_id, $event)"
-                    @refreshList="getConversionsList" />
-            </div>
-        </el-aside>
+  <el-container style="height: 100%; width: 100%;">
+    <!-- Left Sidebar for Chat List -->
+    <el-aside class="chat-aside">
+      <el-button type="primary" @click="createConversation" class="create-button">新建对话</el-button>
+      <div class="chat-list">
+        <ChatLogItem class="chat-log-item" :class="{ active: currentConversationId === item.conversation_id }"
+          v-for="item in conversionsList" :key="item.conversation_id" :title="String(item.conversationName)"
+          :conversation_id="item.conversation_id" @click="handleItemClick(item.conversation_id)"
+          @updateTitle="updateConversationTitle(item.conversation_id, $event)" @refreshList="getConversionsList" />
+      </div>
+    </el-aside>
 
-        <!-- Main Chat Interface -->
-        <el-main class="chat-main">
-            <div class="chat-content" ref="chatContent">
-                <div class="message-container" v-for="item in conversionMessage" :key="item.id">
-                    <div class="message-item-user">
-                        <MessageItem_User :message="String(item.query)" />
-                    </div>
-                    <div class="message-item-assistant">
-                        <MessageItem_Assistant :message="String(item.answer)" :retrievedDocs=item.retriever_docs />
-                    </div>
-                </div>
-            </div>
+    <!-- Main Chat Interface -->
+    <el-main class="chat-main">
+      <div class="chat-content" ref="chatContent">
+        <div class="message-container" v-for="item in conversionMessage" :key="item.id">
+          <div class="message-item-user">
+            <MessageItem_User :message="String(item.query)" />
+          </div>
+          <div class="message-item-assistant">
+            <MessageItem_Assistant :message="String(item.answer)" :retrievedDocs=item.retriever_docs />
+          </div>
+        </div>
+      </div>
 
-            <!-- Input Area -->
-            <div class="input-area">
-                <el-input v-model="message" class="input-box" autosize type="textarea"
-                    placeholder="Type your message..." 
-                    @keyup.enter="sendMessage"
-                    />
-                <el-button type="primary" @click="sendMessage">Send</el-button>
-                <el-loading v-if="loading" text="Sending..."></el-loading> <!-- Loading indicator -->
-            </div>
-        </el-main>
+      <!-- Input Area -->
+      <div class="input-area">
+        <el-input v-model="message" class="input-box" autosize type="textarea" placeholder="Type your message..."
+          @keyup.enter="sendMessage" />
+        <el-button type="primary" @click="sendMessage">Send</el-button>
+        <el-loading v-if="loading" text="Sending..."></el-loading> <!-- Loading indicator -->
+      </div>
+    </el-main>
 
-        <!-- Right Sidebar for Knowledge Base -->
-        <el-aside class="chat-aside-right">
-            <div class="knowledge-base-list">
-                <KnowledgeBaseItem v-for="item in knowledgebaseList" :key="item.id" class="knowledge-base-item"
-                    :class="{ active: choosedKnowledgeBaseId === item.id }"
-                    :knowledgeBaseName="String(item.knowledgeBaseName)" :knowledgeBaseId="String(item.id)"
-                    @click="switchKnowledgeBase(item.id)" />
-            </div>
-        </el-aside>
-    </el-container>
+    <!-- Right Sidebar for Knowledge Base -->
+    <el-aside class="chat-aside-right">
+      <div class="knowledge-base-list">
+        <KnowledgeBaseItem v-for="item in knowledgebaseList" :key="item.id" class="knowledge-base-item"
+          :class="{ active: choosedKnowledgeBaseId === item.id }" :knowledgeBaseName="String(item.knowledgeBaseName)"
+          :knowledgeBaseId="String(item.id)" @click="switchKnowledgeBase(item.id)" />
+      </div>
+    </el-aside>
+  </el-container>
 </template>
 
 <script lang="ts" setup>
@@ -65,142 +61,147 @@ const choosedKnowledgeBaseId = ref<any>('');
 const message = ref<any>('');
 const currentConversationId = ref<any>('');
 let chatContent = ref<any>(null);
-const  loading = ref<boolean>(false);
+const loading = ref<boolean>(false);
 
 async function sendMessage() {
-    if (message.value === '') return;
-    let tempValue = message.value;
-    
-    loading.value = true; // 显示加载状态
-    let chatItemUser:any ={
-        id: Date.now(),
-        query: tempValue,
-        answer: '',
+  if (message.value === '') return;
+  let tempValue = message.value;
 
-    };
-    message.value = ''; 
-    conversionMessage.value.push(chatItemUser);
-    scrollToBottom();
-    let message_length = conversionMessage.value.length;
-    try {
-        const response:any = await fetch('http://localhost:9988/v1/api/mark/chat/chat-message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                "conversation_id": currentConversationId.value.toString(),
-                "message": tempValue,
-                "user_id": "mark",
-                "streaming": true
-            })
-        });
+  loading.value = true; // 显示加载状态
+  let chatItemUser: any = {
+    id: Date.now(),
+    query: tempValue,
+    answer: '',
 
-        if (!response.ok) throw new Error('网络错误，无法发送消息');
+  };
+  message.value = '';
+  conversionMessage.value.push(chatItemUser);
+  scrollToBottom();
+  let message_length = conversionMessage.value.length;
+  try {
+    const baseURL = import.meta.env.VITE_APP_BASE_URL;
+    const response: any = await fetch(baseURL + '/v1/api/mark/chat/chat-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        "conversation_id": currentConversationId.value.toString(),
+        "message": tempValue,
+        "user_id": "mark",
+        "streaming": true
+      })
+    });
+
+    if (!response.ok) throw new Error('网络错误，无法发送消息');
 
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder('utf-8');
-        let resultText = '';
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let resultText = '';
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-            resultText += decoder.decode(value, { stream: true });
-            conversionMessage.value[message_length - 1].answer = resultText;
-            scrollToBottom();
-        }
-
-    } catch (error:any) {
-        console.error(error);
-        message.value = tempValue;
-        ElMessage.error('发送失败，请重试');
-        
-    } finally {
-        loading.value = false; // 隐藏加载状态
-        reGetConversionsList();
-        handleItemClick(currentConversationId.value);
+      resultText += decoder.decode(value, { stream: true });
+      conversionMessage.value[message_length - 1].answer = resultText;
+      scrollToBottom();
     }
+
+  } catch (error: any) {
+    console.error(error);
+    message.value = tempValue;
+    ElMessage.error('发送失败，请重试');
+
+  } finally {
+    loading.value = false; // 隐藏加载状态
+    reGetConversionsList();
+    handleItemClick(currentConversationId.value);
+  }
 }
 
 
 function scrollToBottom() {
-    nextTick(() => {
-        if (chatContent.value) {
-            chatContent.value.scrollTop = chatContent.value.scrollHeight;
-        }
-    });
+  nextTick(() => {
+    if (chatContent.value) {
+      chatContent.value.scrollTop = chatContent.value.scrollHeight;
+    }
+  });
 }
 
 async function getConversionsList() {
-    const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message/mark');
-    conversionsList.value = data.data.reverse();
+  const baseURL = import.meta.env.VITE_APP_BASE_URL;
+  const data = await getRequest<any>(baseURL + '/v1/api/mark/chat/chat-message/mark');
+  conversionsList.value = data.data.reverse();
 
-    if (conversionsList.value.length > 0) {
-        const latestConversationId = conversionsList.value[0].conversation_id;
-        handleItemClick(latestConversationId);
-    }
+  if (conversionsList.value.length > 0) {
+    const latestConversationId = conversionsList.value[0].conversation_id;
+    handleItemClick(latestConversationId);
+  }
 }
 async function reGetConversionsList() {
-    const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-message/mark');
-    conversionsList.value = data.data.reverse();
+  const baseURL = import.meta.env.VITE_APP_BASE_URL;
+  const data = await getRequest<any>(baseURL + '/v1/api/mark/chat/chat-message/mark');
+  conversionsList.value = data.data.reverse();
 }
 async function handleItemClick(conversation_id: string) {
-    currentConversationId.value = conversation_id;
+  currentConversationId.value = conversation_id;
+  const baseURL = import.meta.env.VITE_APP_BASE_URL;
+  // 加载当前对话的历史消息
+  const data = await getRequest<any>(baseURL+'/v1/api/mark/chat/chat-history/' + conversation_id);
+  conversionMessage.value = data.data;
 
-    // 加载当前对话的历史消息
-    const data = await getRequest<any>('http://localhost:9988/v1/api/mark/chat/chat-history/' + conversation_id);
-    conversionMessage.value = data.data;
+  // 设置为当前对话关联的知识库 ID
+  let dataLength = data.data.length;
+  choosedKnowledgeBaseId.value = data.data[dataLength - 1]?.current_knowledge_baseid || '';
 
-    // 设置为当前对话关联的知识库 ID
-    let dataLength = data.data.length;
-    choosedKnowledgeBaseId.value = data.data[dataLength - 1]?.current_knowledge_baseid || '';
-
-    scrollToBottom();
+  scrollToBottom();
 }
 
 async function getKnowledgeBaseList() {
-    const data = await getRequest<any>('http://localhost:9988/v1/api/mark/knowledgebase');
-    knowledgebaseList.value = data.data;
+  const baseURL = import.meta.env.VITE_APP_BASE_URL;
+  const data = await getRequest<any>(baseURL+'/v1/api/mark/knowledgebase');
+  knowledgebaseList.value = data.data;
 }
 
 async function switchKnowledgeBase(knowledgeBaseId: string) {
-    choosedKnowledgeBaseId.value = knowledgeBaseId;
-    if (!currentConversationId.value) return;
+  choosedKnowledgeBaseId.value = knowledgeBaseId;
+  if (!currentConversationId.value) return;
+  const baseURL = import.meta.env.VITE_APP_BASE_URL;
+  const response: any = await postRequest<any>(baseURL+'/v1/api/mark/chat/knowledge_base', {
+    "user_id": "mark",
+    "conversation_id": currentConversationId.value.toString(),
+    "knowledge_base_id": knowledgeBaseId
+  });
 
-    const response: any = await postRequest<any>('http://localhost:9988/v1/api/mark/chat/knowledge_base', {
-        "user_id": "mark",
-        "conversation_id": currentConversationId.value.toString(),
-        "knowledge_base_id": knowledgeBaseId
-    });
-
-    if (response.code === 200) {
-        ElMessage.info('切换知识库成功！');
-        // await handleItemClick(currentConversationId.value);
-    }
+  if (response.code === 200) {
+    ElMessage.info('切换知识库成功！');
+    // await handleItemClick(currentConversationId.value);
+  }
 }
 
 async function createConversation() {
-    const knowledge_base_id = knowledgebaseList.value[0]?.id || '';
-    const user_id = "mark";
-    const data = await postRequest<any>('http://localhost:9988/v1/api/mark/chat/create-conversation', {
-        "knowledge_base_id": knowledge_base_id,
-        "user_id": user_id
-    });
-    getConversionsList();
-    handleItemClick(data.data.conversation_id);
+  const knowledge_base_id = knowledgebaseList.value[0]?.id || '';
+  const user_id = "mark";
+  const baseURL = import.meta.env.VITE_APP_BASE_URL;
+  const data = await postRequest<any>(baseURL+'/v1/api/mark/chat/create-conversation', {
+    "knowledge_base_id": knowledge_base_id,
+    "user_id": user_id
+  });
+  getConversionsList();
+  handleItemClick(data.data.conversation_id);
 }
 
 function updateConversationTitle(conversationId: string, newTitle: string) {
-    const conversation = conversionsList.value.find((item: { conversation_id: string; }) => item.conversation_id === conversationId);
-    if (conversation) {
-        conversation.conversationName = newTitle;
-    }
+  const conversation = conversionsList.value.find((item: { conversation_id: string; }) => item.conversation_id === conversationId);
+  if (conversation) {
+    conversation.conversationName = newTitle;
+  }
 }
 
 onMounted(() => {
-    getConversionsList();
-    scrollToBottom();
-    getKnowledgeBaseList();
+  getConversionsList();
+  scrollToBottom();
+  getKnowledgeBaseList();
 });
 </script>
 
@@ -267,6 +268,7 @@ onMounted(() => {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
+
 .message-container {
   display: flex;
   flex-direction: column;
@@ -369,7 +371,8 @@ onMounted(() => {
 
 /* Add some styles for loading */
 .el-loading {
-    margin-left: 10px; /* Adjust as needed */
+  margin-left: 10px;
+  /* Adjust as needed */
 }
 
 .el-button {

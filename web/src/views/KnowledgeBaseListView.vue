@@ -83,7 +83,8 @@ export default defineComponent({
         // 初始化时获取知识库数据
         const fetchKnowledgeBases = async () => {
             try {
-                const response: any = await getRequest('http://localhost:9988/v1/api/mark/knowledgebase/');
+                const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                const response: any = await getRequest(baseURL+'/v1/api/mark/knowledgebase/');
                 if (response.code === 200) {
                     files.value = [];  // 清空files
                     response.data.forEach((kb: any) => {
@@ -107,7 +108,8 @@ export default defineComponent({
         // 创建知识库
         const createKnowledgeBase = async () => {
             try {
-                const response: any = await postRequest('http://localhost:9988/v1/api/mark/knowledgebase/', {
+                const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                const response: any = await postRequest(baseURL+'/v1/api/mark/knowledgebase/', {
                     base_name: knowledgeBaseName.value || "default"
                 });
 
@@ -133,7 +135,8 @@ export default defineComponent({
                 router.push(`/manager/${file.id}/settings`);
             } else if (command === 'delete') {
                 try {
-                    const response: any = await deleteRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${file.id}`);
+                    const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                    const response: any = await deleteRequest(baseURL+`/v1/api/mark/knowledgebase/${file.id}`);
                     if (response.code === 200) {
                         const index = files.value.findIndex(f => f.id === file.id);
                         if (index !== -1) files.value.splice(index, 1);

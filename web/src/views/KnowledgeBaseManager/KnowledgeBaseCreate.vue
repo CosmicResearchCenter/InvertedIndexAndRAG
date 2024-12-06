@@ -119,7 +119,8 @@ export default defineComponent({
       formData.append('file', fileData.value);
 
       try {
-        const response: any = await putRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId.value}`, formData);
+        const baseURL = import.meta.env.VITE_APP_BASE_URL;
+        const response: any = await putRequest(baseURL+`/v1/api/mark/knowledgebase/${baseId.value}`, formData);
         console.log(response);
         if (response.code === 200) {
           docId.value = response.data[0].doc_id;
@@ -146,7 +147,8 @@ export default defineComponent({
         : { chunk_size: blockSize.value.toString(), chunk_overlap: overLengthHandling.value.toString() };
 
       try {
-        const response: any = await postRequest(`http://localhost:9988/v1/api/mark/knowledgebase/${baseId.value}/doc/${docId.value}/index`, {
+        const baseURL = import.meta.env.VITE_APP_BASE_URL;
+        const response: any = await postRequest(baseURL+`/v1/api/mark/knowledgebase/${baseId.value}/doc/${docId.value}/index`, {
           "splitter_model": splitterModel,
           "splitter_args": splitterArgs
         });
