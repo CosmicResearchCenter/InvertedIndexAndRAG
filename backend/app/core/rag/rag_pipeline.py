@@ -22,8 +22,8 @@ class RAG_Pipeline:
         self.milvus_client = MilvusCollectionManager()
         pass
     #创建知识库
-    def create_knowledgebase(self, knowledge_base_name: str):
-        knowledge_base_id = self.mysql_client.AddKnowledgeBasesList(knowledge_base_name).id
+    def create_knowledgebase(self, knowledge_base_name: str,userId:str="admin"):
+        knowledge_base_id = self.mysql_client.AddKnowledgeBasesList(knowledge_base_name,userId=userId).knowledgeBaseId
         indexName = self.es_client.create_index(knowledge_base_id)
         self.milvus_client.create_collection(knowledgeBaseID=knowledge_base_id, knowledgeBaseName=knowledge_base_name, dim=1536)
         return knowledge_base_id

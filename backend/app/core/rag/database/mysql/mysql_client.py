@@ -5,7 +5,7 @@ from typing import Any, Callable, Optional
 from .model import KnowledgeBase,ConversationsList
 from typing import List
 from config.config_info import settings
-
+import datetime,time
 user = settings.MYSQL_USER
 password = settings.MYSQL_PASSWORD
 ip = settings.MYSQL_IP
@@ -31,10 +31,15 @@ class MysqlClient:
 
         return conversations_list
     # 添加知识库Name和ID到表里
-    def AddKnowledgeBasesList(self,knowledgeBaseName:str)->KnowledgeBase:
+    def AddKnowledgeBasesList(self,knowledgeBaseName:str,userId:str)->KnowledgeBase:
         # if session is None:
         session = self.SessionLocal()
-        new_knowledge_base = KnowledgeBase(knowledgeBaseName=knowledgeBaseName)
+        create_time=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        update_time = create_time
+        new_knowledge_base = KnowledgeBase(knowledgeBaseName=knowledgeBaseName,
+                                           created_by=userId,
+                                           create_time=create_time,
+                                           update_time=update_time)
         session.add(new_knowledge_base)
         session.commit()
         session.close()

@@ -195,7 +195,7 @@ class KBase(MysqlClient):
     # 获取知识库配置信息
     def get_kb_config(self, kb_id:str)->KnowledgeBaseConfig:
          
-        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
+        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == kb_id).first()
         if not knowledgeBase:
             raise HTTPException(status_code=404, detail="KnowledgeBase not found")
         knowledgeBaseName = knowledgeBase.knowledgeBaseName
@@ -206,7 +206,7 @@ class KBase(MysqlClient):
         return KnowledgeBaseConfig(knowledgeBaseId=kb_id,knowledgeBaseName=knowledgeBaseName,rag_model=config.rag_model,is_rerank=config.is_rerank)
     # 更新知识库配置信息
     def update_kb_config(self, kb_id:str,config:KnowledgeBaseConfig)->GenericResponse:
-        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
+        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == kb_id).first()
         if not knowledgeBase:
             raise HTTPException(status_code=404, detail="KnowledgeBase not found")
         
