@@ -9,7 +9,7 @@ from app.core.rag.rag_pipeline import RAG_Pipeline
 from .knowledgebase_type import CreateBaseRequest,IndexStatusRequest,DocumentSplitArgs,KnowledgeBaseConfig
 from fastapi import UploadFile,BackgroundTasks
 from config.splitter_model import SplitterModel
-from typing import List
+from typing import List,Callable
 import os
 import shutil
 import time
@@ -18,8 +18,26 @@ import uuid
 import asyncio
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'docx','doc','ppt','pptx','excel','xlsx','xls'}
+
+def check_kb_owner_decorator(method: Callable):
+    """
+    装饰器，用于检查知识库是否是用户创建的。
+    """
+    @wraps(method)
+    def wrapper(self, base_id: int, username: str, *args, **kwargs):
+        # 检查知识库是否是用户创建的
+        kb = self.db.query(KnowledgeBase).filter(
+            KnowledgeBase.knowledgeBaseId == base_id,
+            KnowledgeBase.created_by == username
+        ).first()
+        if not kb:
+            raise HTTPException(status_code=404, detail="KnowledgeBase not found 404")
+        return method(self, base_id, username, *args, **kwargs)
+    return wrapper
+
 
 class KBase(MysqlClient):
     def __init__(self):
@@ -28,14 +46,14 @@ class KBase(MysqlClient):
     def __del__(self):
         super().__del__()
     # 创建知识库
-    def create_kb(self, kb_name:str)->KnowledgeBase:
+    def create_kb(self, kb_name:str,username:str)->KnowledgeBase:
         rAG_Pipeline:RAG_Pipeline = RAG_Pipeline()
         
         # 设置默认配置
         rag_model = 0
         is_rerank = False
         try:
-            kb_id = rAG_Pipeline.create_knowledgebase(kb_name)
+            kb_id = rAG_Pipeline.create_knowledgebase(kb_name,username=username)
             print(f'create_kb kb_id: {kb_id}')
             config = KnowledgeConfig(knowledgeBaseId=kb_id,rag_model=rag_model,is_rerank=is_rerank,create_time=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),update_time=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
             self.db.add(config)
@@ -43,27 +61,32 @@ class KBase(MysqlClient):
             return kb_id
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e)) 
-        
+     
     # 获取所有知识库
-    def get_all_kbs(self)->List[KnowledgeBase]:
+    def get_all_kbs(self,username:str)->List[KnowledgeBase]:
+        
         # all_kbs = self.db.query(KnowledgeBase).all()
         rAG_Pipeline:RAG_Pipeline = RAG_Pipeline()
         try:
-            all_kbs = rAG_Pipeline.show_knowledgebase_list()
+            all_kbs = rAG_Pipeline.show_knowledgebase_list(username)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         return all_kbs
     
     # 根据id获取知识库
-    def get_kbinfo_by_id(self, kb_id:int)->List[DocInfo]:
+    @check_kb_owner_decorator
+    def get_kbinfo_by_id(self, base_id:int,username:str)->List[DocInfo]:
 
-       
-        kb = self.db.query(DocInfo).filter(DocInfo.knowledgeBaseId == kb_id).all()
-        return kb
+        # # 判断知识库是否是用户创建的
+        # self.check_kb_owner(kb_id,username)
+        kb_info = self.db.query(DocInfo).filter(DocInfo.knowledgeBaseId == base_id).all()
+        return kb_info
+    
     # 删除知识库
-    def delete_kb(self, kb_id:int)->GenericResponse:
+    @check_kb_owner_decorator
+    def delete_kb(self, base_id:int,username:str)->GenericResponse:
         # 删除表
-        kb = self.db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
+        kb = self.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == base_id).first()
         if not kb:
             return GenericResponse(message="KnowledgeBase not found", code=404,data=[])
         self.db.delete(kb)
@@ -71,21 +94,22 @@ class KBase(MysqlClient):
         # 删除ElasticSearch数据
         try:
             elastic_client = ElasticClient()
-            elastic_client.delete_index(kb_id)
+            elastic_client.delete_index(base_id)
         except Exception as e:
             print("Error deleting index from ElasticSearch: ", e)
             return GenericResponse(message="KnowledgeBase not found", code=404,data=[])
         # 删除Milvus数据
         try:
             milvus_manager = MilvusCollectionManager()
-            milvus_manager.drop_collection(f'{kb_id}')
+            milvus_manager.drop_collection(f'{base_id}')
         except Exception as e:
             print("Error dropping collection from Milvus: ", e)
             return GenericResponse(message="KnowledgeBase not found", code=404,data=[])
         
         return GenericResponse(message="KnowledgeBase deleted successfully", code=200,data=[])
     # 删除文档
-    def delete_document(self, doc_id:str)->GenericResponse:
+    @check_kb_owner_decorator
+    def delete_document(self,base_id:str,username:str, doc_id:str)->GenericResponse:
         doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
         if not doc:
             return GenericResponse(message="Document not found", code=404,data=[])
@@ -100,7 +124,8 @@ class KBase(MysqlClient):
         return save_path_p
     # 更新知识库
     # 为每个文档生成一个信息字典，包括文档id、文档名称、文档类型等信息，保存到数据库中
-    def upload_files(self, base_id:int, files:List[UploadFile],background_tasks:BackgroundTasks,executor:ThreadPoolExecutor)->List[DocIndexStatus]:
+    @check_kb_owner_decorator
+    def upload_files(self, base_id:int,username:str, files:List[UploadFile],background_tasks:BackgroundTasks,executor:ThreadPoolExecutor)->List[DocIndexStatus]:
         from config.config import DOCS_PATH
         save_path_p = self._get_docs_save_path(base_id)
         docs:List[DocInfo] = []
@@ -140,7 +165,8 @@ class KBase(MysqlClient):
 
             print(f'{len(files)} files saved successfully')
         return docs_status
-    def insert_knowledgebase(self,documentSplitArgs:DocumentSplitArgs,base_id,doc_id,background_tasks:BackgroundTasks,executor:ThreadPoolExecutor)->DocIndexStatus:
+    @check_kb_owner_decorator
+    def insert_knowledgebase(self,documentSplitArgs:DocumentSplitArgs,base_id,username,doc_id,background_tasks:BackgroundTasks,executor:ThreadPoolExecutor)->DocIndexStatus:
         
         
         index_status = DocIndexStatus(index_status=0,knowledgeBaseId=base_id,doc_id=doc_id)
@@ -193,20 +219,22 @@ class KBase(MysqlClient):
         return index_status
     
     # 获取知识库配置信息
-    def get_kb_config(self, kb_id:str)->KnowledgeBaseConfig:
+    @check_kb_owner_decorator
+    def get_kb_config(self, base_id:str,username:str)->KnowledgeBaseConfig:
          
-        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == kb_id).first()
+        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == base_id).first()
         if not knowledgeBase:
             raise HTTPException(status_code=404, detail="KnowledgeBase not found")
         knowledgeBaseName = knowledgeBase.knowledgeBaseName
-        config = self.db.query(KnowledgeConfig).filter(KnowledgeConfig.knowledgeBaseId == kb_id).first()
+        config = self.db.query(KnowledgeConfig).filter(KnowledgeConfig.knowledgeBaseId == base_id).first()
         if not config:
             raise HTTPException(status_code=404, detail="KnowledgeBase config not found")
         
-        return KnowledgeBaseConfig(knowledgeBaseId=kb_id,knowledgeBaseName=knowledgeBaseName,rag_model=config.rag_model,is_rerank=config.is_rerank)
+        return KnowledgeBaseConfig(knowledgeBaseId=base_id,knowledgeBaseName=knowledgeBaseName,rag_model=config.rag_model,is_rerank=config.is_rerank)
     # 更新知识库配置信息
-    def update_kb_config(self, kb_id:str,config:KnowledgeBaseConfig)->GenericResponse:
-        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == kb_id).first()
+    @check_kb_owner_decorator
+    def update_kb_config(self, base_id:str,username:str,config:KnowledgeBaseConfig)->GenericResponse:
+        knowledgeBase = self.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == base_id).first()
         if not knowledgeBase:
             raise HTTPException(status_code=404, detail="KnowledgeBase not found")
         
@@ -214,7 +242,7 @@ class KBase(MysqlClient):
         self.db.commit()
         self.db.refresh(knowledgeBase)
         
-        config_db = self.db.query(KnowledgeConfig).filter(KnowledgeConfig.knowledgeBaseId == kb_id).first()
+        config_db = self.db.query(KnowledgeConfig).filter(KnowledgeConfig.knowledgeBaseId == base_id).first()
         if not config_db:
             raise HTTPException(status_code=404, detail="KnowledgeBase config not found")
         config_db.rag_model = config.rag_model
@@ -225,7 +253,8 @@ class KBase(MysqlClient):
         return GenericResponse(message="KnowledgeBase config updated successfully", code=200,data=[])
     
     # 重命名文档名字
-    def rename_doc_name(self, doc_id:int,new_name:str)->GenericResponse:
+    @check_kb_owner_decorator
+    def rename_doc_name(self,base_id:str,username:str, doc_id:int,new_name:str)->GenericResponse:
         doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
         if not doc:
             raise HTTPException(status_code=404, detail="Document not found")
@@ -235,7 +264,8 @@ class KBase(MysqlClient):
         return GenericResponse(message="Document name updated successfully", code=200,data=[])
     
     # 归档文档
-    def archive_doc(self, doc_id:int)->GenericResponse:
+    @check_kb_owner_decorator
+    def archive_doc(self,base_id:str,username:str, doc_id:int)->GenericResponse:
         doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
         if not doc:
             raise HTTPException(status_code=404, detail="Document not found")
