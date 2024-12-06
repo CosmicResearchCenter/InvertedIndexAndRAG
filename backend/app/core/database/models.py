@@ -21,9 +21,18 @@ def generate_general_id(length=18):
 
 class KnowledgeBase(Base):
     __tablename__ = 'knowledgeBasesList'
-    id = Column(String(18), primary_key=True, default=lambda: str(generate_id(length=18)))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    knowledgeBaseId = Column(String(18), default=lambda: str(generate_id(length=18)))
     knowledgeBaseName 	= Column(String(255))
+    docs_num = Column(Integer, default=0)
+    words_num = Column(Integer, default=0)
+    related_conversations = Column(Integer, default=0)
     delete_sign = Column(Boolean, default=False)
+    create_time = Column(TIMESTAMP)
+    update_time = Column(TIMESTAMP)
+    # 创建者
+    created_by = Column(String(255))
+    
 
 # 对话列表
 class Conversation(Base):
@@ -69,6 +78,10 @@ class DocInfo(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     doc_name = Column(String(255))
     knowledgeBaseId = Column(String(255))
+    
+    # 召回次数
+    retriever_num = Column(Integer, default=0)
+    
     create_time = Column(TIMESTAMP)
     doc_type = Column(String(255))
     doc_size = Column(Integer)
@@ -106,3 +119,17 @@ class KnowledgeConfig(Base):
             "create_time": self.create_time,
             "update_time": self.update_time
         }
+
+# 用户信息
+class UserInfo(Base):
+    __tablename__ = 'userInfo'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    userId = Column(String(18), default=lambda: str(generate_general_id(length=18)), unique=True, index=True)
+    username = Column(String(50), unique=True, index=True)
+    password = Column(String(255))
+    email = Column(String(100), unique=True, index=True)
+    create_time = Column(TIMESTAMP)
+    update_time = Column(TIMESTAMP)
+    delete_sign = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False)
+    
