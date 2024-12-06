@@ -22,8 +22,8 @@ class RAG_Pipeline:
         self.milvus_client = MilvusCollectionManager()
         pass
     #创建知识库
-    def create_knowledgebase(self, knowledge_base_name: str,userId:str="admin"):
-        knowledge_base_id = self.mysql_client.AddKnowledgeBasesList(knowledge_base_name,userId=userId).knowledgeBaseId
+    def create_knowledgebase(self, knowledge_base_name: str,username:str="admin"):
+        knowledge_base_id = self.mysql_client.AddKnowledgeBasesList(knowledge_base_name,username=username).knowledgeBaseId
         indexName = self.es_client.create_index(knowledge_base_id)
         self.milvus_client.create_collection(knowledgeBaseID=knowledge_base_id, knowledgeBaseName=knowledge_base_name, dim=1536)
         return knowledge_base_id
@@ -33,8 +33,8 @@ class RAG_Pipeline:
     #删除知识库
     def delete_knowledgebase(self, knowledge_base_name: str):
         pass
-    def show_knowledgebase_list(self):
-        knowledgebaseList:List[KnowledgeBase] =  self.mysql_client.GetKnowledgeBasesList()
+    def show_knowledgebase_list(self,username:str):
+        knowledgebaseList:List[KnowledgeBase] =  self.mysql_client.GetKnowledgeBasesList(username)
         return knowledgebaseList
     # 文档拆分
     def split_files(self,file_path:str,splitter_args,splitterModel:SplitterModel):

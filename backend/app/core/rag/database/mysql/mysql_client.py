@@ -31,27 +31,27 @@ class MysqlClient:
 
         return conversations_list
     # 添加知识库Name和ID到表里
-    def AddKnowledgeBasesList(self,knowledgeBaseName:str,userId:str)->KnowledgeBase:
+    def AddKnowledgeBasesList(self,knowledgeBaseName:str,username:str)->KnowledgeBase:
         # if session is None:
         session = self.SessionLocal()
         create_time=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         update_time = create_time
         new_knowledge_base = KnowledgeBase(knowledgeBaseName=knowledgeBaseName,
-                                           created_by=userId,
+                                           created_by=username,
                                            create_time=create_time,
                                            update_time=update_time)
         session.add(new_knowledge_base)
         session.commit()
         session.close()
         return new_knowledge_base
-    def GetKnowledgeBasesList(self)->List[KnowledgeBase]:
+    def GetKnowledgeBasesList(self,username:str)->List[KnowledgeBase]:
         # if session is None:
         session = self.SessionLocal()
-        knowledge_bases_list = session.query(KnowledgeBase).all()
+        knowledge_bases_list = session.query(KnowledgeBase).filter(KnowledgeBase.created_by==username).all()
         session.close()
         return knowledge_bases_list
 
 if __name__ == "__main__":
     mysql_client = MysqlClient()
-    conversations_list = mysql_client.GetKnowledgeBasesList()
+    conversations_list = mysql_client.GetKnowledgeBasesList(username="admin")
     print(conversations_list[-1].knowledgeBaseName)
