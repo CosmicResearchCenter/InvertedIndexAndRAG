@@ -191,7 +191,8 @@ content: {item['content']}
             
         answer = self.rag.generate_answer_by_knowledgebase(resultByDoc=resultByDoc,history_messages=history_message,streaming=streaming)
         if isinstance(answer, str):
-            print("Answer:", answer)
+            print(answer)
+            print("answer")
             return answer
         else:
             for item in answer:
@@ -211,10 +212,10 @@ content: {item['content']}
         except Exception as e:
             print(e)
     # 处理用户输入
-    def run(self, chatMessageRequest: ChatMessageRequest, streaming=False):
+    def run(self, chatMessageRequest: ChatMessageRequest,username, streaming=False):
         # 获取用户输入
         convseration_id = chatMessageRequest.conversation_id
-        username = chatMessageRequest.username
+        username = username
         message = chatMessageRequest.message
         # streaming = chatMessageRequest.streaming
         # 匹配对话
@@ -230,10 +231,10 @@ content: {item['content']}
             messageLog = self.format_conversation_Log(messages)
 
             # 获取知识库配置信息
-            kb_config = KBase().get_kb_config(knowledgebase.id,username)
+            kb_config = KBase().get_kb_config(knowledgebase.knowledgeBaseId,username)
             
             # 获取检索文档
-            resultByDoc: ResultByDoc = self.get_retrieve_documents(question=message, knowledgebase_id=knowledgebase.id,rag_model=kb_config.rag_model,is_rerank=kb_config.is_rerank)
+            resultByDoc: ResultByDoc = self.get_retrieve_documents(question=message, knowledgebase_id=knowledgebase.knowledgeBaseId,rag_model=kb_config.rag_model,is_rerank=kb_config.is_rerank)
 
             # 保存对话记录
             new_message = Chat_Messages(
@@ -241,7 +242,7 @@ content: {item['content']}
                 query=message,
                 answer="",
                 username=username,
-                knowledgeBaseId=knowledgebase.id,
+                knowledgeBaseId=knowledgebase.knowledgeBaseId,
             )
             self.save_conversation(new_message)
 
@@ -250,7 +251,7 @@ content: {item['content']}
                 retriever_doc = RetrieverDoc(
                     content=doc.content,
                     knowledge_doc_name=doc.knowledge_doc_name,
-                    knowledgeBaseId=knowledgebase.id,
+                    knowledgeBaseId=knowledgebase.knowledgeBaseId,
                     messageId=new_message.id
                 )
                 self.mysql_session.add(retriever_doc)
@@ -278,6 +279,7 @@ content: {item['content']}
                     new_message.answer = answer
                     self.mysql_session.commit()  # 更新数据库
                     self.mysql_session.refresh(new_message)
+                    
                     return answer
                 else:
                     for item in answer:
