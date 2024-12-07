@@ -2,40 +2,90 @@
   <div class="login-container">
     <div class="login-box">
       <div class="login-content">
-        <h2>欢迎登录</h2>
-        <div class="form-group">
-          <el-input 
-            v-model="username" 
-            placeholder="用户名" 
-            class="input-field"
-            :prefix-icon="User"
-          />
+        <div class="form-switch">
+          <span 
+            :class="{ active: !isRegister }" 
+            @click="isRegister = false"
+          >登录</span>
+          <span 
+            :class="{ active: isRegister }" 
+            @click="isRegister = true"
+          >注册</span>
         </div>
-        <div class="form-group">
-          <el-input 
-            v-model="password" 
-            type="password" 
-            placeholder="密码" 
-            class="input-field"
-            :prefix-icon="Lock"
-            @keyup.enter="login"
-          />
-        </div>
-        <el-button 
-          type="primary" 
-          @click="login" 
-          class="login-button"
-          :loading="loading"
-        >
-          {{ loading ? '登录中...' : '登 录' }}
-        </el-button>
+
+        <template v-if="!isRegister">
+          <div class="form-group">
+            <el-input 
+              v-model="username" 
+              placeholder="用户名" 
+              class="input-field"
+              :prefix-icon="User"
+            />
+          </div>
+          <div class="form-group">
+            <el-input 
+              v-model="password" 
+              type="password" 
+              placeholder="密码" 
+              class="input-field"
+              :prefix-icon="Lock"
+              @keyup.enter="login"
+            />
+          </div>
+          <el-button 
+            type="primary" 
+            @click="login" 
+            class="login-button"
+            :loading="loading"
+          >
+            {{ loading ? '登录中...' : '登 录' }}
+          </el-button>
+        </template>
+
+        <template v-else>
+          <div class="form-group">
+            <el-input 
+              v-model="registerForm.username" 
+              placeholder="用户名" 
+              class="input-field"
+              :prefix-icon="User"
+            />
+          </div>
+          <div class="form-group">
+            <el-input 
+              v-model="registerForm.password" 
+              type="password" 
+              placeholder="密码" 
+              class="input-field"
+              :prefix-icon="Lock"
+            />
+          </div>
+          <div class="form-group">
+            <el-input 
+              v-model="registerForm.confirmPassword" 
+              type="password" 
+              placeholder="确认密码" 
+              class="input-field"
+              :prefix-icon="Lock"
+              @keyup.enter="register"
+            />
+          </div>
+          <el-button 
+            type="primary" 
+            @click="register" 
+            class="login-button"
+            :loading="loading"
+          >
+            {{ loading ? '注册中...' : '注 册' }}
+          </el-button>
+        </template>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue'
@@ -44,6 +94,8 @@ const username = ref('');
 const password = ref('');
 const loading = ref(false);
 const router = useRouter();
+
+const isRegister = ref(false);
 
 const login = async () => {
   if (!username.value || !password.value) {
@@ -60,6 +112,36 @@ const login = async () => {
     } else {
       ElMessage.error('用户名或密码错误');
     }
+  } finally {
+    loading.value = false;
+  }
+};
+
+const registerForm = reactive({
+  username: '',
+  password: '',
+  confirmPassword: ''
+});
+
+const register = async () => {
+  if (!registerForm.username || !registerForm.password || !registerForm.confirmPassword) {
+    ElMessage.warning('请填写完整注册信息');
+    return;
+  }
+
+  if (registerForm.password !== registerForm.confirmPassword) {
+    ElMessage.error('两次输入的密码不一致');
+    return;
+  }
+
+  loading.value = true;
+  try {
+    await new Promise(resolve => setTimeout(resolve, 800)); // 模拟注册请求
+    ElMessage.success('注册成功');
+    isRegister.value = false; // 切换到登录界面
+    username.value = registerForm.username; // 自动填充用户名
+    registerForm.password = '';
+    registerForm.confirmPassword = '';
   } finally {
     loading.value = false;
   }
@@ -183,5 +265,25 @@ h2 {
   .form-group {
     margin-bottom: 1rem;
   }
+}
+
+.form-switch {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.form-switch span {
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-switch span.active {
+  color: #fff;
+  font-weight: bold;
+  border-bottom: 2px solid #00c6fb;
 }
 </style>
