@@ -24,7 +24,6 @@ class ChatConversationResponse(BaseModel):
     message: str
 
 class ConversationCreateRequest(BaseModel):
-    username: str
     knowledge_base_id: str
 
 class ConversationCreateResponse(BaseModel):
