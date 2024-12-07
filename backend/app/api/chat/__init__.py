@@ -50,7 +50,7 @@ def create_conversation(conversationCreateRequest: ConversationCreateRequest,use
         print(conversationCreateRequest.knowledge_base_id)
         conversation = chat.create_conversation(
             knowledgeBaseId=conversationCreateRequest.knowledge_base_id,
-            username=conversationCreateRequest.username
+            username=username
             )
         del chat
         return ConversationCreateResponse(data=conversation.to_dict(),code = 200,message="Create conversation successfully!" )
