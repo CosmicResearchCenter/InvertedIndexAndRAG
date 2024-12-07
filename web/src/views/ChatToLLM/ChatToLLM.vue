@@ -80,9 +80,13 @@ async function sendMessage() {
   let message_length = conversionMessage.value.length;
   try {
     const baseURL = import.meta.env.VITE_APP_BASE_URL;
+    const token = localStorage.getItem('token') // 获取 token
     const response: any = await fetch(baseURL + '/v1/api/mark/chat/chat-message', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '' // 添加 token 到请求头
+      },
       body: JSON.stringify({
         "conversation_id": currentConversationId.value.toString(),
         "message": tempValue,
@@ -90,6 +94,12 @@ async function sendMessage() {
         "streaming": true
       })
     });
+
+    if (response.status === 401) {
+      // removeToken(); // token 失效时清除
+      ElMessage.error('认证失败，请重新登录');
+      return;
+    }
 
     if (!response.ok) throw new Error('网络错误，无法发送消息');
 
@@ -140,7 +150,7 @@ async function getConversionsList() {
 }
 async function reGetConversionsList() {
   const baseURL = import.meta.env.VITE_APP_BASE_URL;
-  const data = await getRequest<any>(baseURL + '/v1/api/mark/chat/chat-message/mark');
+  const data = await getRequest<any>(baseURL + '/v1/api/mark/chat/chat-message/ai');
   conversionsList.value = data.data.reverse();
 }
 async function handleItemClick(conversation_id: string) {
@@ -185,7 +195,7 @@ async function createConversation() {
   const baseURL = import.meta.env.VITE_APP_BASE_URL;
   const data = await postRequest<any>(baseURL+'/v1/api/mark/chat/create-conversation', {
     "knowledge_base_id": knowledge_base_id,
-    "user_id": user_id
+    "username": user_id
   });
   getConversionsList();
   handleItemClick(data.data.conversation_id);
