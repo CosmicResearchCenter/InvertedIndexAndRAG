@@ -7,7 +7,6 @@ class ChatMessageRequest(BaseModel):
     streaming: bool
     conversation_id: str
     message: str
-    user_id: str
 
 # Chat message history response
 class ChatMessageHistoryResponse(BaseModel):
@@ -25,7 +24,7 @@ class ChatConversationResponse(BaseModel):
     message: str
 
 class ConversationCreateRequest(BaseModel):
-    user_id: str
+    username: str
     knowledge_base_id: str
 
 class ConversationCreateResponse(BaseModel):
@@ -35,7 +34,6 @@ class ConversationCreateResponse(BaseModel):
 
 # Knowledge base selection request
 class KnowledgeBaseSelectRequest(BaseModel):
-    user_id: str
     conversation_id: str
     knowledge_base_id: str
 
@@ -101,7 +99,6 @@ class DeleteConversationResponse(BaseModel):
 class ReNameRequest(BaseModel):
     conversation_id: str
     new_name: str
-    user_id: str
 
 class ReNameResponse(BaseModel):
     code: int
@@ -110,7 +107,6 @@ class ReNameResponse(BaseModel):
 
 class ConversationTitleCreateRequest(BaseModel):
     conversation_id: str
-    user_id: str
 
 class ConversationTitleCreateResponse(BaseModel):
     code: int
