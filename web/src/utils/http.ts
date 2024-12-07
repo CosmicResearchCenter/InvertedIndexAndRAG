@@ -1,9 +1,28 @@
 // http.ts
 
+// 添加token相关的工具函数
+export const saveToken = (token: string) => {
+    localStorage.setItem('token', token);
+};
+
+export const getToken = () => {
+    return localStorage.getItem('token');
+};
+
+export const removeToken = () => {
+    localStorage.removeItem('token');
+};
+
 export async function getRequest<T>(url: string): Promise<T | undefined> {
     try {
+        const token = getToken();
+        const headers: HeadersInit = {
+            'Authorization': token ? `Bearer ${token}` : ''
+        };
+
         const response = await fetch(url, {
             method: 'GET',
+            headers
         });
 
         if (!response.ok) {
@@ -17,16 +36,17 @@ export async function getRequest<T>(url: string): Promise<T | undefined> {
     }
 }
 
-export async function postRequest<T>(url: string, body: any, headers?: any): Promise<T | undefined> {
+export async function postRequest<T>(url: string, body: any, customHeaders?: any): Promise<T | undefined> {
     try {
-        // 检查 body 是否为 FormData，设置默认 headers
+        const token = getToken();
         const isFormData = body instanceof FormData;
-        const defaultHeaders = isFormData ? {} : { 'Content-Type': 'application/json' };
+        const defaultHeaders = {
+            ...(!isFormData && { 'Content-Type': 'application/json' }),
+            'Authorization': token ? `Bearer ${token}` : ''
+        };
 
-        // 合并默认 headers 和传入的 headers
-        const requestHeaders = headers ? { ...defaultHeaders, ...headers } : defaultHeaders;
-
-        // 配置请求体：FormData 类型不需要 stringify
+        // 合并默认headers和自定义headers
+        const requestHeaders = customHeaders ? { ...defaultHeaders, ...customHeaders } : defaultHeaders;
         const requestBody = isFormData ? body : JSON.stringify(body);
 
         const response = await fetch(url, {
@@ -100,5 +120,34 @@ export async function deleteRequest<T>(url: string): Promise<T | undefined> {
         return await response.json() as T;
     } catch (error) {
         console.error('DELETE request error:', error);
+    }
+}
+
+// 添加登录方法
+export async function login(username: string, password: string) {
+    try {
+        const baseURL = import.meta.env.VITE_APP_BASE_URL || 'http://127.0.0.1:9988';
+        const response = await fetch(`${baseURL}/v1/api/mark/account/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (!response.ok) {
+            throw new Error('登录失败');
+        }
+
+        const result = await response.json();
+        if (result.code === 200 && result.data.access_token) {
+            saveToken(result.data.access_token);
+            return result;
+        }
+        
+        throw new Error(result.message || '登录失败');
+    } catch (error) {
+        console.error('Login error:', error);
+        throw error;
     }
 }

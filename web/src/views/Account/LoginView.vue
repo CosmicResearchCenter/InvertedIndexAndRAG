@@ -29,12 +29,12 @@
               placeholder="密码" 
               class="input-field"
               :prefix-icon="Lock"
-              @keyup.enter="login"
+              @keyup.enter="handleLogin"
             />
           </div>
           <el-button 
             type="primary" 
-            @click="login" 
+            @click="handleLogin" 
             class="login-button"
             :loading="loading"
           >
@@ -89,6 +89,7 @@ import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue'
+import { login } from '@/utils/http';
 
 const username = ref('');
 const password = ref('');
@@ -97,7 +98,7 @@ const router = useRouter();
 
 const isRegister = ref(false);
 
-const login = async () => {
+const handleLogin = async () => {
   if (!username.value || !password.value) {
     ElMessage.warning('请输入用户名和密码');
     return;
@@ -105,13 +106,11 @@ const login = async () => {
   
   loading.value = true;
   try {
-    if (username.value === 'admin' && password.value === 'admin') {
-      await new Promise(resolve => setTimeout(resolve, 800)); // 模拟请求延迟
-      ElMessage.success('登录成功');
-      router.push('/');
-    } else {
-      ElMessage.error('用户名或密码错误');
-    }
+    await login(username.value, password.value);
+    ElMessage.success('登录成功');
+    router.push('/');
+  } catch (error: any) {
+    ElMessage.error(error.message || '登录失败');
   } finally {
     loading.value = false;
   }
