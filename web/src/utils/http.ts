@@ -18,7 +18,7 @@ const getAuthHeaders = (customHeaders?: any) => {
     const token = getToken();
     const defaultHeaders = {
         'Authorization': token ? `Bearer ${token}` : '',
-        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/json'
     };
     return customHeaders ? { ...defaultHeaders, ...customHeaders } : defaultHeaders;
 };
@@ -49,8 +49,8 @@ export async function postRequest<T>(url: string, body: any, customHeaders?: any
     try {
         const isFormData = body instanceof FormData;
         const headers = isFormData 
-            ? { ...getAuthHeaders(customHeaders), 'Content-Type': undefined }
-            : getAuthHeaders(customHeaders);
+            ? { ...getAuthHeaders(customHeaders) }
+            : {...getAuthHeaders(customHeaders),'Content-Type': 'application/json'};
 
         const response = await fetch(url, {
             method: 'POST',
@@ -76,7 +76,7 @@ export async function putRequest<T>(url: string, body: any, customHeaders?: any)
     try {
         const isFormData = body instanceof FormData;
         const headers = isFormData 
-            ? { ...getAuthHeaders(customHeaders), 'Content-Type': undefined }
+            ? { ...getAuthHeaders(customHeaders) }
             : getAuthHeaders(customHeaders);
 
         const response = await fetch(url, {
