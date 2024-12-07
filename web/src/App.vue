@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import { ChatDotRound, Folder, Setting } from '@element-plus/icons-vue'
+import { ChatDotRound, Folder, Setting, User } from '@element-plus/icons-vue'
 </script>
 
 <template>
@@ -16,13 +16,19 @@ import { ChatDotRound, Folder, Setting } from '@element-plus/icons-vue'
         <li>
           <RouterLink to="/manager">
             <el-icon><Folder /></el-icon>
-            知识库管理
+            知识库
           </RouterLink>
         </li>
-        <li>
+        <!-- <li>
           <RouterLink to="/settings">
             <el-icon><Setting /></el-icon>
             设置
+          </RouterLink>
+        </li> -->
+        <li>
+          <RouterLink to="/admin">
+            <el-icon><User /></el-icon>
+            后台管理
           </RouterLink>
         </li>
       </ul>
@@ -40,8 +46,8 @@ import { ChatDotRound, Folder, Setting } from '@element-plus/icons-vue'
   overflow-y: hidden;
   height: 100vh;
   width: 100vw;
-  background: #1e1e2f;
-  color: #000000;
+  background: #f2fcfc;
+  /* color: #000000; */
   position: fixed;
   top: 0;
   left: 0;
@@ -49,7 +55,7 @@ import { ChatDotRound, Folder, Setting } from '@element-plus/icons-vue'
 
 nav {
   width: 100%;
-  background: linear-gradient(to right, #2c3e50, #3498db);
+  background: #0245a3;
   padding: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid #3a3a4f;
@@ -101,7 +107,7 @@ main {
   flex: 1;
   overflow: hidden; 
   padding: 1rem;
-  background: #2a2a3c;
+  background: #f2fcfc;
   border-top: 1px solid #3a3a4f;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-top: 4rem; /* 确保内容不被固定导航栏遮挡 */
