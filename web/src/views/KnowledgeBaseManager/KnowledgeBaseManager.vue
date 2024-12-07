@@ -1,32 +1,52 @@
 <template>
     <el-row class="page-content">
-        <!-- Sidebar -->
-        <el-col :span="4" class="sidebar">
-            <el-menu :default-active="activeMenu" class="el-menu-vertical-demo" background-color="#f3f3f4"
-                text-color="#303133" active-text-color="#409EFF">
-                <el-menu-item index="1" @click="toggleSwitch('1')">
-                    <el-icon>
-                        <Document />
-                    </el-icon>
-                    <span slot="title">文档</span>
+        <el-col :span="3" class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <el-icon><Monitor /></el-icon>
+                    <span>{{ settings.knowledgeBaseName }}</span>
+                </div>
+            </div>
+            <el-menu :default-active="activeMenu" 
+                     class="sidebar-menu" 
+                     :collapse="isCollapse"
+                     background-color="transparent"
+                     text-color="#bdf1f6"
+                     active-text-color="#ffffff">
+                <el-menu-item index="1" @click="toggleSwitch('1')" class="menu-item">
+                    <el-icon><Document /></el-icon>
+                    <template #title>
+                        <span class="menu-text">文档</span>
+                    </template>
                 </el-menu-item>
 
-                <el-menu-item index="2" @click="toggleSwitch('2')">
-                    <el-icon>
-                        <Setting />
-                    </el-icon>
-                    <span slot="title">设置</span>
+                <el-menu-item index="2" @click="toggleSwitch('2')" class="menu-item">
+                    <el-icon><Setting /></el-icon>
+                    <template #title>
+                        <span class="menu-text">设置</span>
+                    </template>
                 </el-menu-item>
             </el-menu>
+            
+            <div class="sidebar-footer">
+                <el-button class="collapse-btn" @click="toggleCollapse">
+                    <el-icon><Fold v-if="!isCollapse"/><Expand v-else/></el-icon>
+                </el-button>
+            </div>
         </el-col>
 
         <!-- Main content -->
         <el-col :span="20" class="main-content">
-            <div class="documentBox" v-if="switchButton === '1'">
+            <div class="documentBox content-card" v-if="switchButton === '1'">
                 <!-- Header -->
                 <div class="header">
-                    <el-input v-model="searchText" placeholder="搜索" class="search-input" clearable />
-                    <el-button type="primary" icon="el-icon-plus" @click="addFile">
+                    <el-input v-model="searchText" placeholder="搜索文档..." class="search-input" clearable>
+                        <template #prefix>
+                            <el-icon><Search /></el-icon>
+                        </template>
+                    </el-input>
+                    <el-button type="primary" class="add-button" @click="addFile">
+                        <el-icon><Plus /></el-icon>
                         添加文件
                     </el-button>
                 </div>
@@ -72,7 +92,7 @@
                 </el-table>
             </div>
 
-            <div class="settingBox" v-else>
+            <div class="settingBox content-card" v-else>
                 <el-form :model="settings" label-width="120px">
                     <el-form-item label="知识库名字">
                         <el-input v-model="settings.knowledgeBaseName" placeholder="请输入知识库名字" />
@@ -208,6 +228,12 @@ export default defineComponent({
             }
         };
 
+        const isCollapse = ref(false);
+        
+        const toggleCollapse = () => {
+            isCollapse.value = !isCollapse.value;
+        };
+
         onMounted(() => {
             fetchFiles();
             get_kb_config();
@@ -222,7 +248,9 @@ export default defineComponent({
             addFile,
             settings,
             saveSettings,
-            get_kb_config
+            get_kb_config,
+            isCollapse,
+            toggleCollapse,
         };
     }
 });
@@ -232,50 +260,207 @@ export default defineComponent({
 <style scoped>
 .page-content {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
+    background-color: #f5f7fa;
 }
 
 .sidebar {
-    background-color: #f3f3f4;
-    padding: 20px 0;
+    background: linear-gradient(135deg, #0245a3 0%, #0a4fab 100%);
+    backdrop-filter: blur(10px);
+    min-height: 100vh;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(2, 69, 163, 0.1);
+}
+
+.sidebar-header {
+    padding: 24px 16px;
+    border-bottom: 1px solid rgba(189, 241, 246, 0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.logo .el-icon {
+    font-size: 24px;
+}
+
+.sidebar-menu {
+    border: none;
+    margin-top: 16px;
+}
+
+.menu-item {
+    margin: 8px 12px;
+    border-radius: 8px;
+    height: 48px !important;
+    line-height: 48px;
+}
+
+.menu-item:hover {
+    background: rgba(143, 186, 243, 0.15) !important;
+    backdrop-filter: blur(5px);
+}
+
+.menu-item.is-active {
+    background: rgba(143, 186, 243, 0.25) !important;
+}
+
+.menu-text {
+    font-size: 15px;
+    margin-left: 8px;
+}
+
+.el-menu-item .el-icon {
+    font-size: 18px;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0 16px;
+}
+
+.collapse-btn {
+    background: transparent;
+    border: none;
+    color: #bdf1f6;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.collapse-btn:hover {
+    background: rgba(143, 186, 243, 0.15);
+    color: #ffffff;
+}
+
+/* 在小屏幕下调整布局 */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        z-index: 1000;
+        width: 60px;
+    }
+    
+    .logo span,
+    .menu-text {
+        display: none;
+    }
 }
 
 .main-content {
-    padding: 20px;
-    background-color: white;
+    padding: 24px;
+    background-color: #f5f7fa;
+}
+
+.content-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    align-items: center;
+    margin-bottom: 24px;
 }
 
 .search-input {
     width: 300px;
+    .el-input__inner {
+        border-radius: 8px;
+        border: 1px solid #e4e7ed;
+    }
+}
+
+.add-button {
+    background-color: #0245a3;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        background-color: #8fbaf3;
+        transform: translateY(-2px);
+    }
 }
 
 .file-table {
-    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    
+    .el-table__header th {
+        background-color: #f8f9fa;
+    }
+    
+    .el-table__row {
+        transition: all 0.3s ease;
+        
+        &:hover {
+            background-color: #f0f9ff;
+        }
+    }
 }
 
 .file-name {
     margin-left: 10px;
+    color: #0245a3;
+    font-weight: 500;
 }
 
-.more-actions {
-    cursor: pointer;
+.el-tag {
+    border-radius: 6px;
+    padding: 4px 12px;
 }
 
-/* 在小屏幕下调整布局 */
+.settingBox {
+    .el-form-item {
+        margin-bottom: 24px;
+    }
+    
+    .el-switch {
+        margin-left: 8px;
+    }
+    
+    .el-button {
+        padding: 12px 24px;
+    }
+}
+
 @media screen and (max-width: 768px) {
-  .page-content {
-    flex-direction: column;
-  }
+    .page-content {
+        flex-direction: column;
+    }
 
-  .sidebar,
-  .main-content {
-    width: 100%;
-  }
+    .sidebar, .main-content {
+        width: 100%;
+    }
+    
+    .content-card {
+        margin: 12px;
+        padding: 16px;
+    }
+    
+    .search-input {
+        width: 200px;
+    }
 }
 </style>
