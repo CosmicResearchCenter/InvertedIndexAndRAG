@@ -89,7 +89,7 @@ import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue'
-import { login } from '@/utils/http';
+import { login, signup } from '@/utils/http';
 
 const username = ref('');
 const password = ref('');
@@ -135,12 +135,14 @@ const register = async () => {
 
   loading.value = true;
   try {
-    await new Promise(resolve => setTimeout(resolve, 800)); // 模拟注册请求
+    await signup(registerForm.username, registerForm.password);
     ElMessage.success('注册成功');
     isRegister.value = false; // 切换到登录界面
     username.value = registerForm.username; // 自动填充用户名
     registerForm.password = '';
     registerForm.confirmPassword = '';
+  } catch (error: any) {
+    ElMessage.error(error.message || '注册失败');
   } finally {
     loading.value = false;
   }

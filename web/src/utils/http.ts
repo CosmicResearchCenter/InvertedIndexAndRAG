@@ -157,3 +157,32 @@ export async function login(username: string, password: string) {
         throw error;
     }
 }
+
+// 添加注册方法
+export async function signup(username: string, password: string) {
+    try {
+        const baseURL = import.meta.env.VITE_APP_BASE_URL || 'http://127.0.0.1:9988';
+        const response = await fetch(`${baseURL}/v1/api/mark/account/signup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (!response.ok) {
+            throw new Error('注册失败');
+        }
+
+        const result = await response.json();
+        if (result.code === 200 && result.data.access_token) {
+            saveToken(result.data.access_token);
+            return result;
+        }
+        
+        throw new Error(result.message || '注册失败');
+    } catch (error) {
+        console.error('Signup error:', error);
+        throw error;
+    }
+}
