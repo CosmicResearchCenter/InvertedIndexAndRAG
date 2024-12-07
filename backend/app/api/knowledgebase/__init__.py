@@ -94,7 +94,7 @@ async def upload(
 def insert_doc(base_id:str,doc_id:str,documentSplitArgs:DocumentSplitArgs,background_tasks: BackgroundTasks,username: str = Depends(get_current_user)):
     
     kb_manager = KBase()
-    index_status = kb_manager.insert_knowledgebase(documentSplitArgs,base_id,username,doc_id,background_tasks,executor)
+    index_status = kb_manager.insert_knowledgebase(base_id,username,documentSplitArgs,doc_id,background_tasks,executor)
     return GenericResponse(message="正在建立索引",code=200,data=[index_status.to_dict()])
 
 
