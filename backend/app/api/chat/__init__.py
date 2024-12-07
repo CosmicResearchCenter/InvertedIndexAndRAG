@@ -32,9 +32,9 @@ def chat(query: ChatMessageRequest,username: str = Depends(get_current_user)):
 
     try:
         if query.streaming:
-            return StreamingResponse(chat.run(query,streaming=True), media_type="text/event-stream")
+            return StreamingResponse(chat.run(query,username,streaming=True), media_type="text/event-stream")
         else:
-            result = chat.run(query,streaming=False)
+            result = chat.run(query,username,streaming=False)
             if result == None:
                 raise Exception("No results found.")
             del chat
