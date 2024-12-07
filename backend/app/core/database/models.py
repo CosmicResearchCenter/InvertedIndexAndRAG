@@ -52,7 +52,7 @@ class Conversation(Base):
             "conversationName": self.conversationName,
             "num_conversation": self.num_conversation,
             "knowledgeBaseId": self.knowledgeBaseId,
-            "userId": self.userId
+            "username": self.username
         }
 class Chat_Messages (Base):
     __tablename__ = 'chat_messages'
