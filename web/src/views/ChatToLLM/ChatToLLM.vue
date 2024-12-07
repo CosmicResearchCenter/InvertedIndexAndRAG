@@ -245,7 +245,7 @@ onMounted(() => {
   margin-bottom: 20px;
   border-radius: 12px;
   height: 45px;
-  background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  background: #0245a3;
   border: none;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -325,7 +325,7 @@ onMounted(() => {
 
 .input-box :deep(.el-textarea__inner:focus) {
   box-shadow: 0 4px 16px rgba(0, 198, 251, 0.2);
-  border-color: #00c6fb;
+  border-color: #8fbaf3;
 }
 
 .message-item-user,
@@ -347,8 +347,8 @@ onMounted(() => {
 }
 
 .chat-log-item.active {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: #8fbaf3;
+  color: #0b3763;
 }
 
 .knowledge-base-item {
@@ -368,7 +368,7 @@ onMounted(() => {
 }
 
 .knowledge-base-item.active {
-  background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  background: #0245a3;
   color: white;
   box-shadow: 0 6px 16px rgba(0, 198, 251, 0.25);
   border: none;
@@ -389,7 +389,7 @@ onMounted(() => {
 .el-button {
   border-radius: 12px;
   height: 45px;
-  background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  background: #0245a3;
   border: none;
   transition: all 0.3s ease;
   font-weight: 500;
