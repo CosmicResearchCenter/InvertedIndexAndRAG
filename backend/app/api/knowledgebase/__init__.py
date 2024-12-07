@@ -76,7 +76,7 @@ async def upload(
     kb_manager = KBase()
 
     # index_infos = await  kb_manager.upload_files(base_id,file,threadPool)
-    index_infos =   kb_manager.upload_files(base_id,[file],background_tasks,executor)
+    index_infos =   kb_manager.upload_files(base_id,username,[file],background_tasks,executor)
 
     index_infos_prase = []
     for index_info in index_infos:
@@ -93,25 +93,13 @@ async def upload(
 @router.post("/{base_id}/doc/{doc_id}/index",tags=["插入文档到知识库"],response_model=GenericResponse)
 def insert_doc(base_id:str,doc_id:str,documentSplitArgs:DocumentSplitArgs,background_tasks: BackgroundTasks,username: str = Depends(get_current_user)):
     
-    # 检查知识库是否是属于用户的
-    mysql_client = MysqlClient()
-    kb = mysql_client.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == base_id,KnowledgeBase.created_by==username).first()
-    if kb == None:
-        return GenericResponse(message="知识库不存在",code=400,data=[]) 
-    
     kb_manager = KBase()
-    index_status = kb_manager.insert_knowledgebase(documentSplitArgs,base_id,doc_id,background_tasks,executor)
+    index_status = kb_manager.insert_knowledgebase(documentSplitArgs,base_id,username,doc_id,background_tasks,executor)
     return GenericResponse(message="正在建立索引",code=200,data=[index_status.to_dict()])
 
 
 @router.get("/{base_id}/doc/{doc_id}/index_status", tags=["获取文档索引状态"],response_model=GenericResponse)
 async def get_doc_index_status(base_id:str, doc_id:str,username: str = Depends(get_current_user)):
-    
-    # 检查知识库是否是属于用户的
-    mysql_client = MysqlClient()
-    kb = mysql_client.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == base_id,KnowledgeBase.created_by==username).first()
-    if kb == None:
-        return GenericResponse(message="知识库不存在",code=400,data=[])
     
     kb_manager = KBase()
     index_status = kb_manager.get_index_status(base_id,doc_id)
@@ -121,48 +109,38 @@ async def get_doc_index_status(base_id:str, doc_id:str,username: str = Depends(g
 
 @router.delete("/{base_id}",tags=["删除知识库"],response_model=GenericResponse)
 async def delete(base_id:str,username: str = Depends(get_current_user)):
-    # 检查知识库是否是属于用户的
-    mysql_client = MysqlClient()
-    kb = mysql_client.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == base_id,KnowledgeBase.created_by==username).first()
-    if kb == None:
-        return GenericResponse(message="知识库不存在",code=400,data=[])
-    
+
     kb_manager = KBase()
-    return kb_manager.delete_kb(base_id)
+    return kb_manager.delete_kb(base_id,username)
 
 
 @router.delete("/{base_id}/doc/{doc_id}",tags=["删除文档"],response_model=GenericResponse)
-async def delete_doc():
-    pass
+async def delete_doc(base_id,doc_id,username: str = Depends(get_current_user)):
+    kb_manager = KBase()
+    return kb_manager.delete_document(base_id,username,doc_id)
 
 # 更新知识库配置
 @router.put("/{base_id}/config",tags=["更新知识库配置"],response_model=GenericResponse)
-async def update_config(base_id:str,config:KnowledgeBaseConfig):
-    
-    # 检查知识库是否是属于用户的
-    mysql_client = MysqlClient()
-    kb = mysql_client.db.query(KnowledgeBase).filter(KnowledgeBase.knowledgeBaseId == base_id,KnowledgeBase.created_by==username).first()
-    if kb == None:
-        return GenericResponse(message="知识库不存在",code=400,data=[])
+async def update_config(base_id:str,config:KnowledgeBaseConfig,username: str = Depends(get_current_user)):
     
     kb_manager = KBase()
-    return kb_manager.update_kb_config(kb_id=base_id,config=config)
+    return kb_manager.update_kb_config(kb_id=base_id,config=config,username=username)
 
 # 获取知识库配置
 @router.get("/{base_id}/config",tags=["获取知识库配置"],response_model=GenericResponse)
-async def get_config(base_id:str):
+async def get_config(base_id:str,username: str = Depends(get_current_user)):
     kb_manager = KBase()
-    config = kb_manager.get_kb_config(base_id)
+    config = kb_manager.get_kb_config(base_id,username)
     return GenericResponse(message="获取成功",code=200,data=[config])
 
 # 重命名文档名字
 @router.put("/{base_id}/doc/{doc_id}/rename",tags=["重命名文档"],response_model=GenericResponse)
-async def rename_doc_name(base_id:str,doc_id:str,new_name:str):
+async def rename_doc_name(base_id:str,doc_id:str,new_name:str,username: str = Depends(get_current_user)):
     kb_manager = KBase()
-    return kb_manager.rename_doc_name(doc_id,new_name)
+    return kb_manager.rename_doc_name(base_id,username,doc_id,new_name)
 
 # 归档文档
 @router.put("/{base_id}/doc/{doc_id}/archive",tags=["归档文档"],response_model=GenericResponse)
-async def archive_doc(base_id:str,doc_id:str):
+async def archive_doc(base_id:str,doc_id:str,username: str = Depends(get_current_user)):
     kb_manager = KBase()
-    return kb_manager.archive_doc(doc_id)
+    return kb_manager.archive_doc(base_id,username, doc_id)
