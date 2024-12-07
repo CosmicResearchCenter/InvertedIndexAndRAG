@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { getRequest } from '../utils/http'
 // import KnowledgeBaseManager from '../views/KnowledgeBaseManager/KnowledgeBaseManager.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +35,52 @@ const router = createRouter({
       component: () => import('../views/KnowledgeBaseManager/KnowledgeBaseCreate.vue')
     }
   ]
+})
+
+// 定义白名单路由
+const whiteList = ['/login']
+
+// 定义检查管理员权限的函数
+async function checkAdminAccess(): Promise<boolean> {
+
+
+  const accessToken = localStorage.getItem('token')
+  if (!accessToken) return false
+  const baseURL = import.meta.env.VITE_APP_BASE_URL;
+  try {
+    const response = await fetch(baseURL+'/v1/api/mark/account/me', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+    if (response.ok) {
+      // const result = await response.json()
+      return true
+    }
+  } catch (error) {
+    console.error('Error verifying admin access:', error)
+  }
+  return false
+
+}
+
+// 路由守卫
+router.beforeEach(async (to, from, next) => {
+  // 1. 检查是否是白名单路由
+  if (whiteList.includes(to.path)) {
+    next()
+    return
+  }
+
+  // 2. 检查权限
+  const hasAdminAccess = await checkAdminAccess()
+  if (!hasAdminAccess) {
+    next({ name: 'login', query: { redirect: to.fullPath } })
+    return
+  }
+
+  next()
 })
 
 export default router
