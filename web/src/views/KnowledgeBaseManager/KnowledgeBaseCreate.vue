@@ -212,4 +212,19 @@ export default defineComponent({
 .segment-preview {
   margin-bottom: 10px;
 }
+
+/* 在小屏幕下调整步骤条为竖直方向 */
+@media screen and (max-width: 768px) {
+  .el-steps {
+    flex-direction: column;
+  }
+
+  .step-content {
+    flex-direction: column;
+  }
+
+  .el-col {
+    width: 100%;
+  }
+}
 </style>

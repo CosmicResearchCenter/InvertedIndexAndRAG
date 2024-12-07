@@ -106,4 +106,21 @@ main {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-top: 4rem; /* 确保内容不被固定导航栏遮挡 */
 }
+
+/* 在小屏幕下，调整导航栏的布局 */
+@media screen and (max-width: 768px) {
+  nav ul {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  nav li {
+    margin: 10px 0;
+  }
+
+  main {
+    margin-top: 5rem;
+    padding: 1rem 0.5rem;
+  }
+}
 </style>

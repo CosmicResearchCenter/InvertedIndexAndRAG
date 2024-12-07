@@ -218,7 +218,7 @@ onMounted(() => {
 <style scoped>
 .chat-aside,
 .chat-aside-right {
-  width: 280px !important;
+  width: 20% !important;
   background: rgba(248, 249, 250, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -229,6 +229,7 @@ onMounted(() => {
 }
 
 .chat-main {
+  width: 60% !important;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -399,5 +400,35 @@ onMounted(() => {
 .el-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 198, 251, 0.5);
+}
+
+/* 在小屏幕下，调整布局为上下排列 */
+@media screen and (max-width: 768px) {
+  .chat-aside,
+  .chat-aside-right {
+    width: 100% !important;
+    margin: 0;
+    display: none;
+  }
+
+  .chat-main {
+    width: 100% !important;
+    margin: 0;
+  }
+
+  .input-area {
+    /* 调整输入区域样式 */
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .input-box {
+    width: 100%;
+  }
+
+  .el-button {
+    width: 100%;
+    margin-top: 10px;
+  }
 }
 </style>

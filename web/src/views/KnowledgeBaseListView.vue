@@ -102,7 +102,7 @@ export default defineComponent({
             }
         };
 
-        // 初始化时加��知识库数据
+        // 初始化时加载知识库数据
         onMounted(fetchKnowledgeBases);
 
         // 创建知识库
@@ -227,5 +227,13 @@ export default defineComponent({
 
 .menu-button {
     padding: 0;
+}
+
+/* 调整卡片在小屏幕下的排列方式 */
+@media screen and (max-width: 768px) {
+  .col-card {
+    width: 100%;
+    max-width: none;
+  }
 }
 </style>

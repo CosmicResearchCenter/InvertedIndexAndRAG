@@ -266,4 +266,16 @@ export default defineComponent({
 .more-actions {
     cursor: pointer;
 }
+
+/* 在小屏幕下调整布局 */
+@media screen and (max-width: 768px) {
+  .page-content {
+    flex-direction: column;
+  }
+
+  .sidebar,
+  .main-content {
+    width: 100%;
+  }
+}
 </style>
