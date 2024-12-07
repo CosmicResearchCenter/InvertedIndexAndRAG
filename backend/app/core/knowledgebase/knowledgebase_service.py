@@ -29,12 +29,14 @@ def check_kb_owner_decorator(method: Callable):
     @wraps(method)
     def wrapper(self, base_id: int, username: str, *args, **kwargs):
         # 检查知识库是否是用户创建的
+        print(f'check_kb_owner_decorator base_id: {base_id}, username: {username}')
         kb = self.db.query(KnowledgeBase).filter(
             KnowledgeBase.knowledgeBaseId == base_id,
             KnowledgeBase.created_by == username
         ).first()
+        
         if not kb:
-            raise HTTPException(status_code=404, detail="KnowledgeBase not found 404")
+            raise HTTPException(status_code=404, detail="KnowledgeBase not found 404 !")
         return method(self, base_id, username, *args, **kwargs)
     return wrapper
 
@@ -166,7 +168,7 @@ class KBase(MysqlClient):
             print(f'{len(files)} files saved successfully')
         return docs_status
     @check_kb_owner_decorator
-    def insert_knowledgebase(self,documentSplitArgs:DocumentSplitArgs,base_id,username,doc_id,background_tasks:BackgroundTasks,executor:ThreadPoolExecutor)->DocIndexStatus:
+    def insert_knowledgebase(self,base_id,username,documentSplitArgs:DocumentSplitArgs,doc_id,background_tasks:BackgroundTasks,executor:ThreadPoolExecutor)->DocIndexStatus:
         
         
         index_status = DocIndexStatus(index_status=0,knowledgeBaseId=base_id,doc_id=doc_id)
