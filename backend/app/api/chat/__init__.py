@@ -44,7 +44,7 @@ def chat(query: ChatMessageRequest,username: str = Depends(get_current_user)):
         return ChatMessageResponse(code=400,message="No results found.")
 @router.post("/create-conversation",response_model=ConversationCreateResponse)
 def create_conversation(conversationCreateRequest: ConversationCreateRequest,username: str = Depends(get_current_user)):
-    chat:Chat = Chat(conversation_id="",user_id=conversationCreateRequest.username,rag=rag)
+    chat:Chat = Chat(conversation_id="",user_id=username,rag=rag)
 
     try:
         print(conversationCreateRequest.knowledge_base_id)
