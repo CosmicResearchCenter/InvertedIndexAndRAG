@@ -175,10 +175,10 @@ export default defineComponent({
     justify-content: center;
     align-items: center;
     position: relative;
-    background: rgba(169, 166, 166, 0.599);
+    background: #8fbaf3;
     backdrop-filter: blur(10px);
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-    color: #ffffff;
+    color: #000000;
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
@@ -200,13 +200,13 @@ export default defineComponent({
 
 .sub-text {
     font-size: 12px;
-    color: #a0a0a0;
+    color: #000000;
     margin-top: 10px;
 }
 
 .details {
     font-size: 14px;
-    color: #c0c0c0;
+    color: #000000;
     margin-top: 5px;
 }
 
