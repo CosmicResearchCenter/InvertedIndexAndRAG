@@ -13,19 +13,28 @@ export const removeToken = () => {
     localStorage.removeItem('token');
 };
 
+// 新增：获取认证请求头
+const getAuthHeaders = (customHeaders?: any) => {
+    const token = getToken();
+    const defaultHeaders = {
+        'Authorization': token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+    };
+    return customHeaders ? { ...defaultHeaders, ...customHeaders } : defaultHeaders;
+};
+
 export async function getRequest<T>(url: string): Promise<T | undefined> {
     try {
-        const token = getToken();
-        const headers: HeadersInit = {
-            'Authorization': token ? `Bearer ${token}` : ''
-        };
-
+        const headers = getAuthHeaders();
         const response = await fetch(url, {
             method: 'GET',
             headers
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                removeToken(); // token无效时清除
+            }
             throw new Error(`GET request failed: ${response.statusText}`);
         }
 
@@ -38,24 +47,21 @@ export async function getRequest<T>(url: string): Promise<T | undefined> {
 
 export async function postRequest<T>(url: string, body: any, customHeaders?: any): Promise<T | undefined> {
     try {
-        const token = getToken();
         const isFormData = body instanceof FormData;
-        const defaultHeaders = {
-            ...(!isFormData && { 'Content-Type': 'application/json' }),
-            'Authorization': token ? `Bearer ${token}` : ''
-        };
-
-        // 合并默认headers和自定义headers
-        const requestHeaders = customHeaders ? { ...defaultHeaders, ...customHeaders } : defaultHeaders;
-        const requestBody = isFormData ? body : JSON.stringify(body);
+        const headers = isFormData 
+            ? { ...getAuthHeaders(customHeaders), 'Content-Type': undefined }
+            : getAuthHeaders(customHeaders);
 
         const response = await fetch(url, {
             method: 'POST',
-            headers: requestHeaders,
-            body: requestBody,
+            headers,
+            body: isFormData ? body : JSON.stringify(body),
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                removeToken();
+            }
             throw new Error(`POST request failed: ${response.statusText}`);
         }
 
@@ -66,29 +72,24 @@ export async function postRequest<T>(url: string, body: any, customHeaders?: any
     }
 }
 
-export async function putRequest<T>(url: string, body: any, headers?: any): Promise<T | undefined> {
+export async function putRequest<T>(url: string, body: any, customHeaders?: any): Promise<T | undefined> {
     try {
         const isFormData = body instanceof FormData;
-
-        // 默认请求头（如果是 FormData，则不设置 Content-Type）
-        const defaultHeaders = isFormData ? {} : { 'Content-Type': 'application/json' };
-
-        // 合并默认 headers 和传入的 headers
-        const requestHeaders = headers ? { ...defaultHeaders, ...headers } : defaultHeaders;
-
-        // 如果 body 是 FormData，则直接传递；否则进行 JSON 序列化
-        const requestBody = isFormData ? body : JSON.stringify(body);
+        const headers = isFormData 
+            ? { ...getAuthHeaders(customHeaders), 'Content-Type': undefined }
+            : getAuthHeaders(customHeaders);
 
         const response = await fetch(url, {
             method: 'PUT',
-            headers: requestHeaders,
-            body: requestBody,
+            headers,
+            body: isFormData ? body : JSON.stringify(body),
         });
 
         if (!response.ok) {
-            const errorText = `PUT request failed with status ${response.status}: ${response.statusText}`;
-            console.error(errorText);
-            throw new Error(errorText);
+            if (response.status === 401) {
+                removeToken();
+            }
+            throw new Error(`PUT request failed: ${response.statusText}`);
         }
 
         // 确保响应体为 JSON 格式再解析
@@ -105,14 +106,18 @@ export async function putRequest<T>(url: string, body: any, headers?: any): Prom
     }
 }
 
-
 export async function deleteRequest<T>(url: string): Promise<T | undefined> {
     try {
+        const headers = getAuthHeaders();
         const response = await fetch(url, {
             method: 'DELETE',
+            headers
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                removeToken();
+            }
             throw new Error(`DELETE request failed: ${response.statusText}`);
         }
 
@@ -120,6 +125,7 @@ export async function deleteRequest<T>(url: string): Promise<T | undefined> {
         return await response.json() as T;
     } catch (error) {
         console.error('DELETE request error:', error);
+        return undefined;
     }
 }
 
