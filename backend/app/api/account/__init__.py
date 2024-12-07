@@ -51,7 +51,7 @@ async def login(loginRequest: LoginRequest):
             raise HTTPException(status_code=400, detail="Incorrect username or password")
         if not verify_password(password, user.password):
             raise HTTPException(status_code=400, detail="Incorrect username or password")
-        if user.status == 1:
+        if user.delete_sign == True:
             raise HTTPException(status_code=400, detail="Account disabled")
         access_token_expires = datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
