@@ -120,6 +120,10 @@ export default defineComponent({
 
       try {
         const baseURL = import.meta.env.VITE_APP_BASE_URL;
+        const headers= {
+          'Authorization': 'Bearer ' + localStorage.getItem('token'),
+          // 'Content-Type': 'multipart/form-data'
+        }
         const response: any = await putRequest(baseURL+`/v1/api/mark/knowledgebase/${baseId.value}`, formData);
         console.log(response);
         if (response.code === 200) {
