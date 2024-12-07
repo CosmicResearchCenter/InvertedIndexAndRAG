@@ -91,6 +91,6 @@ def signup(signupRequest: SignUpRequest):
         mysql_client.db.close()
 
 # 获取当前用户信息
-@router.get("/me", response_model=TestResponse)
+@router.get("/me")
 def read_users_me(token: str = Depends(get_current_user)):
     return token
