@@ -163,11 +163,11 @@ const register = async () => {
 .login-box {
   position: relative;
   margin-top: -200px;
-  width: 90%;
+  width: 100%;
   max-width: 400px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  padding: 2.5rem;
+  padding: 2rem;
   border-radius: 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -265,6 +265,18 @@ h2 {
   
   .form-group {
     margin-bottom: 1rem;
+  }
+
+  .login-box {
+    padding: 1rem;
+  }
+
+  .input-field :deep(.el-input__wrapper) {
+    padding: 6px 10px;
+  }
+
+  .login-button {
+    height: 40px;
   }
 }
 
