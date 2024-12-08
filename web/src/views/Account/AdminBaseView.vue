@@ -1,9 +1,9 @@
 <template>
-  <el-container style="height: 100%; width: 100%;">
-    <!-- 左侧用户列表 -->
+  <el-container class="base-container" :class="{ 'dark-mode': isDarkMode, 'content-visible': contentVisible }">
     <el-aside class="base-aside">
-      <div class="search-box">
+      <div class="aside-header">
         <el-input v-model="searchUser" placeholder="搜索用户..." prefix-icon="Search" />
+        <el-switch v-model="isDarkMode" class="theme-switch" size="small" />
       </div>
       <div class="user-list">
         <div v-for="user in filteredUsers" 
@@ -159,18 +159,45 @@ function formatSize(bytes: number) {
 // 页面加载时获取用户列表
 onMounted(() => {
   fetchUsers();
+  setTimeout(() => contentVisible.value = true, 100);
 });
+
+// 添加主题切换
+const isDarkMode = ref(false);
+
+// 添加动画状态
+const contentVisible = ref(false);
 </script>
 
 <style scoped>
+.base-container {
+  height: 100vh;
+  background: var(--bg-color, #f5f7fa);
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.base-container.content-visible {
+  opacity: 1;
+}
+
+.base-container.dark-mode {
+  --bg-color: #1a1a1a;
+  --card-bg: #242424;
+  --text-color: #fff;
+  --border-color: #333;
+  color: var(--text-color);
+}
+
 .base-aside {
   width: 20% !important;
-  background: rgba(248, 249, 250, 0.95);
-  backdrop-filter: blur(10px);
+  background: var(--card-bg, rgba(248, 249, 250, 0.95));
+  backdrop-filter: blur(20px);
   border-radius: 16px;
   margin: 12px;
   padding: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .base-aside-right {
@@ -245,6 +272,18 @@ onMounted(() => {
   align-items: center;
   height: 100%;
   color: #999;
+}
+
+.base-item {
+  border: 1px solid var(--border-color, #eee);
+  margin: 8px 0;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.base-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 @media screen and (max-width: 768px) {

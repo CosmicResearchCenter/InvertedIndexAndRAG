@@ -1,11 +1,12 @@
 <template>
-  <el-container style="height: 100%; width: 100%;">
+  <el-container class="chat-container" :class="{ 'dark-mode': isDarkMode }">
     <!-- 左侧用户列表 -->
     <el-aside class="chat-aside">
-      <div class="search-box">
+      <div class="aside-header">
         <el-input v-model="searchUser" placeholder="搜索用户..." prefix-icon="Search" />
+        <el-switch v-model="isDarkMode" class="theme-switch" size="small" />
       </div>
-      <div class="user-list">
+      <div class="user-list custom-scrollbar">
         <div v-for="user in filteredUsers" :key="user.id"
           class="user-item"
           :class="{ active: currentUserId === user.id }"
@@ -61,6 +62,7 @@ const currentConvId = ref('');
 const users = ref<any[]>([]);
 const userConversations = ref<any[]>([]);
 const conversationMessages = ref<any[]>([]);
+const isDarkMode = ref(false);
 
 // 示例数据
 const mockUsers = [
@@ -164,15 +166,45 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.chat-container {
+  height: 100vh;
+  background: var(--bg-color, #f5f7fa);
+  transition: all 0.3s ease;
+}
+
+.chat-container.dark-mode {
+  --bg-color: #1a1a1a;
+  --card-bg: #242424;
+  --text-color: #fff;
+  --border-color: #333;
+  color: var(--text-color);
+}
+
 .chat-aside{
   width: 20% !important;  /* 改为20% */
-  background: rgba(248, 249, 250, 0.95);
+  background: var(--card-bg, #fff);
+  border-right: 1px solid var(--border-color, #eee);
+  transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   border-radius: 16px;
   margin: 12px;
   padding: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
+
+.aside-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color, #eee);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
 .chat-aside-right {
   width: 50% !important;  /* 改为20% */
   background: rgba(248, 249, 250, 0.95);
@@ -224,6 +256,14 @@ onMounted(() => {
   padding: 12px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .user-message {
