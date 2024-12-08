@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
-from app.api import AccountRouter,ChatRouter,KnowledgeBaseRouter
+from app.api import AccountRouter,ChatRouter,KnowledgeBaseRouter,AdminRouter
 
 origins = [
     "*"
@@ -32,7 +32,7 @@ router = APIRouter()
 router.include_router(AccountRouter, prefix="/account", tags=["mark", "account"])
 router.include_router(ChatRouter, prefix="/chat", tags=["mark", "chat"])
 router.include_router(KnowledgeBaseRouter, prefix="/knowledgebase", tags=["mark", "knowledgebase"])
-
+router.include_router(AdminRouter, prefix="/admin", tags=["mark", "admin"])
 
 app.include_router(router, prefix="/v1/api/mark", tags=["mark"])
 
