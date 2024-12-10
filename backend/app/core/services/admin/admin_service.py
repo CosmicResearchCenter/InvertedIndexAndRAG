@@ -4,13 +4,11 @@ from app.core.database.models import KnowledgeBase,UserInfo,Chat_Messages,Conver
 from app.core.rag.database.milvus.milvus_client import MilvusCollectionManager
 from app.core.rag.database.elasticsearch.elastic_client import ElasticClient
 from .admin_type import (SystemInfo,
-                        UserConversation,
                         Conversation_Collection,
-                        ConversationSession,
                         Message,
-                        User_KnowledgeBase,
                         KnowledgeBaseItem,
-                        KnowledgeBaseInfo
+                        KnowledgeBaseInfo,
+                        User
                          )
 from typing import List,Tuple
 from datetime import datetime
@@ -31,98 +29,131 @@ class AdminService:
             user_count=user_count,
             conversation_count=conversation_count
         )
+    # 获取所有用户
+    def get_all_users(self)->List[User]:
+        mysql_client = MysqlClient()
+        users = mysql_client.db.query(UserInfo).all()
+        user_list: List[User] = []
+        for user in users:
+            user_list.append(User(
+                username=user.username,
+                admin_sign=user.is_admin
+            ))
+        return user_list
     
-    # 获取用户对话信息
-    def get_users_conversation(self) -> List[UserConversation]:
+    # 根据用户对话列表
+    def get_user_conversation(self,username:str,s_username:str)->List[Conversation_Collection]:
         mysql_client = MysqlClient()
         
-        # 1. 首先获取所有用户
-        users = mysql_client.db.query(UserInfo).all()
-        user_conversation_list: List[UserConversation] = []
-
-        # 2. 遍历每个用户
-        for user in users:
-            # 3. 获取该用户的所有对话
+        if s_username == 'admin':
+            # 获取用户对话
             conversations = mysql_client.db.query(Conversation).filter(
-                Conversation.username == user.username
+                Conversation.username == username
             ).all()
-            
-            conversation_collection: List[Conversation_Collection] = []
-            
-            # 4. 遍历该用户的所有对话
+            user_conversation_list: List[Conversation_Collection] = []
             for conversation in conversations:
-                # 5. 获取该对话的所有消息
-                chat_messages = mysql_client.db.query(Chat_Messages).filter(
-                    Chat_Messages.conversationID == conversation.id
-                ).all()
-                
-                # 6. 构建消息列表
-                content: List[Message] = [
-                    Message(
-                        assistant=msg.answer,
-                        message_time=msg.timeStamp,
-                        user=msg.query
-                    ) for msg in chat_messages
-                ]
-                
-                # 7. 创建会话信息
-                conversation_session = ConversationSession(
-                    message_count=len(chat_messages),
-                    content=content
-                )
-                
-                # 8. 添加到会话集合
-                conversation_collection.append(Conversation_Collection(
+                user_conversation_list.append(Conversation_Collection(
                     conversation_title=conversation.conversationName,
-                    conversation_content=conversation_session,
-                    conversation_time=str(conversation.lastChatTime),  # 转换为字符串
-                    conversation_id=str(conversation.id)
+                    conversation_time=str(conversation.lastChatTime),
+                    conversation_id=conversation.id,
+                    delete_sign=conversation.delete_sign
                 ))
-            
-            # 9. 为每个用户创建会话记录
-            user_conversation_list.append(UserConversation(
-                username=user.username,
-                conversation_collection=conversation_collection
-            ))
-        
+        else:
+            # 不能返回管理员的对话
+            user_conversation_list = []
+            # 获取当前请求用户信息
+            current_user = mysql_client.db.query(User).filter(
+                User.username == username
+            ).first()
+            if current_user.admin_sign:
+                return []
+            else:
+                # 获取用户对话
+                conversations = mysql_client.db.query(Conversation).filter(
+                    Conversation.username == username
+                ).all()
+                for conversation in conversations:
+                    user_conversation_list.append(Conversation_Collection(
+                        conversation_title=conversation.conversationName,
+                        conversation_time=str(conversation.lastChatTime),
+                        conversation_id=conversation.id,
+                        delete_sign=conversation.delete_sign
+                    ))
+
         return user_conversation_list
     
-    # 获取所有用户创建的知识库
-    def get_users_knowledge_base(self) -> List[User_KnowledgeBase]:
+    # 根据对话id获取对话内容
+    def get_conversation_content(self,conversation_id:int,s_username:str)->List[Message]:
         mysql_client = MysqlClient()
-        # 1. 首先获取所有用户
-        users = mysql_client.db.query(UserInfo).all()
-        user_KnowledgeBase: List[User_KnowledgeBase] = [] 
-        # 2. 遍历每个用户
-        for user in users:
-            # 3. 获取该用户的所有知识库
+        # 获取对话内容
+        messages = mysql_client.db.query(Chat_Messages).filter(
+            Chat_Messages.conversationID == conversation_id
+        ).all()
+        message_list: List[Message] = []
+        for message in messages:
+            message_list.append(Message(
+                assistant=message.answer,
+                message_time=message.timeStamp,
+                user=message.query
+            ))
+        return message_list
+    
+    # 根据用户获取知识库列表
+    def get_user_knowledge_base(self,username:str,s_username:str)->List[KnowledgeBaseItem]:
+        mysql_client = MysqlClient()
+        if s_username == 'admin':
+            # 获取用户知识库
             knowledge_bases = mysql_client.db.query(KnowledgeBase).filter(
-                KnowledgeBase.created_by == user.username
+                KnowledgeBase.created_by == username
             ).all()
             knowledge_base_list: List[KnowledgeBaseItem] = []
-            # 4. 遍历该用户的所有知识库
             for knowledge_base in knowledge_bases:
-                knowledge_base_info = KnowledgeBaseInfo(
-                    knowledge_base_id=knowledge_base.knowledgeBaseId,
-                    knowledge_base_name=knowledge_base.knowledgeBaseName,
-                    docs_num=knowledge_base.docs_num,
-                    words_num=knowledge_base.words_num,
-                    related_conversations=knowledge_base.related_conversations,
-                    delete_sign=knowledge_base.delete_sign,
-                    create_time=knowledge_base.create_time,
-                    update_time=knowledge_base.update_time,
-                    created_by=knowledge_base.created_by
-                )
                 knowledge_base_list.append(KnowledgeBaseItem(
                     knowledge_base_id=knowledge_base.knowledgeBaseId,
                     knowledge_base_name=knowledge_base.knowledgeBaseName,
-                    knowledge_base_info=knowledge_base_info
+                    knowledge_base_info=KnowledgeBaseInfo(
+                        knowledge_base_id=knowledge_base.knowledgeBaseId,
+                        knowledge_base_name=knowledge_base.knowledgeBaseName,
+                        docs_num=knowledge_base.docs_num,
+                        words_num=knowledge_base.words_num,
+                        related_conversations=knowledge_base.related_conversations,
+                        delete_sign=knowledge_base.delete_sign,
+                        create_time=knowledge_base.create_time,
+                        update_time=knowledge_base.update_time,
+                        created_by=knowledge_base.created_by
+                    )
                 ))
-            user_KnowledgeBase.append(User_KnowledgeBase(
-                knowledge_base_list=knowledge_base_list,
-                username=user.username
-            ))
-        return user_KnowledgeBase
+        else:
+            # 不能返回管理员的知识库
+            knowledge_base_list = []
+            # 获取当前请求用户信息
+            current_user = mysql_client.db.query(User).filter(
+                User.username == username
+            ).first()
+            if current_user.admin_sign:
+                return []
+            else:
+                # 获取用户知识库
+                knowledge_bases = mysql_client.db.query(KnowledgeBase).filter(
+                    KnowledgeBase.created_by == username
+                ).all()
+                for knowledge_base in knowledge_bases:
+                    knowledge_base_list.append(KnowledgeBaseItem(
+                        knowledge_base_id=knowledge_base.knowledgeBaseId,
+                        knowledge_base_name=knowledge_base.knowledgeBaseName,
+                        knowledge_base_info=KnowledgeBaseInfo(
+                            knowledge_base_id=knowledge_base.knowledgeBaseId,
+                            knowledge_base_name=knowledge_base.knowledgeBaseName,
+                            docs_num=knowledge_base.docs_num,
+                            words_num=knowledge_base.words_num,
+                            related_conversations=knowledge_base.related_conversations,
+                            delete_sign=knowledge_base.delete_sign,
+                            create_time=knowledge_base.create_time,
+                            update_time=knowledge_base.update_time,
+                            created_by=knowledge_base.created_by
+                        )
+                    ))
+        return knowledge_base_list
     
     # 删除用户对话
     def delete_user_conversation(self,username:str,conversation_id:int)->bool:
