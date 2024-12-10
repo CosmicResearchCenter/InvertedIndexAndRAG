@@ -77,8 +77,7 @@ export async function putRequest<T>(url: string, body: any, customHeaders?: any)
         const isFormData = body instanceof FormData;
         const headers = isFormData 
             ? { ...getAuthHeaders(customHeaders) }
-            : getAuthHeaders(customHeaders);
-
+            : {...getAuthHeaders(customHeaders),'Content-Type': 'application/json'};
         const response = await fetch(url, {
             method: 'PUT',
             headers,

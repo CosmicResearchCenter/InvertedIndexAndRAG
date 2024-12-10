@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { TabsPaneContext } from 'element-plus'
 import { useRouter } from 'vue-router'
+import { getRequest } from '@/utils/http'
 
 const activeName = ref('users')
 const handleClick = (tab: TabsPaneContext) => {
@@ -27,11 +28,28 @@ const knowledgeBases = ref([
 ])
 
 // 计算统计数据
-const statistics = computed(() => ({
-  totalUsers: users.value.length,
-  totalConversations: conversations.value.length,
-  totalKnowledgeBases: knowledgeBases.value.length
-}))
+const statistics = ref({
+  totalUsers: 0,
+  totalConversations: 0,
+  totalKnowledgeBases: 0
+})
+
+// 获取系统信息
+async function fetchSystemInfo() {
+  const baseURL = import.meta.env.VITE_APP_BASE_URL;
+  const data = await getRequest<any>(baseURL + '/v1/api/mark/admin/system_info');
+  if (data && data.code === 200) {
+    const systemInfo = data.data[0];
+    statistics.value.totalUsers = systemInfo.user_count;
+    statistics.value.totalConversations = systemInfo.conversation_count;
+    statistics.value.totalKnowledgeBases = systemInfo.knowledge_base_count;
+  }
+}
+
+onMounted(() => {
+  fetchSystemInfo();
+  // ...existing code...
+})
 
 // 搜索关键词
 const searchQuery = ref('')
