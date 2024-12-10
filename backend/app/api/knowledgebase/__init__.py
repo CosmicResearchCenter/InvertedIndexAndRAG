@@ -124,7 +124,7 @@ async def delete_doc(base_id,doc_id,username: str = Depends(get_current_user)):
 async def update_config(base_id:str,config:KnowledgeBaseConfig,username: str = Depends(get_current_user)):
     
     kb_manager = KBase()
-    return kb_manager.update_kb_config(kb_id=base_id,config=config,username=username)
+    return kb_manager.update_kb_config(base_id=base_id,config=config,username=username)
 
 # 获取知识库配置
 @router.get("/{base_id}/config",tags=["获取知识库配置"],response_model=GenericResponse)
