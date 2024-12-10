@@ -9,7 +9,7 @@ from app.core.models.rerank_models import RerankDocument, RerankResult
 class RerankModel:
     def __init__(self) -> None:
         # 设置请求的 URL
-        self.url = 'http://10.116.123.30:9997/v1/rerank'
+        self.url = 'https://uk.k.cn:8443/v1/rerank'
 
         # 设置请求头
         self.headers = {
