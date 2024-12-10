@@ -7,7 +7,9 @@ class SystemInfo(BaseModel):
     conversation_count: int
     
     
-
+class User(BaseModel):
+    username:str
+    admin_sign: bool
 
     
 class Message(BaseModel):
@@ -15,20 +17,13 @@ class Message(BaseModel):
     message_time: Optional[str] = None
     user: str 
     
-class ConversationSession(BaseModel):
-    message_count: int
-    content: List[Message]
-    
-
 class Conversation_Collection(BaseModel):
     conversation_title: str
-    conversation_content: ConversationSession
     conversation_time: str
-    conversation_id: str
+    conversation_id: int
+    delete_sign: bool
     
-class UserConversation(BaseModel):
-    username: str
-    conversation_collection: List[Conversation_Collection] 
+
 
 
 class KnowledgeBaseInfo(BaseModel):
@@ -55,6 +50,3 @@ class KnowledgeBaseItem(BaseModel):
     knowledge_base_name: str
     knowledge_base_info : KnowledgeBaseInfo
     
-class User_KnowledgeBase(BaseModel):
-    knowledge_base_list: List[KnowledgeBaseItem]
-    username: str
