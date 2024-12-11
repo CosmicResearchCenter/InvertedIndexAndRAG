@@ -273,8 +273,15 @@ class AdminService:
         return True
     
     # 删除用户
-    def delete_user(self,username:str)->bool:
+    def delete_user(self,username:str,username_s:str)->bool:
         mysql_client = MysqlClient()
+        # 不能删除管理员
+        
+        user = mysql_client.db.query(UserInfo).filter(
+            UserInfo.username == username
+        ).first()
+        if user.is_admin == True and username_s != 'admin':
+            return False
         # 删除用户
         user = mysql_client.db.query(UserInfo).filter(
             UserInfo.username == username
@@ -288,7 +295,7 @@ class AdminService:
         return True
     
     # 授予用户管理员权限
-    def grant_user_admin(self,username:str)->bool:
+    def grant_user_admin(self,username:str,username_s)->bool:
         mysql_client = MysqlClient()
         # 授予用户管理员权限
         user = mysql_client.db.query(UserInfo).filter(
@@ -299,8 +306,14 @@ class AdminService:
         return True
     
     # 撤销用户管理员权限
-    def revoke_user_admin(self,username:str)->bool:
+    def revoke_user_admin(self,username:str,username_s)->bool:
         mysql_client = MysqlClient()
+        # 管理员不能撤销管理员权限
+        user = mysql_client.db.query(UserInfo).filter(
+            UserInfo.username == username
+        ).first()
+        if user.username == 'admin' and username_s != 'admin':
+            return False
         # 撤销用户管理员权限
         user = mysql_client.db.query(UserInfo).filter(
             UserInfo.username == username
@@ -320,4 +333,3 @@ class AdminService:
     
 if __name__ == "__main__":
     admin_service = AdminService()
-    admin_service.get_users_conversation()

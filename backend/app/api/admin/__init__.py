@@ -87,10 +87,16 @@ async def get_knowledge_base(username:str,knowledge_base_id: str, username_s: st
     )
     
 # 删除用户
-@router.delete("/user", response_model=ResponseGenral)
-async def delete_user(delete_user_request: DeleteUserRequest, username: str = Depends(get_is_admin)):
+@router.delete("/user/{username}", response_model=ResponseGenral)
+async def delete_user(username:str, username_s: str = Depends(get_is_admin)):
     admin_service = AdminService()
-    admin_service.delete_user(delete_user_request.username)
+    status =  admin_service.delete_user(username,username_s)
+    if status == False:
+        return ResponseGenral(
+            code=400,
+            message="删除用户失败,权限不够",
+            data=[]
+        )
     return ResponseGenral(
         code=200,
         message="删除用户成功",
@@ -118,7 +124,13 @@ async def delete_user_conversation(username:str,conversation_id:str, username_s:
 @router.delete("/user_knowledge_base/{username}/{knowledge_base_id}", response_model=ResponseGenral)
 async def delete_user_knowledge_base(username:str,knowledge_base_id:str, username_s: str = Depends(get_is_admin)):
     admin_service = AdminService()
-    admin_service.delete_user_knowledge_base(username,knowledge_base_id,username_s)
+    status = admin_service.delete_user_knowledge_base(username,knowledge_base_id,username_s)
+    if status == False:
+        return ResponseGenral(
+            code=400,
+            message="删除用户知识库失败,权限不够",
+            data=[]
+        )
     return ResponseGenral(
         code=200,
         message="删除用户知识库成功",
@@ -126,10 +138,17 @@ async def delete_user_knowledge_base(username:str,knowledge_base_id:str, usernam
     )
     
 # 授予用户管理员权限
-@router.post("/grant_admin", response_model=ResponseGenral)
-async def grant_admin(grant_admin_request: GrantAdminRequest,user: str = Depends(get_is_admin)):
+@router.post("/grant_admin/{username}", response_model=ResponseGenral)
+async def grant_admin(username:str,user: str = Depends(get_is_admin)):
     admin_service = AdminService()
-    admin_service.grant_user_admin(grant_admin_request.username)
+    status = admin_service.grant_user_admin(username,user)
+    if status == False:
+        return ResponseGenral(
+            code=400,
+            message="授予用户管理员权限失败,权限不够",
+            data=[]
+        )
+        
     return ResponseGenral(
         code=200,
         message="授予用户管理员权限成功",
@@ -137,10 +156,16 @@ async def grant_admin(grant_admin_request: GrantAdminRequest,user: str = Depends
     )
     
 # 撤销用户管理员权限
-@router.post("/revoke_admin", response_model=ResponseGenral)
-async def revoke_admin(revoke_admin_request: RevokeAdminRequest,user: str = Depends(get_is_admin)):
+@router.post("/revoke_admin/{username}", response_model=ResponseGenral)
+async def revoke_admin(username:str,user: str = Depends(get_is_admin)):
     admin_service = AdminService()
-    admin_service.revoke_user_admin(revoke_admin_request.username)
+    status = admin_service.revoke_user_admin(username,user)
+    if status == False:
+        return ResponseGenral(
+            code=400,
+            message="撤销用户管理员权限失败,权限不够",
+            data=[]
+        )
     return ResponseGenral(
         code=200,
         message="撤销用户管理员权限成功",
