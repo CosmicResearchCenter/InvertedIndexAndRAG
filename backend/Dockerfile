@@ -25,4 +25,4 @@ COPY . .
 COPY .env .env
 
 # 启动应用程序
-CMD ["sh", "-c", "alembic upgrade head && python main.py"]
+CMD ["sh", "-c", "alembic revision --autogenerate -m 'initial migration' && alembic upgrade head && python main.py"]
