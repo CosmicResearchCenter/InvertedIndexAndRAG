@@ -3,6 +3,7 @@ from .doubao import DouBaoLLM
 from .openaillm import OpenAILLM
 from .zhipuai_llm import ZhiPuAI_LLM
 from .sparkai_llm import SparkAILLM
+from .openapi_llm import OneApiLLM
 from .llm import LLM
 
 class LLM_Provider(Enum):
@@ -13,6 +14,7 @@ class LLM_Provider(Enum):
     DOUBAO = "DOUBAO"
     ZHIPUAI = "ZHIPUAI"
     SPARKAI = "SPARKAI"
+    ONEAPI = "ONEAPI"
     @classmethod
     def get_llm(cls, mode_provider: str):
         for member_name, member in cls.__members__.items():
@@ -20,7 +22,8 @@ class LLM_Provider(Enum):
                 return member
         else:
             raise Exception("Not supported mode_provider type")
-    
+
+
 class LLM_Manager:
     def creatLLM(self,mode_provider: str)->LLM:
         lLM_Provider = LLM_Provider.get_llm(mode_provider)
@@ -32,6 +35,8 @@ class LLM_Manager:
             return ZhiPuAI_LLM()
         elif lLM_Provider == LLM_Provider.SPARKAI:
             return SparkAILLM()
+        elif lLM_Provider == LLM_Provider.ONEAPI:
+            return OneApiLLM()
         else:
             raise Exception("Not supported mode_provider type")
         

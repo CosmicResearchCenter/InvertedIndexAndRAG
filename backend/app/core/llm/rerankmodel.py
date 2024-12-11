@@ -33,6 +33,7 @@ class RerankModel:
             return RerankResult(model=model_uid, docs=[])
 
         # 设置请求体
+        
         data = {
             "model": model_uid,
             "query": query,
@@ -41,7 +42,7 @@ class RerankModel:
         }
 
         # 发送 POST 请求
-        response = requests.post(self.url, headers=self.headers, data=json.dumps(data))
+        response = requests.post(self.url, headers=self.headers, data=json.dumps(data),verify=False)
 
         if response.status_code != 200:
             raise Exception(f"Error: {response.status_code}, Message: {response.text}")
