@@ -18,7 +18,7 @@ class Message(BaseModel):
     user: str 
     
 class Conversation_Collection(BaseModel):
-    conversation_title: str
+    conversation_title: Optional[str] = None
     conversation_time: str
     conversation_id: int
     delete_sign: bool
