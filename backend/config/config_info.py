@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     MYSQL_USER:str
     MYSQL_PASSWORD:str
 
+    EMBEEDING_BASE_URL:str
+    EMBEEDING_API_KEY:str
     EMBEDDING_MODEL_PROVIDER :str 
     LLM_PROVIDER :str
     # 0 1
@@ -24,7 +26,11 @@ class Settings(BaseSettings):
     OCR_PORT :int 
     OCR_URL :str 
 
-
+    ONEAPI_BASE_URL:str
+    ONEAPI_API_KEY:str
+    ONEAPI_MODEL:str
+    ONEAPI_EMBEDDING_MODEL:str
+    
     OPENAI_API_KEY:str
     OPENAI_BASE_URL:str
     OPENAI_MODEL:str
