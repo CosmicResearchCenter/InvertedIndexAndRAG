@@ -156,8 +156,17 @@ class AdminService:
         return knowledge_base_list
     
     # 删除用户对话
-    def delete_user_conversation(self,username:str,conversation_id:int)->bool:
+    def delete_user_conversation(self,username:str,conversation_id:int,username_s:str)->bool:
         mysql_client = MysqlClient()
+        
+        # 不能删除管理员的对话  
+        user = mysql_client.db.query(UserInfo).filter(
+            UserInfo.username == username
+        ).first()
+            
+        if user.is_admin == True and username_s != 'admin': 
+            return False
+        
         # 删除对话
         conversation = mysql_client.db.query(Conversation).filter(
             Conversation.username == username,
