@@ -165,7 +165,7 @@ const register = async () => {
   margin-top: -200px;
   width: 100%;
   max-width: 400px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgb(255, 255, 255);
   backdrop-filter: blur(10px);
   padding: 2rem;
   border-radius: 24px;
@@ -194,25 +194,24 @@ h2 {
 }
 
 .input-field {
-  --el-input-bg-color: rgba(255, 255, 255, 0.1) !important;
-  --el-input-text-color: #fff !important;
-  --el-input-border-color: rgba(255, 255, 255, 0.2) !important;
-  --el-input-hover-border-color: rgba(255, 255, 255, 0.4) !important;
+  --el-input-bg-color: rgb(255, 255, 255) !important;
+  --el-input-border-color: rgba(0, 0, 0, 0.1) !important;
+  --el-input-hover-border-color: rgba(0, 0, 0, 0.2) !important;
 }
 
 .input-field :deep(.el-input__wrapper) {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgb(255, 255, 255);
   box-shadow: none;
   border-radius: 12px;
   padding: 8px 15px;
 }
 
 .input-field :deep(.el-input__inner) {
-  color: #fff;
+  color: #333;
 }
 
 .input-field :deep(.el-input__inner::placeholder) {
-  color: rgba(255, 255, 255, 0.6);
+  color: #999;
 }
 
 .login-button {
@@ -288,15 +287,15 @@ h2 {
 }
 
 .form-switch span {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgb(0, 0, 0);
   cursor: pointer;
   padding: 0.5rem 1rem;
   transition: all 0.3s ease;
 }
 
 .form-switch span.active {
-  color: #fff;
+  color: #409EFF;
   font-weight: bold;
-  border-bottom: 2px solid #00c6fb;
+  border-bottom: 2px solid #409EFF;
 }
 </style>
