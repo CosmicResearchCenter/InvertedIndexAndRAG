@@ -7,10 +7,10 @@
       </div>
       <div class="user-list">
         <div v-for="user in filteredUsers" 
-             :key="user.id"
+             :key="user.username"
              class="user-item"
-             :class="{ active: currentUserId === user.id }"
-             @click="handleUserClick(user.id)">
+             :class="{ active: currentUserId === user.username }"
+             @click="handleUserClick(user.username)">
           <el-avatar :size="32" :src="user.avatar">{{ user.username.charAt(0) }}</el-avatar>
           <span class="username">{{ user.username }}</span>
         </div>
@@ -21,17 +21,19 @@
     <el-main class="base-main">
       <div v-if="currentUserId" class="knowledge-base-list">
         <div v-for="base in userKnowledgeBases" 
-             :key="base.id"
+             :key="base.knowledge_base_id"
              class="base-item"
-             :class="{ active: currentBaseId === base.id }"
-             @click="handleBaseClick(base.id)">
+             :class="{ active: currentBaseId === base.knowledge_base_id, 'deleted': base.knowledge_base_info.delete_sign }"
+             @click="handleBaseClick(base.knowledge_base_id)">
           <div class="base-info">
-            <div class="base-title">{{ base.name }}</div>
+            <div class="base-title">{{ base.knowledge_base_name }}</div>
             <div class="base-stats">
-              <span>文档数: {{ base.documentCount }}</span>
-              <span>创建时间: {{ formatDate(base.created_at) }}</span>
+              <span>文档数: {{ base.knowledge_base_info.docs_num }}</span>
+              <span>创建时间: {{ formatDate(base.knowledge_base_info.create_time) }}</span>
+              <span v-if="base.knowledge_base_info.delete_sign" class="delete-sign">已删除</span>
             </div>
           </div>
+          <el-button link type="danger" @click.stop="confirmDeleteKnowledgeBase(base)">删除</el-button>
         </div>
       </div>
       <div v-else class="no-selection">
@@ -43,19 +45,13 @@
     <el-aside class="base-aside-right">
       <div v-if="currentBaseId" class="document-list">
         <el-table :data="baseDocuments" style="width: 100%">
-          <el-table-column prop="name" label="文档名称" />
-          <el-table-column prop="size" label="大小" width="100">
+          <el-table-column prop="doc_name" label="文档名称" />
+          <el-table-column prop="doc_size" label="大小" width="100">
             <template #default="scope">
-              {{ formatSize(scope.row.size) }}
+              {{ formatSize(scope.row.doc_size) }}
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="100">
-            <template #default="scope">
-              <el-tag :type="scope.row.status === 1 ? 'success' : 'warning'">
-                {{ scope.row.status === 1 ? '已索引' : '未索引' }}
-              </el-tag>
-            </template>
-          </el-table-column>
+          <el-table-column prop="retriever_num" label="检索次数" width="100" />
           <el-table-column label="操作" width="120">
             <template #default="scope">
               <el-button link type="primary" @click="viewDocument(scope.row)">查看</el-button>
@@ -72,8 +68,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { getRequest } from '@/utils/http';
-import { ElMessage } from 'element-plus';
+import { getRequest, deleteRequest } from '@/utils/http';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const searchUser = ref('');
 const currentUserId = ref('');
@@ -93,9 +89,9 @@ const filteredUsers = computed(() => {
 async function fetchUsers() {
   try {
     const baseURL = import.meta.env.VITE_APP_BASE_URL;
-    const response = await getRequest<any>(baseURL + '/v1/api/admin/users');
+    const response = await getRequest<any>(baseURL + '/v1/api/mark/admin/users');
     if (response.code === 200) {
-      users.value = response.data;
+      users.value = response.data[0];
     } else {
       ElMessage.error('获取用户列表失败');
     }
@@ -106,14 +102,14 @@ async function fetchUsers() {
 }
 
 // 获取用户的知识库列表
-async function handleUserClick(userId: string) {
-  currentUserId.value = userId;
+async function handleUserClick(username: string) {
+  currentUserId.value = username;
   currentBaseId.value = '';
   try {
     const baseURL = import.meta.env.VITE_APP_BASE_URL;
-    const response = await getRequest<any>(baseURL + `/v1/api/admin/users/${userId}/bases`);
+    const response = await getRequest<any>(baseURL + `/v1/api/mark/admin/user_knowledge_base/${username}`);
     if (response.code === 200) {
-      userKnowledgeBases.value = response.data;
+      userKnowledgeBases.value = response.data[0];
     }
   } catch (error) {
     console.error('获取知识库列表出错:', error);
@@ -126,9 +122,9 @@ async function handleBaseClick(baseId: string) {
   currentBaseId.value = baseId;
   try {
     const baseURL = import.meta.env.VITE_APP_BASE_URL;
-    const response = await getRequest<any>(baseURL + `/v1/api/admin/bases/${baseId}/documents`);
+    const response = await getRequest<any>(baseURL + `/v1/api/mark/admin/user_knowledge_base/${currentUserId.value}/${baseId}`);
     if (response.code === 200) {
-      baseDocuments.value = response.data;
+      baseDocuments.value = response.data[0];
     }
   } catch (error) {
     console.error('获取文档列表出错:', error);
@@ -139,7 +135,41 @@ async function handleBaseClick(baseId: string) {
 // 查看文档详情
 function viewDocument(doc: any) {
   // 实现文档查看逻辑
-  ElMessage.info(`查看文档: ${doc.name}`);
+  ElMessage.info(`查看文档: ${doc.doc_name}`);
+}
+
+// 删除知识库
+async function deleteKnowledgeBase(base: any) {
+  try {
+    const baseURL = import.meta.env.VITE_APP_BASE_URL;
+    const response = await deleteRequest<any>(baseURL + `/v1/api/mark/admin/user_knowledge_base/${currentUserId.value}/${base.knowledge_base_id}`);
+    if (response.code === 200) {
+      ElMessage.success('知识库删除成功');
+      handleUserClick(currentUserId.value); // 重新加载知识库列表
+    } else {
+      ElMessage.error('删除知识库失败');
+    }
+  } catch (error) {
+    console.error('删除知识库出错:', error);
+    ElMessage.error('删除知识库出错');
+  }
+}
+
+// 确认删除知识库
+function confirmDeleteKnowledgeBase(base: any) {
+  ElMessageBox.confirm(
+    '此操作将永久删除该知识库, 是否继续?',
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    deleteKnowledgeBase(base);
+  }).catch(() => {
+    ElMessage.info('已取消删除');
+  });
 }
 
 // 格式化日期
@@ -201,7 +231,7 @@ const contentVisible = ref(false);
 }
 
 .base-aside-right {
-  width: 50% !important;
+  width: 30% !important;
   background: rgba(248, 249, 250, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -211,7 +241,7 @@ const contentVisible = ref(false);
 }
 
 .base-main {
-  width: 25% !important;
+  width: 50% !important;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -284,6 +314,16 @@ const contentVisible = ref(false);
 .base-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.base-item.deleted {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.delete-sign {
+  color: #d32f2f;
+  font-weight: bold;
 }
 
 @media screen and (max-width: 768px) {
