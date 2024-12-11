@@ -22,13 +22,14 @@
       <div v-if="currentUserId" class="conversation-list">
         <div v-for="conv in userConversations" :key="conv.id"
           class="conversation-item"
-          :class="{ active: currentConvId === conv.id }"
+          :class="{ active: currentConvId === conv.id, deleted: conv.delete_sign }"
           @click="handleConversationClick(conv.id)">
           <div class="conv-info">
             <div class="conv-title">{{ conv.title }}</div>
             <div class="conv-time">{{ formatDate(conv.created_at) }}</div>
+            <span v-if="conv.delete_sign" class="delete-sign">已删除</span>
           </div>
-          <el-button type="danger" icon="Delete" size="mini" @click.stop="handleDeleteConversation(conv.id)">删除</el-button>
+          <el-button link type="danger" @click.stop="confirmDeleteConversation(conv)">删除</el-button>
         </div>
       </div>
       <div v-else class="no-selection">
@@ -58,6 +59,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { getRequest,deleteRequest } from '@/utils/http';
+import { ElMessageBox,ElMessage } from 'element-plus';
 
 const searchUser = ref('');
 const currentUserId = ref('');
@@ -101,7 +103,8 @@ async function handleUserClick(userId: string) {
     userConversations.value = response.data[0].map((conv: any) => ({
       id: conv.conversation_id,
       title: conv.conversation_title,
-      created_at: conv.conversation_time
+      created_at: conv.conversation_time,
+      delete_sign: conv.delete_sign
     }));
   } catch (error) {
     userConversations.value = [];
@@ -139,7 +142,7 @@ async function handleConversationClick(convId: string) {
 async function handleDeleteConversation(convId: string) {
   try {
     const baseURL = import.meta.env.VITE_APP_BASE_URL;
-    await deleteRequest<any>(baseURL + `/v1/api/mark/admin/delete_user_conversation/${currentUserId.value}/${convId}`);
+    await deleteRequest<any>(baseURL + `/v1/api/mark/admin/user_conversation/${currentUserId.value}/${convId}`);
     userConversations.value = userConversations.value.filter(conv => conv.id !== convId);
     if (currentConvId.value === convId) {
       currentConvId.value = '';
@@ -148,6 +151,23 @@ async function handleDeleteConversation(convId: string) {
   } catch (error) {
     console.log('Failed to delete conversation');
   }
+}
+
+// 确认删除对话
+function confirmDeleteConversation(conv: any) {
+  ElMessageBox.confirm(
+    '此操作将永久删除该对话, 是否继续?',
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    handleDeleteConversation(conv.id);
+  }).catch(() => {
+    ElMessage.info('已取消删除');
+  });
 }
 
 // 格式化日期
@@ -248,6 +268,11 @@ onMounted(() => {
   color: white;
 }
 
+.conversation-item.deleted {
+  text-decoration: line-through;
+  color: #d32f2f;
+}
+
 .username {
   margin-left: 12px;
 }
@@ -305,6 +330,11 @@ onMounted(() => {
 .conv-info {
   flex-grow: 1;
   margin-right: 10px;
+}
+
+.delete-sign {
+  color: #d32f2f;
+  font-weight: bold;
 }
 
 @media screen and (max-width: 768px) {
