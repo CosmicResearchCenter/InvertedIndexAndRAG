@@ -24,5 +24,9 @@ COPY . .
 # 将 .env 文件复制到容器工作目录
 COPY .env .env
 
+# 修改hosts文件
+RUN echo "10.14.17.62     iuk.k.cn" >> /etc/hosts && \
+    echo "10.14.17.62     oneapi.k.cn" >> /etc/hosts
+
 # 启动应用程序
 CMD ["sh", "-c", "alembic revision --autogenerate -m 'initial migration' && alembic upgrade head && python main.py"]
