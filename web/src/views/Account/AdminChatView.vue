@@ -24,8 +24,11 @@
           class="conversation-item"
           :class="{ active: currentConvId === conv.id }"
           @click="handleConversationClick(conv.id)">
-          <div class="conv-title">{{ conv.title }}</div>
-          <div class="conv-time">{{ formatDate(conv.created_at) }}</div>
+          <div class="conv-info">
+            <div class="conv-title">{{ conv.title }}</div>
+            <div class="conv-time">{{ formatDate(conv.created_at) }}</div>
+          </div>
+          <el-button type="danger" icon="Delete" size="mini" @click.stop="handleDeleteConversation(conv.id)">删除</el-button>
         </div>
       </div>
       <div v-else class="no-selection">
@@ -54,7 +57,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { getRequest } from '@/utils/http';
+import { getRequest,deleteRequest } from '@/utils/http';
 
 const searchUser = ref('');
 const currentUserId = ref('');
@@ -63,45 +66,6 @@ const users = ref<any[]>([]);
 const userConversations = ref<any[]>([]);
 const conversationMessages = ref<any[]>([]);
 const isDarkMode = ref(false);
-
-// 示例数据
-const mockUsers = [
-  { id: '1', username: '张三', avatar: '' },
-  { id: '2', username: '李四', avatar: '' },
-  { id: '3', username: '王五', avatar: '' }
-];
-
-const mockConversations = [
-  { id: '1', title: '关于项目进度的讨论', created_at: '2024-01-15T10:00:00' },
-  { id: '2', title: '技术方案探讨', created_at: '2024-01-16T14:30:00' }
-];
-
-const mockMessages = [
-  { 
-    id: '1', 
-    role: 'user', 
-    content: '这个项目预计什么时候能完成？', 
-    created_at: '2024-01-15T10:00:00' 
-  },
-  { 
-    id: '2', 
-    role: 'assistant', 
-    content: '根据目前的进度,预计下周三可以完成全部开发工作。后续还需要进行测试和部署,整体项目计划在月底前完成。', 
-    created_at: '2024-01-15T10:01:00' 
-  },
-  { 
-    id: '3', 
-    role: 'user', 
-    content: '好的,那测试阶段大概需要多久？', 
-    created_at: '2024-01-15T10:02:00' 
-  },
-  { 
-    id: '4', 
-    role: 'assistant', 
-    content: '测试阶段预计需要3-5个工作日,包括功能测试和性能测试。如果发现重大问题可能会需要更多时间。', 
-    created_at: '2024-01-15T10:03:00' 
-  }
-];
 
 // 过滤用户列表
 const filteredUsers = computed(() => {
@@ -113,14 +77,17 @@ const filteredUsers = computed(() => {
 // 获取用户列表
 async function fetchUsers() {
   try {
-    // ���果 API 可用就使用真实数据
     const baseURL = import.meta.env.VITE_APP_BASE_URL;
-    const response = await getRequest<any>(baseURL + '/v1/api/admin/users');
-    users.value = response.data;
+    const response = await getRequest<any>(baseURL + '/v1/api/mark/admin/users');
+    users.value = response.data[0].map((user: any) => ({
+      id: user.username,
+      username: user.username,
+      avatar: '',
+      admin_sign: user.admin_sign
+    }));
   } catch (error) {
-    // 如果 API 不可用就使用示例数据
-    users.value = mockUsers;
-    console.log('Using mock data');
+    users.value = [];
+    console.log('Failed to fetch users');
   }
 }
 
@@ -130,10 +97,15 @@ async function handleUserClick(userId: string) {
   currentConvId.value = '';
   try {
     const baseURL = import.meta.env.VITE_APP_BASE_URL;
-    const response = await getRequest<any>(baseURL + `/v1/api/admin/users/${userId}/conversations`);
-    userConversations.value = response.data;
+    const response = await getRequest<any>(baseURL + `/v1/api/mark/admin/user_conversation/${userId}`);
+    userConversations.value = response.data[0].map((conv: any) => ({
+      id: conv.conversation_id,
+      title: conv.conversation_title,
+      created_at: conv.conversation_time
+    }));
   } catch (error) {
-    userConversations.value = mockConversations;
+    userConversations.value = [];
+    console.log('Failed to fetch conversations');
   }
 }
 
@@ -142,10 +114,39 @@ async function handleConversationClick(convId: string) {
   currentConvId.value = convId;
   try {
     const baseURL = import.meta.env.VITE_APP_BASE_URL;
-    const response = await getRequest<any>(baseURL + `/v1/api/admin/conversations/${convId}/messages`);
-    conversationMessages.value = response.data;
+    const response = await getRequest<any>(baseURL + `/v1/api/mark/admin/conversation/${convId}`);
+    conversationMessages.value = response.data[0].flatMap((msg: any) => [
+      msg.user ? {
+        id: msg.message_time || Date.now().toString(),
+        role: 'user',
+        content: msg.user,
+        created_at: msg.message_time || new Date().toISOString()
+      } : null,
+      msg.assistant ? {
+        id: msg.message_time || Date.now().toString(),
+        role: 'assistant',
+        content: msg.assistant,
+        created_at: msg.message_time || new Date().toISOString()
+      } : null
+    ].filter(Boolean));
   } catch (error) {
-    conversationMessages.value = mockMessages;
+    conversationMessages.value = [];
+    console.log('Failed to fetch messages');
+  }
+}
+
+// 删除对话
+async function handleDeleteConversation(convId: string) {
+  try {
+    const baseURL = import.meta.env.VITE_APP_BASE_URL;
+    await deleteRequest<any>(baseURL + `/v1/api/mark/admin/delete_user_conversation/${currentUserId.value}/${convId}`);
+    userConversations.value = userConversations.value.filter(conv => conv.id !== convId);
+    if (currentConvId.value === convId) {
+      currentConvId.value = '';
+      conversationMessages.value = [];
+    }
+  } catch (error) {
+    console.log('Failed to delete conversation');
   }
 }
 
@@ -181,7 +182,7 @@ onMounted(() => {
 }
 
 .chat-aside{
-  width: 20% !important;  /* 改为20% */
+  width: 20% !important;
   background: var(--card-bg, #fff);
   border-right: 1px solid var(--border-color, #eee);
   transition: all 0.3s ease;
@@ -206,7 +207,7 @@ onMounted(() => {
 }
 
 .chat-aside-right {
-  width: 50% !important;  /* 改为20% */
+  width: 50% !important;
   background: rgba(248, 249, 250, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -216,7 +217,7 @@ onMounted(() => {
 }
 
 .chat-main {
-  width: 25% !important;  /* 改为45% */
+  width: 25% !important;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -293,6 +294,17 @@ onMounted(() => {
   align-items: center;
   height: 100%;
   color: #999;
+}
+
+.conversation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conv-info {
+  flex-grow: 1;
+  margin-right: 10px;
 }
 
 @media screen and (max-width: 768px) {
