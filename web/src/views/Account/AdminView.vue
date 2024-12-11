@@ -113,7 +113,7 @@ const navigateTo = (path: string) => {
         <el-col :span="8" v-for="(item, index) in [
           { title: '对话管理', desc: '查看所有用户对话记录', icon: 'ChatLineSquare', path: 'chat', color: '#1677ff' },
           { title: '知识库管理', desc: '管理用户知识库文档', icon: 'Collection', path: 'base', color: '#722ed1' },
-          { title: '系统设置', desc: '配置系统参数', icon: 'Setting', path: 'settings', color: '#13c2c2' }
+          { title: '用户管理', desc: '管理所有用户', icon: 'Setting', path: 'user', color: '#13c2c2' }
         ]" :key="index">
           <div class="access-card" @click="navigateTo(item.path)" :style="{ '--card-color': item.color }">
             <div class="card-icon">
