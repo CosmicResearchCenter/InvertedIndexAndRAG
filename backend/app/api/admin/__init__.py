@@ -76,10 +76,18 @@ async def get_user_knowledge_base(username: str, s_username: str = Depends(get_i
         message="返回用户知识库信息",
         data=[user_knowledge_base]
     )
-
+@router.get("/user_knowledge_base/{username}/{knowledge_base_id}", response_model=ResponseGenral)
+async def get_knowledge_base(username:str,knowledge_base_id: str, username_s: str = Depends(get_is_admin)):
+    admin_service = AdminService()
+    knowledge_base = admin_service.get_knowledge_base(username,knowledge_base_id,username_s)
+    return ResponseGenral(
+        code=200,
+        message="返回用户知识库信息",
+        data=[knowledge_base]
+    )
     
 # 删除用户
-@router.delete("/delete_user", response_model=ResponseGenral)
+@router.delete("/user", response_model=ResponseGenral)
 async def delete_user(delete_user_request: DeleteUserRequest, username: str = Depends(get_is_admin)):
     admin_service = AdminService()
     admin_service.delete_user(delete_user_request.username)
@@ -90,7 +98,7 @@ async def delete_user(delete_user_request: DeleteUserRequest, username: str = De
     )
     
 # 删除用户对话
-@router.delete("/delete_user_conversation/{username}/{conversation_id}", response_model=ResponseGenral)
+@router.delete("/user_conversation/{username}/{conversation_id}", response_model=ResponseGenral)
 async def delete_user_conversation(username:str,conversation_id:str, username_s: str = Depends(get_is_admin)):
     admin_service = AdminService()
     status =  admin_service.delete_user_conversation(username,conversation_id,username_s)
@@ -107,10 +115,10 @@ async def delete_user_conversation(username:str,conversation_id:str, username_s:
     )
     
 # 删除用户知识库
-@router.delete("/delete_user_knowledge_base", response_model=ResponseGenral)
-async def delete_user_knowledge_base(delete_user_knowledge_base_request: DeleteUserKnowledgeBaseRequest,username: str = Depends(get_is_admin)):
+@router.delete("/user_knowledge_base/{username}/{knowledge_base_id}", response_model=ResponseGenral)
+async def delete_user_knowledge_base(username:str,knowledge_base_id:str, username_s: str = Depends(get_is_admin)):
     admin_service = AdminService()
-    admin_service.delete_user_knowledge_base(delete_user_knowledge_base_request.username,delete_user_knowledge_base_request.knowledge_base_id)
+    admin_service.delete_user_knowledge_base(username,knowledge_base_id,username_s)
     return ResponseGenral(
         code=200,
         message="删除用户知识库成功",

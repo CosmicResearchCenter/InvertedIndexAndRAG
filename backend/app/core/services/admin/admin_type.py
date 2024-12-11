@@ -50,3 +50,10 @@ class KnowledgeBaseItem(BaseModel):
     knowledge_base_name: str
     knowledge_base_info : KnowledgeBaseInfo
     
+class DocInfo_Re(BaseModel):
+    doc_id: str
+    doc_name: str
+    doc_type: str
+    doc_size: int
+    delete_sign: bool
+    retriever_num: int

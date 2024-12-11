@@ -1,6 +1,6 @@
 from app.core.rag.rag_pipeline import RAG_Pipeline
 from app.core.database.mysql_client import MysqlClient
-from app.core.database.models import KnowledgeBase,UserInfo,Chat_Messages,Conversation
+from app.core.database.models import KnowledgeBase,UserInfo,Chat_Messages,Conversation,DocInfo
 from app.core.rag.database.milvus.milvus_client import MilvusCollectionManager
 from app.core.rag.database.elasticsearch.elastic_client import ElasticClient
 from .admin_type import (SystemInfo,
@@ -8,7 +8,8 @@ from .admin_type import (SystemInfo,
                         Message,
                         KnowledgeBaseItem,
                         KnowledgeBaseInfo,
-                        User
+                        User,
+                        DocInfo_Re
                          )
 from typing import List,Tuple
 from datetime import datetime
@@ -154,7 +155,62 @@ class AdminService:
                         )
                     ))
         return knowledge_base_list
-    
+    def get_knowledge_base(self,username:str,knowledge_base_id:str,username_s:str)->List[DocInfo_Re]:
+        
+        mysql_client = MysqlClient()
+        if username_s == 'admin':
+            # 获取知识库文档
+            knowledge_base = mysql_client.db.query(KnowledgeBase).filter(
+                KnowledgeBase.created_by == username,
+                KnowledgeBase.knowledgeBaseId == knowledge_base_id
+            ).first()
+            
+            docs = mysql_client.db.query(DocInfo).filter(
+                DocInfo.knowledgeBaseId == knowledge_base_id
+            ).all()
+            
+            doc_list: List[DocInfo_Re] = []
+            for doc in docs:
+                doc_list.append(DocInfo_Re(
+                    doc_id=doc.save_id,
+                    doc_name=doc.doc_name,
+                    doc_type=doc.doc_type,
+                    doc_size=doc.doc_size,
+                    delete_sign=doc.delete_sign,
+                    retriever_num=doc.retriever_num
+                ))
+                
+        else:
+            # 不能返回管理员的知识库
+            doc_list = []
+            # 获取当前请求用户信息
+            current_user = mysql_client.db.query(User).filter(
+                User.username == username
+            ).first()
+            if current_user.admin_sign:
+                return []
+            else:
+                # 获取知识库文档
+                knowledge_base = mysql_client.db.query(KnowledgeBase).filter(
+                    KnowledgeBase.created_by == username,
+                    KnowledgeBase.knowledgeBaseId == knowledge_base_id
+                ).first()
+                
+                docs = mysql_client.db.query(DocInfo).filter(
+                    DocInfo.knowledgeBaseId == knowledge_base_id
+                ).all()
+                
+                for doc in docs:
+                    doc_list.append(DocInfo_Re(
+                        doc_id=doc.save_id,
+                        doc_name=doc.doc_name,
+                        doc_type=doc.doc_type,
+                        doc_size=doc.doc_size,
+                        delete_sign=doc.delete_sign,
+                        retriever_num=doc.retriever_num
+                    ))
+        return doc_list
+        
     # 删除用户对话
     def delete_user_conversation(self,username:str,conversation_id:int,username_s:str)->bool:
         mysql_client = MysqlClient()
@@ -180,10 +236,17 @@ class AdminService:
         mysql_client.db.refresh(conversation)
         
         return True
-    
+
+
     # 删除用户知识库
-    def delete_user_knowledge_base(self,username:str,knowledge_base_id:str)->bool:
+    def delete_user_knowledge_base(self,username:str,knowledge_base_id:str,username_s)->bool:
         mysql_client = MysqlClient()
+        # 不能删除管理员的知识库
+        user = mysql_client.db.query(UserInfo).filter(
+            UserInfo.username == username
+        ).first()
+        if user.is_admin == True and username_s != 'admin':
+            return False
         # 删除知识库
         knowledge_base = mysql_client.db.query(KnowledgeBase).filter(
             KnowledgeBase.created_by == username,
