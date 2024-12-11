@@ -90,10 +90,16 @@ async def delete_user(delete_user_request: DeleteUserRequest, username: str = De
     )
     
 # 删除用户对话
-@router.delete("/delete_user_conversation", response_model=ResponseGenral)
-async def delete_user_conversation(delete_user_conversation_request: DeleteUserConversationRequest, username: str = Depends(get_is_admin)):
+@router.delete("/delete_user_conversation/{username}/{conversation_id}", response_model=ResponseGenral)
+async def delete_user_conversation(username:str,conversation_id:str, username_s: str = Depends(get_is_admin)):
     admin_service = AdminService()
-    admin_service.delete_user_conversation(delete_user_conversation_request.username,delete_user_conversation_request.conversation_id)
+    status =  admin_service.delete_user_conversation(username,conversation_id,username_s)
+    if status == False:
+        return ResponseGenral(
+            code=400,
+            message="删除用户对话失败,权限不够",
+            data=[]
+        )
     return ResponseGenral(
         code=200,
         message="删除用户对话成功",
