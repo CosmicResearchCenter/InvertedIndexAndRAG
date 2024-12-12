@@ -44,6 +44,9 @@ data = {
         {
             "role": "user",
             "content": "Write a haiku about recursion in programming."
+        },{
+            "role": "assistant",
+            "content": "Sure! Here's a haiku about recursion in programming:\n\nRecursion is fun,\nWhen functions call themselves, oh!\nRecursion is fun."
         }
     ]
 }
