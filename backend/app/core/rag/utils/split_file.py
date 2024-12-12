@@ -1,4 +1,4 @@
-from ..splitter import PDFSplitter,TextSplitter,DocxSplitter,ExcelSplitter
+from ..splitter import PDFSplitter,TextSplitter,DocxSplitter,ExcelSplitter,MarkDownSplitter
 from langchain_core.documents import Document
 from typing import List
 from app.core.ocr.ocr_model import OCR_Model
@@ -57,7 +57,8 @@ def split_file(file_path:str,splitter_args,splitterModel:SplitterModel=SPPLITTER
         textSplitter = TextSplitter(splitter_args=splitter_args,SPPLITTER_MODEL=splitterModel)
         docs = textSplitter.split(state_of_the_union)
     elif file_path.lower().endswith(".md"):
-        pass
+        loader = MarkDownSplitter(file_path=file_path,splitter_args=splitter_args,splitter_model=splitterModel)
+        docs = loader.split()
     else:
         raise Exception("File type not support")
 
