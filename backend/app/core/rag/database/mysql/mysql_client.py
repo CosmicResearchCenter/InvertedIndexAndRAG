@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Callable, Optional
 from .model import KnowledgeBase,ConversationsList
+from app.core.database.models import DocInfo 
 from typing import List
 from config.config_info import settings
 import datetime,time
@@ -48,6 +49,9 @@ class MysqlClient:
         # if session is None:
         session = self.SessionLocal()
         knowledge_bases_list = session.query(KnowledgeBase).filter(KnowledgeBase.created_by==username).all()
+        for item in knowledge_bases_list:
+            docs = session.query(DocInfo).filter(DocInfo.knowledgeBaseId ==item.knowledgeBaseId).all()
+            item.docs_num = len(docs)
         session.close()
         return knowledge_bases_list
 
