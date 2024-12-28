@@ -81,7 +81,7 @@ class KBase(MysqlClient):
 
         # # 判断知识库是否是用户创建的
         # self.check_kb_owner(kb_id,username)
-        kb_info = self.db.query(DocInfo).filter(DocInfo.knowledgeBaseId == base_id).all()
+        kb_info = self.db.query(DocInfo).filter(DocInfo.knowledgeBaseId == base_id,DocInfo.delete_sign==False).all()
         return kb_info
     
     # 删除知识库
@@ -112,11 +112,14 @@ class KBase(MysqlClient):
     # 删除文档
     @check_kb_owner_decorator
     def delete_document(self,base_id:str,username:str, doc_id:str)->GenericResponse:
-        doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
+        doc = self.db.query(DocInfo).filter(DocInfo.save_id == doc_id).first()
         if not doc:
             return GenericResponse(message="Document not found", code=404,data=[])
-        self.db.delete(doc)
+        doc.delete_sign = True
+        
         self.db.commit()
+        self.db.refresh(doc)
+        
         return GenericResponse(message="Document deleted successfully", code=200,data=[])
     def _get_docs_save_path(self, base_id:int)->Path:
         from config.config import DOCS_PATH
@@ -258,7 +261,7 @@ class KBase(MysqlClient):
     # 重命名文档名字
     @check_kb_owner_decorator
     def rename_doc_name(self,base_id:str,username:str, doc_id:int,new_name:str)->GenericResponse:
-        doc = self.db.query(DocInfo).filter(DocInfo.id == doc_id).first()
+        doc = self.db.query(DocInfo).filter(DocInfo.save_id == doc_id).first()
         if not doc:
             raise HTTPException(status_code=404, detail="Document not found")
         doc.doc_name = new_name
