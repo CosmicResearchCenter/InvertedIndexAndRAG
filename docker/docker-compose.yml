@@ -101,7 +101,7 @@ services:
 
 
   chat2anything:
-    image: chat2anything  # 替换为实际的chat2anything镜像名
+    image: chat2anything_backend  # 替换为实际的chat2anything镜像名
     container_name: chat2anything_app
     env_file:
       - .env
@@ -115,12 +115,12 @@ services:
       - chat2network
 
   chat2anything_web:
-    image: chat2anything_web  # 替换为实际的chat2anything_web镜像名
+    image: chat2anything_frontend  # 替换为实际的chat2anything_web镜像名
     container_name: chat2anything_web
     depends_on:
       - chat2anything
     ports:
-      - "8080:80"  # Nginx 默认监听80端口
+      - "8088:80"  # Nginx 默认监听80端口
     networks:
       - chat2network
 
