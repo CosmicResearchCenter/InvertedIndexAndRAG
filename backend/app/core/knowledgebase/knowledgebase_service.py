@@ -249,6 +249,7 @@ class KBase(MysqlClient):
             raise HTTPException(status_code=404, detail="KnowledgeBase config not found")
         config_db.rag_model = config.rag_model
         config_db.is_rerank = config.is_rerank
+        config_db.update_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         self.db.commit()
         self.db.refresh(config_db)
         
