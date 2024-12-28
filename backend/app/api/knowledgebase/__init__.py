@@ -26,10 +26,16 @@ async def create(createBaseRequest:CreateBaseRequest,username: str = Depends(get
 async def get_base_list(username: str = Depends(get_current_user)):
     kb_manager = KBase()
     knowledgeBase = kb_manager.get_all_kbs(username = username)
-
+    
     data = []
     for kb in knowledgeBase:
-        data.append(kb.to_dict())
+        json_data = {
+            "id": kb.knowledgeBaseId,
+            "docs_num": kb.docs_num,
+            "related_conversations": kb.related_conversations,
+            "knowledgeBaseName": kb.knowledgeBaseName
+        }
+        data.append(json_data)
 
     return GenericResponse(message="获取成功",code=200,data=data)
 
