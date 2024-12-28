@@ -91,7 +91,7 @@ export default defineComponent({
                         files.value.push({
                             id: kb.id,
                             name: kb.knowledgeBaseName,
-                            details: 'xxx 文档 | xxx 千字符 | xxx 关联对话' // 示例细节
+                            details: String(kb.docs_num)+'个文档 | '+String(kb.related_conversations)+'个关联对话' // 示例细节
                         });
                     });
                 } else {
