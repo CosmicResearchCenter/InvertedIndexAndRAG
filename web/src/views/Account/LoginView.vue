@@ -107,7 +107,10 @@ const handleLogin = async () => {
   loading.value = true;
   try {
     await login(username.value, password.value);
-    ElMessage.success('登录成功');
+    ElMessage.success({
+      message: '登录成功',
+      duration: 2000
+    });
     router.push('/');
   } catch (error: any) {
     ElMessage.error(error.message || '登录失败');
