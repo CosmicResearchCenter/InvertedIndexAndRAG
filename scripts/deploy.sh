@@ -108,7 +108,7 @@ else
 fi
 
 log "启动后端容器"
-if docker run -d -p 9988:9988   --network=chat2network --name $backend_container_name $backend_image_name ; then
+if docker run -d -p 9988:9988   --network=docker_chat2network --name $backend_container_name $backend_image_name ; then
     log "启动 $backend_container_name 容器完成"
 else
     log "启动 $backend_container_name 容器失败"
