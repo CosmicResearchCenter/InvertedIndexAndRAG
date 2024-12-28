@@ -24,9 +24,9 @@ class KnowledgeBase(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     knowledgeBaseId = Column(String(18), default=lambda: str(generate_id(length=18)))
     knowledgeBaseName 	= Column(String(255))
-    docs_num = Column(Integer, default=0)
-    words_num = Column(Integer, default=0)
-    related_conversations = Column(Integer, default=0)
+    # docs_num = Column(Integer, default=0)
+    # words_num = Column(Integer, default=0)
+    # related_conversations = Column(Integer, default=0)
     delete_sign = Column(Boolean, default=False)
     create_time = Column(TIMESTAMP)
     update_time = Column(TIMESTAMP)
@@ -80,7 +80,7 @@ class DocInfo(Base):
     knowledgeBaseId = Column(String(255))
     
     # 召回次数
-    retriever_num = Column(Integer, default=0)
+    # retriever_num = Column(Integer, default=0)
     
     create_time = Column(TIMESTAMP)
     doc_type = Column(String(255))
