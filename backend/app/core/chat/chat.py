@@ -243,6 +243,7 @@ content: {item['content']}
                 answer="",
                 username=username,
                 knowledgeBaseId=knowledgebase.knowledgeBaseId,
+                timeStamp=datetime.datetime.now()
             )
             self.save_conversation(new_message)
 
