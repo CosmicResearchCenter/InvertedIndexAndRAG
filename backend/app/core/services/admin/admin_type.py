@@ -29,9 +29,9 @@ class Conversation_Collection(BaseModel):
 class KnowledgeBaseInfo(BaseModel):
     knowledge_base_id: str
     knowledge_base_name: str
-    docs_num: int
-    words_num: int
-    related_conversations: int
+    # docs_num: int
+    # words_num: int
+    # related_conversations: int
     delete_sign: bool
     # create_time: str
     # update_time: str
@@ -56,4 +56,3 @@ class DocInfo_Re(BaseModel):
     doc_type: str
     doc_size: int
     delete_sign: bool
-    retriever_num: int

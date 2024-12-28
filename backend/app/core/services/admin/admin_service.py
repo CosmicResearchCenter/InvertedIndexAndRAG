@@ -115,9 +115,9 @@ class AdminService:
                     knowledge_base_info=KnowledgeBaseInfo(
                         knowledge_base_id=knowledge_base.knowledgeBaseId,
                         knowledge_base_name=knowledge_base.knowledgeBaseName,
-                        docs_num=knowledge_base.docs_num,
-                        words_num=knowledge_base.words_num,
-                        related_conversations=knowledge_base.related_conversations,
+                        # docs_num=0,
+                        # words_num=0,
+                        # related_conversations=0,
                         delete_sign=knowledge_base.delete_sign,
                         create_time=knowledge_base.create_time,
                         update_time=knowledge_base.update_time,
@@ -145,9 +145,9 @@ class AdminService:
                         knowledge_base_info=KnowledgeBaseInfo(
                             knowledge_base_id=knowledge_base.knowledgeBaseId,
                             knowledge_base_name=knowledge_base.knowledgeBaseName,
-                            docs_num=knowledge_base.docs_num,
-                            words_num=knowledge_base.words_num,
-                            related_conversations=knowledge_base.related_conversations,
+                            # docs_num=knowledge_base.docs_num,
+                            # words_num=knowledge_base.words_num,
+                            # related_conversations=knowledge_base.related_conversations,
                             delete_sign=knowledge_base.delete_sign,
                             create_time=knowledge_base.create_time,
                             update_time=knowledge_base.update_time,
@@ -176,8 +176,7 @@ class AdminService:
                     doc_name=doc.doc_name,
                     doc_type=doc.doc_type,
                     doc_size=doc.doc_size,
-                    delete_sign=doc.delete_sign,
-                    retriever_num=doc.retriever_num
+                    delete_sign=doc.delete_sign
                 ))
                 
         else:
