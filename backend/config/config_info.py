@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     OCR_PORT :int 
     OCR_URL :str 
 
+    RERANK_BASE_URL:str
+    
     ONEAPI_BASE_URL:str
     ONEAPI_API_KEY:str
     ONEAPI_MODEL:str
