@@ -60,8 +60,7 @@
                         </el-icon>
                         <span class="file-name">{{ scope.row.name }}</span>
                     </el-table-column>
-                    <el-table-column prop="size" label="字符数"></el-table-column>
-                    <el-table-column prop="recalls" label="召回次数"></el-table-column>
+                    <el-table-column prop="size" label="大小"></el-table-column>
                     <el-table-column prop="uploadDate" label="上传时间"></el-table-column>
                     <el-table-column prop="status" label="状态" width="100">
                         <template v-slot="scope">
@@ -80,10 +79,10 @@
                                 </span>
                                 <template #dropdown>
                                     <el-dropdown-menu>
-                                        <el-dropdown-item>重命名</el-dropdown-item>
+                                        <el-dropdown-item @click="openRenameDialog(scope.row.docId)">重命名</el-dropdown-item>
                                         <!-- <el-dropdown-item>分段设置</el-dropdown-item> -->
-                                        <el-dropdown-item>归档</el-dropdown-item>
-                                        <el-dropdown-item>删除</el-dropdown-item>
+                                        <!-- <el-dropdown-item>归档</el-dropdown-item> -->
+                                        <el-dropdown-item @click="deleteFile">删除</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </template>
                             </el-dropdown>
@@ -114,19 +113,36 @@
             </div>
         </el-col>
     </el-row>
+    <el-dialog
+        v-model="renameDialogVisible"
+        title="重命名文档"
+        width="30%"
+        :close-on-click-modal="false"
+    >
+        <el-form>
+            <el-form-item label="新文件名">
+                <el-input v-model="newDocName" placeholder="请输入新的文档名"></el-input>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="renameDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="confirmRename">确定</el-button>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter, useRoute } from 'vue-router';
-import { getRequest, postRequest, putRequest } from '@/utils/http';
+import { getRequest, postRequest,deleteRequest, putRequest } from '@/utils/http';
 
 interface File {
     index: number;
     name: string;
     size: string;
-    recalls: number;
     uploadDate: string;
     status: string;
     docId: string;
@@ -227,11 +243,72 @@ export default defineComponent({
                 ElMessage.error("保存设置时出错");
             }
         };
-
+        const deleteFile = async () => {
+            const baseId = route.params.base_id as string;
+            try {
+                const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                const response: any = await deleteRequest(baseURL+`/v1/api/mark/knowledgebase/${baseId}/doc/${files.value[0].docId}`);
+                if (response.code === 200) {
+                    ElMessage.success("文件已删除");
+                } else {
+                    ElMessage.error("删除文件失败");
+                }
+            } catch (error) {
+                console.error(error);
+                ElMessage.error("删除文件时出错");
+            }
+        };
+        const renameDoc = async () => {
+            const baseId = route.params.base_id as string;
+            try {
+                const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                const response: any = await postRequest(baseURL+`/v1/api/mark/knowledgebase/${baseId}/doc/${files.value[0].docId}/rename`, {
+                    new_name: "new name"
+                });
+                if (response.code === 200) {
+                    ElMessage.success("文件已重命名");
+                } else {
+                    ElMessage.error("重命名文件失败");
+                }
+            } catch (error) {
+                console.error(error);
+                ElMessage.error("重命名文件时出错");
+            }
+        };
         const isCollapse = ref(false);
         
         const toggleCollapse = () => {
             isCollapse.value = !isCollapse.value;
+        };
+
+        const renameDialogVisible = ref(false);
+        const newDocName = ref('');
+        const currentDocId = ref('');
+
+        const openRenameDialog = (docId: string) => {
+            currentDocId.value = docId;
+            // 获取当前文档的名称作为默认值
+            const currentDoc = files.value.find(file => file.docId === docId);
+            newDocName.value = currentDoc ? currentDoc.name : '';
+            renameDialogVisible.value = true;
+        };
+
+        const confirmRename = async () => {
+            const baseId = route.params.base_id as string;
+            try {
+                const baseURL = import.meta.env.VITE_APP_BASE_URL;
+                const response: any = await putRequest(baseURL+`/v1/api/mark/knowledgebase/${baseId}/doc/${currentDocId.value}/rename?new_name=${newDocName.value}`,{});
+                if (response.code === 200) {
+                    ElMessage.success("文件已重命名");
+                    renameDialogVisible.value = false;
+                    fetchFiles();
+                } else {
+                    ElMessage.error("重命名文件失败");
+                }
+            } catch (error) {
+                console.error(error);
+                ElMessage.error("重命名文件时出错");
+            }
         };
 
         onMounted(() => {
@@ -251,6 +328,12 @@ export default defineComponent({
             get_kb_config,
             isCollapse,
             toggleCollapse,
+            deleteFile,
+            renameDoc,
+            renameDialogVisible,
+            newDocName,
+            openRenameDialog,
+            confirmRename
         };
     }
 });
@@ -462,5 +545,11 @@ export default defineComponent({
     .search-input {
         width: 200px;
     }
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
 }
 </style>
