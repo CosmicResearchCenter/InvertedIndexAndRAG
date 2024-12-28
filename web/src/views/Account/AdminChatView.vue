@@ -4,7 +4,7 @@
     <el-aside class="chat-aside">
       <div class="aside-header">
         <el-input v-model="searchUser" placeholder="搜索用户..." prefix-icon="Search" />
-        <el-switch v-model="isDarkMode" class="theme-switch" size="small" />
+        <!-- <el-switch v-model="isDarkMode" class="theme-switch" size="small" /> -->
       </div>
       <div class="user-list custom-scrollbar">
         <div v-for="user in filteredUsers" :key="user.id"

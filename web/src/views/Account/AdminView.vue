@@ -78,13 +78,13 @@ const navigateTo = (path: string) => {
         <h1>系统管理控制台</h1>
         <span class="subtitle">AI 助手管理系统</span>
       </div>
-      <el-switch
+      <!-- <el-switch
         v-model="isDarkMode"
         class="theme-switch"
         active-text="暗色"
         inactive-text="亮色"
         inline-prompt
-      />
+      /> -->
     </div>
 
     <!-- 统计卡片 -->
