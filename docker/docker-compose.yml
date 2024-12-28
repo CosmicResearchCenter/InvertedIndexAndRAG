@@ -121,6 +121,8 @@ services:
       - chat2anything
     ports:
       - "8088:80"  # Nginx 默认监听80端口
+    environment:
+      - VITE_APP_BASE_URL=http://chat2anything_app:9988
     networks:
       - chat2network
 
