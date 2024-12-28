@@ -75,7 +75,7 @@ def signup(signupRequest: SignUpRequest):
         
         hashed_password = get_password_hash(password)
 
-        new_user = UserInfo(username=username, password=hashed_password,is_admin=False,delete_sign=False)
+        new_user = UserInfo(username=username, password=hashed_password,is_admin=False,delete_sign=False,create_time=datetime.datetime.now(),update_time=datetime.datetime.now())
         mysql_client.db.add(new_user)
         mysql_client.db.commit()
         mysql_client.db.refresh(new_user)
