@@ -3,7 +3,7 @@
     <el-aside class="base-aside">
       <div class="aside-header">
         <el-input v-model="searchUser" placeholder="搜索用户..." prefix-icon="Search" />
-        <el-switch v-model="isDarkMode" class="theme-switch" size="small" />
+        <!-- <el-switch v-model="isDarkMode" class="theme-switch" size="small" /> -->
       </div>
       <div class="user-list">
         <div v-for="user in filteredUsers" 
@@ -28,7 +28,7 @@
           <div class="base-info">
             <div class="base-title">{{ base.knowledge_base_name }}</div>
             <div class="base-stats">
-              <span>文档数: {{ base.knowledge_base_info.docs_num }}</span>
+              <!-- <span>文档数: {{ base.knowledge_base_info.docs_num }}</span> -->
               <span>创建时间: {{ formatDate(base.knowledge_base_info.create_time) }}</span>
               <span v-if="base.knowledge_base_info.delete_sign" class="delete-sign">已删除</span>
             </div>
@@ -51,12 +51,12 @@
               {{ formatSize(scope.row.doc_size) }}
             </template>
           </el-table-column>
-          <el-table-column prop="retriever_num" label="检索次数" width="100" />
-          <el-table-column label="操作" width="120">
+          <!-- <el-table-column prop="retriever_num" label="检索次数" width="100" /> -->
+          <!-- <el-table-column label="操作" width="120">
             <template #default="scope">
               <el-button link type="primary" @click="viewDocument(scope.row)">查看</el-button>
             </template>
-          </el-table-column>
+          </el-table-column> -->
         </el-table>
       </div>
       <div v-else class="no-selection">
