@@ -7,7 +7,7 @@ networks:
 services:
   mysql:
     image: mysql:8.0
-    container_name: ${MYSQL_IP}
+    container_name: chat2anything_db
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_BASE}
@@ -22,7 +22,7 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
-    container_name: ${ES_BASE_URL}
+    container_name: chat2anything_es
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -74,7 +74,7 @@ services:
     networks:
           - chat2network
   standalone:
-    container_name: ${MILVUS_HOST}
+    container_name: chat2anything_milvus
     image: milvusdb/milvus:v2.4.13-hotfix
     command: ["milvus", "run", "standalone"]
     security_opt:
@@ -96,33 +96,6 @@ services:
     depends_on:
       - etcd
       - minio
-    networks:
-      - chat2network
-
-
-  chat2anything:
-    image: chat2anything_backend  # 替换为实际的chat2anything镜像名
-    container_name: chat2anything_app
-    env_file:
-      - .env
-    depends_on:
-      - mysql
-      - elasticsearch
-      - standalone
-    ports:
-      - "9988:9988"  # 替换为chat2anything API的端口
-    networks:
-      - chat2network
-
-  chat2anything_web:
-    image: chat2anything_frontend  # 替换为实际的chat2anything_web镜像名
-    container_name: chat2anything_web
-    depends_on:
-      - chat2anything
-    ports:
-      - "8088:80"  # Nginx 默认监听80端口
-    environment:
-      - VITE_APP_BASE_URL=http://chat2anything_app:9988
     networks:
       - chat2network
 
