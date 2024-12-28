@@ -40,7 +40,8 @@ else
     exit 1
 fi
 
-
+cd "$project_root"
+cd "docker"
 # 用 docker-compose 启动容器
 log "开始启动容器"
 if docker-compose up -d; then
