@@ -130,33 +130,33 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      # device: /path/to/mysql_data  # Replace with the desired path on your host machine
+      device: ./mysql_data  # Replace with the desired path on your host machine
 
   es_data:
     driver: local
     driver_opts:
       o: bind
       type: none
-      # device: /path/to/es_data  # Replace with the desired path on your host machine
+      device: ./es_data  # Replace with the desired path on your host machine
 
   minio_data:
     driver: local
     driver_opts:
       o: bind
       type: none
-      # device: /path/to/minio_data  # Replace with the desired path on your host machine
+      device: ./minio_data  # Replace with the desired path on your host machine
 
   milvus_data:
     driver: local
     driver_opts:
       o: bind
       type: none
-      # device: /path/to/milvus_data  # Replace with the desired path on your host machine
+      device: ./milvus_data  # Replace with the desired path on your host machine
 
   etcd:
     driver: local
     driver_opts:
       o: bind
       type: none
-      # device: /path/to/etcd  # Replace with the desired path on your host machine
+      device: ./etcd  # Replace with the desired path on your host machine
 
