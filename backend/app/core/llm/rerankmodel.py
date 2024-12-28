@@ -2,14 +2,14 @@ import requests
 import json
 from typing import List, Optional
 from app.core.models.rerank_models import RerankDocument, RerankResult
-
+from config.config_info import settings
 
 
 
 class RerankModel:
     def __init__(self) -> None:
         # 设置请求的 URL
-        self.url = 'https://uk.k.cn:8443/v1/rerank'
+        self.url = settings.RERANK_BASE_URL
 
         # 设置请求头
         self.headers = {
