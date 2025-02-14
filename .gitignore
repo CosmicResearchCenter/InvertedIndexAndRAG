@@ -8,3 +8,5 @@ node_modules/
 .DS_Store
 # backend/alembic/versions/
 documents_stored/
+backend/.env/
+backend/.idea/

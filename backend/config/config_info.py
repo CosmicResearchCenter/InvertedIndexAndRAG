@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     DOUBAOAI_BASE_URL:str
     DOUBAOAI_MODEL:str
     DOUBAOAI_EMBEDDING_MODEL:str
+
+    OLLAMA_MODEL :str
+    OLLAMA_BASE_URL:str
+    
     class Config:
         env_file = ".env"
         extra = 'allow'
@@ -54,4 +58,4 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# print(settings.MYSQL_IP)
+#print(settings.MYSQL_IP)
