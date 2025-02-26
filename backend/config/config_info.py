@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     OLLAMA_MODEL :str
     OLLAMA_BASE_URL:str
     
+    SILICONFLOW_API_KEY:str
+    SILICONFLOW_BASE_URL:str
+    SILICONFLOW_MODEL:str  # 或其他可用模型
+     
     class Config:
         env_file = ".env"
         extra = 'allow'
