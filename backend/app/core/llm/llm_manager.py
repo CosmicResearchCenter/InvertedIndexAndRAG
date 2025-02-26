@@ -4,6 +4,7 @@ from .openaillm import OpenAILLM
 from .zhipuai_llm import ZhiPuAI_LLM
 from .sparkai_llm import SparkAILLM
 from .openapi_llm import OneApiLLM
+from .siliconflow import SiliconFlowLLM
 from .llm import LLM
 
 class LLM_Provider(Enum):
@@ -15,6 +16,7 @@ class LLM_Provider(Enum):
     ZHIPUAI = "ZHIPUAI"
     SPARKAI = "SPARKAI"
     ONEAPI = "ONEAPI"
+    SILICONFLOW = "SILICONFLOW"
     @classmethod
     def get_llm(cls, mode_provider: str):
         for member_name, member in cls.__members__.items():
@@ -37,6 +39,8 @@ class LLM_Manager:
             return SparkAILLM()
         elif lLM_Provider == LLM_Provider.ONEAPI:
             return OneApiLLM()
+        elif lLM_Provider == LLM_Provider.SILICONFLOW:
+            return SiliconFlowLLM()
         else:
             raise Exception("Not supported mode_provider type")
         
@@ -44,4 +48,3 @@ if __name__ == "__main__":
     llm = LLM_Manager().creatLLM("OPENAI")
     llm.setPrompt("你是一个聊天助手")
     print(llm.ChatToBot("你好"))
-    
