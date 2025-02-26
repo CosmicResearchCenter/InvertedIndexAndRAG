@@ -58,6 +58,7 @@ class Settings(BaseSettings):
     SILICONFLOW_API_KEY:str
     SILICONFLOW_BASE_URL:str
     SILICONFLOW_MODEL:str  # 或其他可用模型
+    SILICONFLOW_EMBEDDING_MODEL:str
      
     class Config:
         env_file = ".env"
