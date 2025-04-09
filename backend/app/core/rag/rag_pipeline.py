@@ -76,6 +76,8 @@ class RAG_Pipeline:
         
         result: List[SourceDocument] = []
         
+        print("检索知识库")
+         
         if rag_model == 0 or rag_model == 1:
             result_milvus = self.milvus_client.search(vector, knowledge_base_id)
             i = 0
@@ -113,7 +115,7 @@ class RAG_Pipeline:
         
         return rerank_result
     # 找回文档
-    def retrieve_documents(self,question:str,knowledge_base_id: str,rag_model:int=0,is_rerank:bool=False)->SourceDocumentReRanked:
+    def retrieve_documents(self,question:str,knowledge_base_id: str,rag_model:int=0,is_rerank:bool=False)->ResultByDoc:
         print("generate_answer_by_knowledgebase")
         # 获取文档源信息
         source_docs:List[SourceDocument] = self.retriever_by_knowledgebase(question,knowledge_base_id,rag_model)
