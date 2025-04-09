@@ -39,13 +39,17 @@ class OpenAILLM(LLM):
     def ChatToBotWithSteam(self, content: str):
         self.addHistory_User(content)
         response = self.client.chat.completions.create(
-            max_tokens=10240,
+            max_tokens=8192,
             model=self.model,
             messages=self.messages,
             stream=True
         )
         for chunk in response:
-            yield chunk.choices[0].delta.content
+            if not chunk.choices or len(chunk.choices) == 0:
+                continue
+            delta_content = chunk.choices[0].delta.content
+            if delta_content is not None:
+                yield delta_content
 if __name__ == "__main__":
     # api_key = "sk-proj-W7tB90AAlJGsYfTN5nh6T3BlbkFJLbQV6lpH9RYU34FgfUr3"
     # url = "https://api.openai.com/v1/"
