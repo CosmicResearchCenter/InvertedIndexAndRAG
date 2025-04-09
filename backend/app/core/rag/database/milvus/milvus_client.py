@@ -83,7 +83,7 @@ class MilvusCollectionManager:
         }
         # print(search_params)
         results = self.collection.search([query_vector], "vector", search_params, limit=limit,output_fields=["content","knowledge_doc_name"])
-        # print(f"Found {len(results[0])} results")
+        print(f"Found {len(results[0])} results")
         return results
 
     def get_content_by_id(self, entity_id):
