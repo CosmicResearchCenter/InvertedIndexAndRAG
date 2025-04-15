@@ -36,7 +36,7 @@ class SparkAILLM(LLM):
         a = self.client.generate([self.messages], callbacks=[handler])
         
         return a.generations[0][0].text
-    def ChatToBotWithSteam(self, content: str):
+    def ChatToBotWithStream(self, content: str):
         self.addHistory_User(content)
         handler = ChunkPrintHandler()
         self.client.streaming = True

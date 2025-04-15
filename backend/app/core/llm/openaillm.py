@@ -36,7 +36,7 @@ class OpenAILLM(LLM):
         message_content = response.choices[0].message.content
         self.addHistory_Assistant(message_content)
         return message_content
-    def ChatToBotWithSteam(self, content: str):
+    def ChatToBotWithStream(self, content: str):
         self.addHistory_User(content)
         response = self.client.chat.completions.create(
             max_tokens=8192,

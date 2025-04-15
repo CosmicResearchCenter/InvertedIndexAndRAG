@@ -57,7 +57,7 @@ class SiliconFlowLLM(LLM):
         self.addHistory_Assistant(message_content)
         return message_content
         
-    def ChatToBotWithSteam(self, content: str):
+    def ChatToBotWithStream(self, content: str):
         self.addHistory_User(content)
         
         payload = {

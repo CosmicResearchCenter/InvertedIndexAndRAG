@@ -42,7 +42,7 @@ class OneApiLLM(LLM):
         
             return message_content
         
-    def ChatToBotWithSteam(self, content: str):
+    def ChatToBotWithStream(self, content: str):
         self.addHistory_User(content)
         data = {
             "model": self.model,

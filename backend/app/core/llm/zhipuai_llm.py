@@ -34,7 +34,7 @@ class ZhiPuAI_LLM(LLM):
         )
         message_content=response.choices[0].message.content
         return message_content
-    def ChatToBotWithSteam(self, content: str):
+    def ChatToBotWithStream(self, content: str):
         self.addHistory_User(content)
         response = self.client.chat.completions.create(
             model=self.model,  # 填写需要调用的模型编码

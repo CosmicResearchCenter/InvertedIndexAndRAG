@@ -41,7 +41,7 @@ class OllamaLLM(LLM):
         self.addHistory_Assistant(message_content)
         return message_content
 
-    def ChatToBotWithSteam(self, content: str) -> Generator[str, None, None]:
+    def ChatToBotWithStream(self, content: str) -> Generator[str, None, None]:
         self.addHistory_User(content)
         response = self.client.chat(
             model=self.model,

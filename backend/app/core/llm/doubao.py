@@ -29,7 +29,7 @@ class DouBaoLLM(LLM):
             stream=False,
         )
         return completion.choices[0].message.content
-    def ChatToBotWithSteam(self, content: str):
+    def ChatToBotWithStream(self, content: str):
         self.addHistory_User(content)
         response = self.client.chat.completions.create(
             model=self.model,
